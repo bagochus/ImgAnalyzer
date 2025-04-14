@@ -22,7 +22,7 @@ namespace ImgAnalyzer
 
         }
 
-        public void MeasurePixel(int x,int y)
+        public int MeasurePixel(int x,int y)
         {
             int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
@@ -33,7 +33,7 @@ namespace ImgAnalyzer
             tiff_img.ReadScanline(buffer, y);
             ushort[] pixelData = new ushort[width * samplesPerPixel];
             Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
-
+            return pixelData[x];
         }
 
 

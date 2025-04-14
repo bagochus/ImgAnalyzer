@@ -11,12 +11,46 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer
 {
+    public enum ClickMode {None, MeasurePixel, CornerCatching}
     public partial class Form1 : Form
     {
         ImageProcessor processor = new ImageProcessor();
+        private ClickMode clickMode = ClickMode.None;
+        int corner_index = 0;
+        Point[] corners = new Point[4];
+
         public Form1()
         {
             InitializeComponent();
+        }
+
+        public void HookClick(Point point)
+        {
+            switch (clickMode)
+            {
+                case ClickMode.None: break;
+                case ClickMode.MeasurePixel: 
+                    MessageBox.Show(
+                    processor.MeasurePixel(point.X, point.Y).ToString());
+                    break;
+                case ClickMode.CornerCatching:
+                    CatchCorner(point);
+                    break;
+
+            }
+        }
+
+        private void CatchCorner(Point point)
+        {
+            corners[corner_index] = point;
+            corner_index++;
+            if (corner_index >= 4)
+            {
+                corner_index = 0;
+                MessageBox.Show("Координаты углов считаны");
+            
+            }
+
         }
 
         private void button_openfile_Click(object sender, EventArgs e)
@@ -43,15 +77,24 @@ namespace ImgAnalyzer
         {
             ImageForm form2 = new ImageForm(processor.image);
             form2.Show();
-            form2.ImageClicked += (clickPoint) =>
+            form2.ImageClicked += HookClick;
+            /*form2.ImageClicked += (clickPoint) =>
             {
-                MessageBox.Show($"Клик на координатах формы: X={clickPoint.X}, Y={clickPoint.Y}");
-            };
+                MessageBox.Show($"Клик на координатах формы: X={clickPoint.X}, Y={clickPoint.Y}"
+                    +"\n"+ "Интенсивность:"+
+                    processor.MeasurePixel(clickPoint.X,clickPoint.Y).ToString());
+
+            };*/
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            processor.MeasurePixel(100, 100);
+            clickMode = ClickMode.MeasurePixel;
+        }
+
+        private void button_corners_Click(object sender, EventArgs e)
+        {
+            clickMode = ClickMode.CornerCatching;
         }
     }
 }
