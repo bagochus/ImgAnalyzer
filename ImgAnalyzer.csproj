@@ -106,6 +106,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Json_Converter.cs" />
+    <Compile Include="LookupTables\ILookupTable.cs" />
     <Compile Include="PlotForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -117,12 +118,15 @@
     </Compile>
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="MeasurmentTypes\IMeasurment.cs" />
-    <Compile Include="LookupTableFlat.cs" />
+    <Compile Include="LookupTables\LookupTableFlat.cs" />
     <Compile Include="MeasurmentTypes\MatrixMeasurment.cs" />
     <Compile Include="MeasurmentTypes\PointMeasurment.cs" />
     <Compile Include="MeasurmentTypes\PolygonMeasurment.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ThermalMapForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

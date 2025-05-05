@@ -40,6 +40,15 @@ namespace ImgAnalyzer
         public List<IMeasurment> measurements = new List<IMeasurment>();
         public EventHandler ListUpdated;
 
+        private ushort[,] max_values;
+        private ushort[,] min_values;
+        private ushort[,] amplitude_values;
+        private ushort[,] good_values;
+        private int[,] pseudo_phase_values;
+
+
+
+
         #region MeasurmentListManagement
         public List<string> GetMeasurnetNames()
         {
@@ -67,11 +76,74 @@ namespace ImgAnalyzer
             measurements.Add(new MatrixMeasurment(this, corners, nx, ny));
             ListUpdated?.Invoke(this, EventArgs.Empty);
         }
+
+        public void RenameItem(int index, string newName)
+        {
+            try
+            {
+                measurements[index].Name = newName;
+                ListUpdated(this, EventArgs.Empty);
+            }
+            catch { }
+        }
+
+        public void DeleteItem(int index)
+        {
+            try
+            {
+                measurements.RemoveAt(index);
+                ListUpdated(this, EventArgs.Empty);
+            }
+            catch { }
+        }
+
+        public void SaveMeasurmentList(string filename)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                IncludeFields = true,
+                Converters = { new JsonInterfaceConverter<IMeasurment>() }
+            };
+            string json = JsonSerializer.Serialize(measurements, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(filename, json);
+        }
+
+        public void LoadMeasurmentList(string filename)
+        {
+
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    Converters = { new JsonInterfaceConverter<IMeasurment>() }
+                };
+                string jsonString = File.ReadAllText(filename);
+                IMeasurment[] arr_measurements = JsonSerializer.Deserialize<IMeasurment[]>(jsonString, options);
+                measurements.Clear();
+                foreach (var measure in arr_measurements) measurements.Add(measure);
+                ListUpdated(this, EventArgs.Empty);
+            }
+            catch (FileNotFoundException)
+            {
+                MessageBox.Show("Файл не найден!");
+            }
+            catch (JsonException)
+            {
+                MessageBox.Show("Ошибка в формате JSON!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Неизвестная ошибка: {ex.Message}");
+            }
+
+
+        }
         #endregion
-       
-        
-        
-        
+
+
+
+
         public void LoadImage(string filename)
         {
             image = Image.FromFile(filename);
@@ -81,28 +153,7 @@ namespace ImgAnalyzer
         private byte ConvertIntensity(double intesity)
         { return (byte)intesity; }
 
-        private void ProcessImageFlatLUT(LookupTableFlat table,short value)
-        {
-            double kxi = (corners[TopLeft].X - corners[TopRight].X) / x_sectors;
-            double kyi = (corners[TopLeft].Y - corners[TopRight].Y) / x_sectors;
-            double kxj = (corners[TopLeft].X - corners[BottomLeft].X) / y_sectors;
-            double kyj = (corners[TopLeft].Y - corners[BottomLeft].Y) / y_sectors;
-            int x0 = corners[TopLeft].X;
-            int y0 = corners[TopLeft].Y;
 
-            for (int i = 0; i < x_sectors; i++)
-            {
-                for (int j = 0; j < y_sectors; j++) 
-                {
-                    Point[] points = new Point[4];
-                    points[TopLeft] =       new Point(x0 + (int)(kxi * i) + (int)(kxj * j),             y0 + (int)(kyi * i) + (int)(kyj * j));
-                    points[TopRight] =      new Point(x0 + (int)(kxi * (i+1)) + (int)(kxj * j),         y0 + (int)(kyi * (i + 1)) + (int)(kyj * j));
-                    points[BottomLeft] =    new Point(x0 + (int)(kxi * i) + (int)(kxj * (j + 1)),         y0 + (int)(kyi * i) + (int)(kyj * (j+1)));
-                    points[BottomRight] =   new Point(x0 + (int)(kxi * (i+1)) + (int)(kxj * (j + 1)),   y0 + (int)(kyi * (i + 1)) + (int)(kyj * (j + 1)));
-                    table.WriteValue(i,j,ConvertIntensity(MeanValueStrictBorders(points)),value);
-                }
-            }
-        }
 
 
         public static bool IsPointInPolygonOptimized(PointF point, PointF[] polygon, RectangleF bounds)
@@ -217,7 +268,6 @@ namespace ImgAnalyzer
             return result;
         }
 
-
         public void BatchMeasurment(string[] filenames)
         {
 
@@ -225,7 +275,6 @@ namespace ImgAnalyzer
 
             for (int i = 0; i < filenames.Length; i++)
             {
-             
                 tiff_img = Tiff.Open(filenames[i], "r");
                 for (int j = 0; j < measurements.Count; j++)
                 {
@@ -233,9 +282,117 @@ namespace ImgAnalyzer
                 }
             }
             return;
+        }
 
+        public void FindMinMax(string[] filenames)
+        {
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                tiff_img = Tiff.Open(filenames[i], "r");
+                int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+                int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+                int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+                int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
+
+                if (i==0)
+                {
+                    min_values = new ushort[width, height];
+                    max_values = new ushort[width, height];
+                    amplitude_values = new ushort[width, height];
+                }
+                for (int line = 0; line<height; line++)
+                {
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = buffer[pixel];
+                        if (i == 0)
+                        {
+                            min_values[line, pixel] = pixel_value;
+                            max_values[line, pixel] = pixel_value;
+                        } else
+                        {
+                            if (pixel_value < min_values[line,pixel]) min_values[line,pixel] = pixel_value;
+                            if (pixel_value > max_values[line,pixel]) max_values[line,pixel] = pixel_value;
+                        }
+                    }
+                }
+            }
+            
+            for (int i = 0; i < min_values.GetLength(0);i++)
+                for (int j = 0; j < min_values.GetLength(1); j++)
+                {
+                    amplitude_values[i,j] = (ushort)(max_values[i,j] - min_values[i,j]);
+                }
 
         }
+
+        public void CalculatePseudePhase(string[] filenames,int upper_threshold, int lower_threshold, int max_peak, int min_peak)
+        {
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                tiff_img = Tiff.Open(filenames[i], "r");
+                int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+                int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+                int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+                int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
+                bool[,] raising_state;
+
+
+                if (i == 0)
+                {
+                    //min_values = new ushort[width, height];
+                    //max_values = new ushort[width, height];
+                    //amplitude_values = new ushort[width, height];
+                }
+                for (int line = 0; line < height; line++)
+                {
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = buffer[pixel];
+                        if (i == 0)
+                        {
+                            min_values[line, pixel] = pixel_value;
+                            max_values[line, pixel] = pixel_value;
+                        }
+                        else
+                        {
+                            if (pixel_value < min_values[line, pixel]) min_values[line, pixel] = pixel_value;
+                            if (pixel_value > max_values[line, pixel]) max_values[line, pixel] = pixel_value;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < min_values.GetLength(0); i++)
+                for (int j = 0; j < min_values.GetLength(1); j++)
+                {
+                    amplitude_values[i, j] = (ushort)(max_values[i, j] - min_values[i, j]);
+                }
+
+        }
+
+        public void MarkDeadPixelByThreshold(int threshold)
+        {
+            if (amplitude_values == null) return;
+            if (amplitude_values.Length == 0) return;
+            good_values = new ushort[amplitude_values.GetLength(0),amplitude_values.GetLength(1)];
+
+
+            for (int i = 0; i < amplitude_values.GetLength(0); i++)
+                for (int j = 0; j < amplitude_values.GetLength(1); j++)
+                {
+                    if (amplitude_values[i, j] > threshold) good_values[i, j] = 1;
+                    else good_values[i, j] = 0;
+                }
+        }
+
+
 
         public void SaveCSV_All(string filename)
         {
@@ -270,67 +427,7 @@ namespace ImgAnalyzer
 
         }
 
-        public void RenameItem(int index, string newName)
-        {
-            try 
-            { 
-            measurements[index].Name = newName;
-            ListUpdated(this, EventArgs.Empty);
-            }
-            catch { }
-        }
 
-        public void DeleteItem(int index)
-        {
-            try
-            { 
-            measurements.RemoveAt(index);
-            ListUpdated(this, EventArgs.Empty);
-            } catch { }
-        }
-
-        public void SaveMeasurmentList(string filename)
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                IncludeFields = true,
-                Converters = { new JsonInterfaceConverter<IMeasurment>() }
-            };
-            string json = JsonSerializer.Serialize(measurements, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filename, json);
-        }
-
-        public void LoadMeasurmentList(string filename)
-        {
-
-            try
-            {
-                var options = new JsonSerializerOptions
-                {
-                    Converters = { new JsonInterfaceConverter<IMeasurment>() }
-                };
-                string jsonString = File.ReadAllText(filename);
-                IMeasurment[] arr_measurements = JsonSerializer.Deserialize<IMeasurment[]>(jsonString, options);
-                measurements.Clear();
-                foreach (var measure in arr_measurements) measurements.Add(measure);
-                ListUpdated(this, EventArgs.Empty); 
-            }
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show("Файл не найден!");
-            }
-            catch (JsonException)
-            {
-                MessageBox.Show("Ошибка в формате JSON!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Неизвестная ошибка: {ex.Message}");
-            }
-
-
-        }
 
 
 
