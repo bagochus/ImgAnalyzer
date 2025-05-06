@@ -128,7 +128,7 @@ namespace ImgAnalyzer.LookupTables
                     points[TopRight] = new Point(x0 + (int)(kxi * (i + 1)) + (int)(kxj * j), y0 + (int)(kyi * (i + 1)) + (int)(kyj * j));
                     points[BottomLeft] = new Point(x0 + (int)(kxi * i) + (int)(kxj * (j + 1)), y0 + (int)(kyi * i) + (int)(kyj * (j + 1)));
                     points[BottomRight] = new Point(x0 + (int)(kxi * (i + 1)) + (int)(kxj * (j + 1)), y0 + (int)(kyi * (i + 1)) + (int)(kyj * (j + 1)));
-                    table.WriteValue(i, j, ConvertIntensity(MeanValueStrictBorders(points)), value);
+                    //table.WriteValue(i, j, ConvertIntensity(MeanValueStrictBorders(points)), value);
                 }
             }
         }

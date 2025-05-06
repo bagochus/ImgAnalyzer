@@ -31,7 +31,7 @@ namespace ImgAnalyzer
         }
 
 
-        public PlotForm(Form1 form1, ImageProcessor imageProcessor)
+        public PlotForm(MainForm form1, ImageProcessor imageProcessor)
         {
             InitializeComponent();
             GetSizes();

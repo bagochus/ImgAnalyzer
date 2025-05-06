@@ -9,13 +9,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ImgAnalyzer.DialogForms;
+using System.Globalization;
 
 
 namespace ImgAnalyzer
 {
     public enum ClickMode {None, MeasurePixel, MeasurePoly, MeasureMatrix}
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
+        IFormatProvider frmt = new NumberFormatInfo { NumberDecimalSeparator = "." };
         ImageProcessor imageProcessor = new ImageProcessor();
         private ClickMode clickMode = ClickMode.None;
         int corner_index = 0;
@@ -37,7 +40,7 @@ namespace ImgAnalyzer
 
 
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             imageProcessor.ListUpdated += UpdateMeasurmentList;
@@ -361,6 +364,35 @@ namespace ImgAnalyzer
             {
                 MessageBox.Show($"Ошибка при выборе файла: {ex.Message}");
             }
+        }
+
+        private void button_calcminmax_Click(object sender, EventArgs e)
+        {
+            imageProcessor.FindMinMax(batch_filanames);
+        }
+
+        private void button_pseudoph_Click(object sender, EventArgs e)
+        {
+            PseudoPhaseForm form = new PseudoPhaseForm(imageProcessor, batch_filanames);
+            form.ShowDialog();
+        }
+
+        private void button_deadpix_Click(object sender, EventArgs e)
+        {
+            int value = 0;
+            string userInput = Interaction.InputBox("Введите порог:",
+               "Поиск битых пикселей по порогу амплитуды",
+               "0");
+            if (Int32.TryParse(userInput,NumberStyles.Any, frmt,out value))
+            {
+                imageProcessor.MarkDeadPixelByThreshold(value);
+            }
+        }
+
+        private void button_map_Click(object sender, EventArgs e)
+        {
+            ValueMapForm valueMapForm = new ValueMapForm(imageProcessor);
+            valueMapForm.Show();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace ImgAnalyzer
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -60,6 +60,10 @@
             this.button_clear = new System.Windows.Forms.Button();
             this.button_save = new System.Windows.Forms.Button();
             this.button_load = new System.Windows.Forms.Button();
+            this.button_calcminmax = new System.Windows.Forms.Button();
+            this.button_pseudoph = new System.Windows.Forms.Button();
+            this.button_deadpix = new System.Windows.Forms.Button();
+            this.button_map = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button_openfile
@@ -357,11 +361,55 @@
             this.button_load.UseVisualStyleBackColor = true;
             this.button_load.Click += new System.EventHandler(this.button_load_Click);
             // 
-            // Form1
+            // button_calcminmax
+            // 
+            this.button_calcminmax.Location = new System.Drawing.Point(594, 187);
+            this.button_calcminmax.Name = "button_calcminmax";
+            this.button_calcminmax.Size = new System.Drawing.Size(146, 23);
+            this.button_calcminmax.TabIndex = 32;
+            this.button_calcminmax.Text = "Расчитать амплитуды";
+            this.button_calcminmax.UseVisualStyleBackColor = true;
+            this.button_calcminmax.Click += new System.EventHandler(this.button_calcminmax_Click);
+            // 
+            // button_pseudoph
+            // 
+            this.button_pseudoph.Location = new System.Drawing.Point(594, 215);
+            this.button_pseudoph.Name = "button_pseudoph";
+            this.button_pseudoph.Size = new System.Drawing.Size(146, 23);
+            this.button_pseudoph.TabIndex = 33;
+            this.button_pseudoph.Text = "Расчитать псевдо-фазы";
+            this.button_pseudoph.UseVisualStyleBackColor = true;
+            this.button_pseudoph.Click += new System.EventHandler(this.button_pseudoph_Click);
+            // 
+            // button_deadpix
+            // 
+            this.button_deadpix.Location = new System.Drawing.Point(594, 244);
+            this.button_deadpix.Name = "button_deadpix";
+            this.button_deadpix.Size = new System.Drawing.Size(146, 23);
+            this.button_deadpix.TabIndex = 34;
+            this.button_deadpix.Text = "Отметить битые пиксели";
+            this.button_deadpix.UseVisualStyleBackColor = true;
+            this.button_deadpix.Click += new System.EventHandler(this.button_deadpix_Click);
+            // 
+            // button_map
+            // 
+            this.button_map.Location = new System.Drawing.Point(594, 273);
+            this.button_map.Name = "button_map";
+            this.button_map.Size = new System.Drawing.Size(146, 23);
+            this.button_map.TabIndex = 35;
+            this.button_map.Text = "Построить карту";
+            this.button_map.UseVisualStyleBackColor = true;
+            this.button_map.Click += new System.EventHandler(this.button_map_Click);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button_map);
+            this.Controls.Add(this.button_deadpix);
+            this.Controls.Add(this.button_pseudoph);
+            this.Controls.Add(this.button_calcminmax);
             this.Controls.Add(this.button_load);
             this.Controls.Add(this.button_save);
             this.Controls.Add(this.button_clear);
@@ -394,8 +442,8 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button_show);
             this.Controls.Add(this.button_openfile);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MainForm";
+            this.Text = "MainForm";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -435,6 +483,10 @@
         private System.Windows.Forms.Button button_clear;
         private System.Windows.Forms.Button button_save;
         private System.Windows.Forms.Button button_load;
+        private System.Windows.Forms.Button button_calcminmax;
+        private System.Windows.Forms.Button button_pseudoph;
+        private System.Windows.Forms.Button button_deadpix;
+        private System.Windows.Forms.Button button_map;
     }
 }
 

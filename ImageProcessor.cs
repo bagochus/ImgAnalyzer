@@ -16,10 +16,16 @@ using ScottPlot.Plottables;
 using System.IO;
 using OpenTK.Graphics.OpenGL;
 using System.Windows.Forms;
+using ScottPlot.PlotStyles;
+using ScottPlot.Interactivity.UserActions;
+using System.Reflection;
 
 namespace ImgAnalyzer
 {
+    public enum State : byte { Rising, Falling, Unknown };
     public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
+    public enum VariablesToMap : int {Minimum = 0 , Maximum, Amplitude, Pseudophase, DeadAlive }
+
     delegate void ListUpdatedDelegate();
     public class ImageProcessor
     {
@@ -40,10 +46,10 @@ namespace ImgAnalyzer
         public List<IMeasurment> measurements = new List<IMeasurment>();
         public EventHandler ListUpdated;
 
-        private ushort[,] max_values;
-        private ushort[,] min_values;
-        private ushort[,] amplitude_values;
-        private ushort[,] good_values;
+        private int[,] max_values;
+        private int[,] min_values;
+        private int[,] amplitude_values;
+        private int[,] good_values;
         private int[,] pseudo_phase_values;
 
 
@@ -296,18 +302,19 @@ namespace ImgAnalyzer
 
                 if (i==0)
                 {
-                    min_values = new ushort[width, height];
-                    max_values = new ushort[width, height];
-                    amplitude_values = new ushort[width, height];
+                    min_values = new int[height,width];
+                    max_values = new int[height, width];
+                    amplitude_values = new int[height, width];
                 }
                 for (int line = 0; line<height; line++)
                 {
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
                     for (int pixel = 0; pixel < width; pixel++)
                     {
-                        ushort pixel_value = buffer[pixel];
+                        ushort pixel_value = pixelData[pixel];
                         if (i == 0)
                         {
                             min_values[line, pixel] = pixel_value;
@@ -329,8 +336,14 @@ namespace ImgAnalyzer
 
         }
 
-        public void CalculatePseudePhase(string[] filenames,int upper_threshold, int lower_threshold, int max_peak, int min_peak)
+        public void CalculatePseudoPhase(string[] filenames,int upper_threshold, int lower_threshold, int max_peak, int min_peak)
         {
+            
+            State[,] previous_state = new State[0,0];
+            
+            int[,] initial_values = new int[0,0];
+            //ushort[,] pseudeophase_values = new ushort[0,0]; 
+
             for (int i = 0; i < filenames.Length; i++)
             {
                 tiff_img = Tiff.Open(filenames[i], "r");
@@ -338,50 +351,90 @@ namespace ImgAnalyzer
                 int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
                 int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
                 int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
-                bool[,] raising_state;
+
 
 
                 if (i == 0)
                 {
-                    //min_values = new ushort[width, height];
-                    //max_values = new ushort[width, height];
-                    //amplitude_values = new ushort[width, height];
+                    previous_state = new State[height, width];             
+                    initial_values = new int[height, width]; 
+                    pseudo_phase_values = new int[height, width];
                 }
                 for (int line = 0; line < height; line++)
                 {
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
                     for (int pixel = 0; pixel < width; pixel++)
                     {
-                        ushort pixel_value = buffer[pixel];
+                        ushort pixel_value = pixelData[pixel]; 
                         if (i == 0)
                         {
-                            min_values[line, pixel] = pixel_value;
-                            max_values[line, pixel] = pixel_value;
+                            initial_values[line, pixel] = pixel_value;
+                            pseudo_phase_values[line, pixel] = 0;
+
+                            if (pixel_value < lower_threshold)
+                            {
+                                previous_state[line, pixel] = State.Rising;
+                            }
+                            else if (pixel_value > upper_threshold)
+                            {
+                                previous_state[line, pixel] = State.Falling;
+                            }
+                            else
+                            {
+                                previous_state[line, pixel] = State.Unknown;
+                            }
                         }
                         else
                         {
-                            if (pixel_value < min_values[line, pixel]) min_values[line, pixel] = pixel_value;
-                            if (pixel_value > max_values[line, pixel]) max_values[line, pixel] = pixel_value;
+                            State state = State.Unknown;
+                            if (pixel_value < lower_threshold) state = State.Rising;
+                            if (pixel_value > upper_threshold) state = State.Falling;
+
+                            if (state == State.Rising && previous_state[line,pixel] == State.Falling )
+                            {
+                                pseudo_phase_values[line, pixel] += 180;
+                                previous_state[line,pixel ] = State.Rising; 
+                            }
+                            else if (state == State.Falling && previous_state[line,pixel] == State.Rising)
+                            {
+                                pseudo_phase_values[line, pixel] += 180;
+                                previous_state[line, pixel] = State.Falling;
+                            }
+                            else if (state == State.Rising && previous_state[line,pixel] == State.Unknown)
+                            {
+                                pseudo_phase_values[line,pixel] += (initial_values[line, pixel] - min_peak) * 180/ (max_peak - min_peak);
+                                previous_state[line,pixel] = State.Rising;
+                            }
+                            else if (state == State.Falling && previous_state[line,pixel] == State.Unknown)
+                            {
+                                pseudo_phase_values[line,pixel] += (max_peak - initial_values[line,pixel]) * 180 / (max_peak - min_peak);
+                                previous_state[line, pixel] = State.Falling;
+                            }
+
+                            if (i == filenames.Length-1)
+                            {
+
+                                if (previous_state[line,pixel] == State.Unknown)
+                                    pseudo_phase_values[line, pixel] = Math.Abs(pixel_value - initial_values[line,pixel] ) * 180 / (max_peak - min_peak);
+                                if (previous_state[line, pixel] == State.Rising && state == State.Unknown)
+                                    pseudo_phase_values[line, pixel] += (pixel_value - min_peak) * 180 / (max_peak - min_peak);
+                                if (previous_state[line,pixel] == State.Falling && state == State.Unknown)
+                                    pseudo_phase_values[line, pixel] += (pixel_value - min_peak) * 180 / (max_peak - min_peak);
+                            }
                         }
                     }
                 }
             }
-
-            for (int i = 0; i < min_values.GetLength(0); i++)
-                for (int j = 0; j < min_values.GetLength(1); j++)
-                {
-                    amplitude_values[i, j] = (ushort)(max_values[i, j] - min_values[i, j]);
-                }
-
         }
 
         public void MarkDeadPixelByThreshold(int threshold)
         {
             if (amplitude_values == null) return;
             if (amplitude_values.Length == 0) return;
-            good_values = new ushort[amplitude_values.GetLength(0),amplitude_values.GetLength(1)];
+            good_values = new int[amplitude_values.GetLength(0),amplitude_values.GetLength(1)];
 
 
             for (int i = 0; i < amplitude_values.GetLength(0); i++)
@@ -391,7 +444,6 @@ namespace ImgAnalyzer
                     else good_values[i, j] = 0;
                 }
         }
-
 
 
         public void SaveCSV_All(string filename)
@@ -427,6 +479,61 @@ namespace ImgAnalyzer
 
         }
 
+        public void PlotValueMap (VariablesToMap variable)
+        {
+            switch (variable)
+            {
+                case VariablesToMap.Amplitude:
+                    if (amplitude_values != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(amplitude_values);
+                        thermalMapForm.Show();
+                    } 
+                    else goto default;
+                    break;
+                case VariablesToMap.Maximum:
+                    if (max_values != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(max_values);
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.Minimum:
+                    if (min_values != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(min_values);
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.Pseudophase:
+                    if (pseudo_phase_values != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(pseudo_phase_values);
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.DeadAlive:
+                    if (good_values != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(good_values);
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                default:
+                    MessageBox.Show("Невозможно построить эту карту, возможно данные еще не готовы");
+                    break;
+
+
+
+
+            }
+
+
+        }
 
 
 

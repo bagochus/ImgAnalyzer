@@ -28,6 +28,19 @@ namespace ImgAnalyzer
             InitializeComponents();
             GenerateThermalImage();
         }
+        public ThermalMapForm(ushort[,] data)
+        {
+            if (data == null || data.Length == 0)
+                throw new ArgumentException("Data array cannot be null or empty");
+
+            this.dataArray = new int[data.GetLength(0),data.GetLength(1)];
+            for (int i=0;i<data.GetLength(0);i++)
+                for(int j=0; j<data.GetLength(1);j++)
+                    this.dataArray[i,j] = data[i,j];
+            InitializeComponents();
+            GenerateThermalImage();
+        }
+
 
         private void InitializeComponents()
         {
