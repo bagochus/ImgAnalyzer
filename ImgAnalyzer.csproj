@@ -99,6 +99,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DialogForms\EditRange.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\EditRange.Designer.cs">
+      <DependentUpon>EditRange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\MarkDeadPixels.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\MarkDeadPixels.Designer.cs">
+      <DependentUpon>MarkDeadPixels.cs</DependentUpon>
+    </Compile>
     <Compile Include="DialogForms\PseudoPhaseForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -140,6 +152,12 @@
     <Compile Include="ThermalMapForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <EmbeddedResource Include="DialogForms\EditRange.resx">
+      <DependentUpon>EditRange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\MarkDeadPixels.resx">
+      <DependentUpon>MarkDeadPixels.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\PseudoPhaseForm.resx">
       <DependentUpon>PseudoPhaseForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -30,8 +30,6 @@
         {
             this.button_openfile = new System.Windows.Forms.Button();
             this.button_show = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button_corners = new System.Windows.Forms.Button();
             this.button_openfiles = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox_start = new System.Windows.Forms.TextBox();
@@ -65,6 +63,9 @@
             this.button_deadpix = new System.Windows.Forms.Button();
             this.button_map = new System.Windows.Forms.Button();
             this.button_ab = new System.Windows.Forms.Button();
+            this.button_peaks = new System.Windows.Forms.Button();
+            this.button_editrange = new System.Windows.Forms.Button();
+            this.button_invrange = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button_openfile
@@ -86,26 +87,6 @@
             this.button_show.Text = "Показать изображение";
             this.button_show.UseVisualStyleBackColor = true;
             this.button_show.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(12, 247);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(190, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Измерить пиксель";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button_corners
-            // 
-            this.button_corners.Location = new System.Drawing.Point(12, 276);
-            this.button_corners.Name = "button_corners";
-            this.button_corners.Size = new System.Drawing.Size(190, 23);
-            this.button_corners.TabIndex = 3;
-            this.button_corners.Text = "Задать углы";
-            this.button_corners.UseVisualStyleBackColor = true;
-            this.button_corners.Click += new System.EventHandler(this.button_corners_Click);
             // 
             // button_openfiles
             // 
@@ -288,7 +269,7 @@
             // 
             this.button_plot.Location = new System.Drawing.Point(594, 12);
             this.button_plot.Name = "button_plot";
-            this.button_plot.Size = new System.Drawing.Size(146, 23);
+            this.button_plot.Size = new System.Drawing.Size(146, 53);
             this.button_plot.TabIndex = 24;
             this.button_plot.Text = "Построить график";
             this.button_plot.UseMnemonic = false;
@@ -322,7 +303,7 @@
             // 
             // button_rename
             // 
-            this.button_rename.Location = new System.Drawing.Point(594, 41);
+            this.button_rename.Location = new System.Drawing.Point(594, 71);
             this.button_rename.Name = "button_rename";
             this.button_rename.Size = new System.Drawing.Size(146, 23);
             this.button_rename.TabIndex = 28;
@@ -332,7 +313,7 @@
             // 
             // button_clear
             // 
-            this.button_clear.Location = new System.Drawing.Point(594, 70);
+            this.button_clear.Location = new System.Drawing.Point(594, 100);
             this.button_clear.Name = "button_clear";
             this.button_clear.Size = new System.Drawing.Size(146, 23);
             this.button_clear.TabIndex = 29;
@@ -343,7 +324,7 @@
             // button_save
             // 
             this.button_save.Enabled = false;
-            this.button_save.Location = new System.Drawing.Point(594, 99);
+            this.button_save.Location = new System.Drawing.Point(594, 129);
             this.button_save.Name = "button_save";
             this.button_save.Size = new System.Drawing.Size(146, 23);
             this.button_save.TabIndex = 30;
@@ -354,7 +335,7 @@
             // button_load
             // 
             this.button_load.Enabled = false;
-            this.button_load.Location = new System.Drawing.Point(594, 128);
+            this.button_load.Location = new System.Drawing.Point(594, 158);
             this.button_load.Name = "button_load";
             this.button_load.Size = new System.Drawing.Size(146, 23);
             this.button_load.TabIndex = 31;
@@ -364,7 +345,7 @@
             // 
             // button_calcminmax
             // 
-            this.button_calcminmax.Location = new System.Drawing.Point(594, 187);
+            this.button_calcminmax.Location = new System.Drawing.Point(746, 71);
             this.button_calcminmax.Name = "button_calcminmax";
             this.button_calcminmax.Size = new System.Drawing.Size(146, 23);
             this.button_calcminmax.TabIndex = 32;
@@ -374,7 +355,7 @@
             // 
             // button_pseudoph
             // 
-            this.button_pseudoph.Location = new System.Drawing.Point(594, 215);
+            this.button_pseudoph.Location = new System.Drawing.Point(746, 99);
             this.button_pseudoph.Name = "button_pseudoph";
             this.button_pseudoph.Size = new System.Drawing.Size(146, 23);
             this.button_pseudoph.TabIndex = 33;
@@ -384,7 +365,7 @@
             // 
             // button_deadpix
             // 
-            this.button_deadpix.Location = new System.Drawing.Point(594, 244);
+            this.button_deadpix.Location = new System.Drawing.Point(746, 128);
             this.button_deadpix.Name = "button_deadpix";
             this.button_deadpix.Size = new System.Drawing.Size(146, 23);
             this.button_deadpix.TabIndex = 34;
@@ -394,9 +375,9 @@
             // 
             // button_map
             // 
-            this.button_map.Location = new System.Drawing.Point(594, 273);
+            this.button_map.Location = new System.Drawing.Point(746, 12);
             this.button_map.Name = "button_map";
-            this.button_map.Size = new System.Drawing.Size(146, 23);
+            this.button_map.Size = new System.Drawing.Size(146, 53);
             this.button_map.TabIndex = 35;
             this.button_map.Text = "Построить карту";
             this.button_map.UseVisualStyleBackColor = true;
@@ -404,7 +385,7 @@
             // 
             // button_ab
             // 
-            this.button_ab.Location = new System.Drawing.Point(594, 302);
+            this.button_ab.Location = new System.Drawing.Point(746, 157);
             this.button_ab.Name = "button_ab";
             this.button_ab.Size = new System.Drawing.Size(146, 23);
             this.button_ab.TabIndex = 36;
@@ -412,11 +393,42 @@
             this.button_ab.UseVisualStyleBackColor = true;
             this.button_ab.Click += new System.EventHandler(this.button_ab_Click);
             // 
+            // button_peaks
+            // 
+            this.button_peaks.Location = new System.Drawing.Point(746, 186);
+            this.button_peaks.Name = "button_peaks";
+            this.button_peaks.Size = new System.Drawing.Size(146, 23);
+            this.button_peaks.TabIndex = 37;
+            this.button_peaks.Text = "Найти максимумы";
+            this.button_peaks.UseVisualStyleBackColor = true;
+            this.button_peaks.Click += new System.EventHandler(this.button_peaks_Click);
+            // 
+            // button_editrange
+            // 
+            this.button_editrange.Location = new System.Drawing.Point(12, 250);
+            this.button_editrange.Name = "button_editrange";
+            this.button_editrange.Size = new System.Drawing.Size(179, 23);
+            this.button_editrange.TabIndex = 38;
+            this.button_editrange.Text = "Изменить диапазон";
+            this.button_editrange.UseVisualStyleBackColor = true;
+            // 
+            // button_invrange
+            // 
+            this.button_invrange.Location = new System.Drawing.Point(12, 279);
+            this.button_invrange.Name = "button_invrange";
+            this.button_invrange.Size = new System.Drawing.Size(179, 23);
+            this.button_invrange.TabIndex = 39;
+            this.button_invrange.Text = "Инвертировать диапазон";
+            this.button_invrange.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1101, 450);
+            this.Controls.Add(this.button_invrange);
+            this.Controls.Add(this.button_editrange);
+            this.Controls.Add(this.button_peaks);
             this.Controls.Add(this.button_ab);
             this.Controls.Add(this.button_map);
             this.Controls.Add(this.button_deadpix);
@@ -450,8 +462,6 @@
             this.Controls.Add(this.textBox_start);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button_openfiles);
-            this.Controls.Add(this.button_corners);
-            this.Controls.Add(this.button2);
             this.Controls.Add(this.button_show);
             this.Controls.Add(this.button_openfile);
             this.Name = "MainForm";
@@ -465,8 +475,6 @@
 
         private System.Windows.Forms.Button button_openfile;
         private System.Windows.Forms.Button button_show;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button_corners;
         private System.Windows.Forms.Button button_openfiles;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox_start;
@@ -500,6 +508,9 @@
         private System.Windows.Forms.Button button_deadpix;
         private System.Windows.Forms.Button button_map;
         private System.Windows.Forms.Button button_ab;
+        private System.Windows.Forms.Button button_peaks;
+        private System.Windows.Forms.Button button_editrange;
+        private System.Windows.Forms.Button button_invrange;
     }
 }
 

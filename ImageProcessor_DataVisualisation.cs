@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer
 {
+    public enum VariablesToMap : int { Minimum = 0, Maximum, Amplitude, Pseudophase, DeadAlive, A_values, B_values, N_peaks, V_peaks }
     public partial class ImageProcessor
     {
 
@@ -151,6 +152,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(amplitude_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "Amplitude";
                     }
                     else goto default;
                     break;
@@ -159,6 +161,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(max_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "MAX";
                     }
                     else goto default;
                     break;
@@ -167,6 +170,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(min_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "MIN";
                     }
                     else goto default;
                     break;
@@ -175,6 +179,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(pseudo_phase_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "Pseudophase";
                     }
                     else goto default;
                     break;
@@ -183,6 +188,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(good_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "Dead/Alive";
                     }
                     else goto default;
                     break;
@@ -191,6 +197,7 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(a_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "A";
                     }
                     else goto default;
                     break;
@@ -199,6 +206,28 @@ namespace ImgAnalyzer
                     {
                         ThermalMapForm thermalMapForm = new ThermalMapForm(b_values);
                         thermalMapForm.Show();
+                        thermalMapForm.Text = "B";
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.N_peaks:
+                    if (n_peaks != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(n_peaks);
+                        thermalMapForm.Text = "N_peaks";
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.V_peaks:
+                    if (v_max_positions?.Count != 0)
+                    {
+                        for (int i = 0; i < v_max_positions.Count; i++)
+                        { 
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(v_max_positions[i]);
+                        thermalMapForm.Text = "V " + i.ToString();
+                        thermalMapForm.Show();
+                        }
                     }
                     else goto default;
                     break;

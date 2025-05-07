@@ -125,15 +125,7 @@ namespace ImgAnalyzer
             };*/
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            clickMode = ClickMode.MeasurePixel;
-        }
 
-        private void button_corners_Click(object sender, EventArgs e)
-        {
-            clickMode = ClickMode.MeasurePoly;
-        }
 
         private void textBox_varname_TextChanged(object sender, EventArgs e)
         {
@@ -255,7 +247,7 @@ namespace ImgAnalyzer
 
         private void button_start_Click(object sender, EventArgs e)
         {
-            if (batch_filanames == null) return;
+            if (imageProcessor.filenames == null) return;
             label_status.Text = "Обработка начата";
             imageProcessor.BatchMeasurment();
             label_status.Text = "Обработка закончена";
@@ -300,7 +292,7 @@ namespace ImgAnalyzer
         {
             if (listBox_measurments.SelectedItems.Count == 0) return;
             selected_items = listBox_measurments.SelectedIndices.Cast<int>().ToArray();
-            for (int i = 0; i < selected_items.Length; i++)
+            for (int i = selected_items.Length - 1 ; i >= 0; i--)
             {
                 imageProcessor.DeleteItem(selected_items[i]);
             }
@@ -379,14 +371,8 @@ namespace ImgAnalyzer
 
         private void button_deadpix_Click(object sender, EventArgs e)
         {
-            int value = 0;
-            string userInput = Interaction.InputBox("Введите порог:",
-               "Поиск битых пикселей по порогу амплитуды",
-               "0");
-            if (Int32.TryParse(userInput,NumberStyles.Any, frmt,out value))
-            {
-                imageProcessor.MarkDeadPixelByThreshold(value);
-            }
+            MarkDeadPixelsForm form = new MarkDeadPixelsForm(imageProcessor);
+            form.Show();
         }
 
         private void button_map_Click(object sender, EventArgs e)
@@ -406,6 +392,25 @@ namespace ImgAnalyzer
                 imageProcessor.CalculateABByBlocks(value);
             }
             
+        }
+
+        private void button_peaks_Click(object sender, EventArgs e)
+        {
+            int value1 = 0;
+            int value2 = 0;
+            bool good_input = false;
+            string userInput = Interaction.InputBox("Ведите погрешность поиска пика:",
+               "Поиск положения максимумов",
+               "500");
+            good_input = (Int32.TryParse(userInput, NumberStyles.Any, frmt, out value1));
+            if (good_input) 
+                userInput = Interaction.InputBox("Ведите размер блока:",
+               "Поиск положения максимумов",
+               "4");
+            good_input = (Int32.TryParse(userInput, NumberStyles.Any, frmt, out value2));
+            if (good_input) imageProcessor.CalculateVPeakByBlock(value1,value2);
+
+
         }
     }
 }

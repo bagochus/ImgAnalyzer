@@ -24,7 +24,7 @@ namespace ImgAnalyzer
 {
     public enum State : byte { Rising, Falling, Unknown };
     public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
-    public enum VariablesToMap : int {Minimum = 0 , Maximum, Amplitude, Pseudophase, DeadAlive, A_values, B_values }
+    
 
     delegate void ListUpdatedDelegate();
     public partial class ImageProcessor
@@ -337,7 +337,7 @@ namespace ImgAnalyzer
             }
         }
 
-        public void MarkDeadPixelByThreshold(int threshold)
+        public void MarkDeadPixelByAmplitude(int threshold)
         {
             if (amplitude_values == null) return;
             if (amplitude_values.Length == 0) return;
@@ -351,6 +351,24 @@ namespace ImgAnalyzer
                     else good_values[i, j] = 0;
                 }
         }
+
+        public void MarkDeadPixelByPseudophase(int threshold)
+        {
+            if (pseudo_phase_values == null) return;
+            if (pseudo_phase_values.Length == 0) return;
+            good_values = new int[pseudo_phase_values.GetLength(0), pseudo_phase_values.GetLength(1)];
+
+
+            for (int i = 0; i < pseudo_phase_values.GetLength(0); i++)
+                for (int j = 0; j < pseudo_phase_values.GetLength(1); j++)
+                {
+                    if (pseudo_phase_values[i, j] > threshold) good_values[i, j] = 1;
+                    else good_values[i, j] = 0;
+                }
+        }
+
+
+
         
         public void CalculateABByBlocks(int block_size)
         {
@@ -454,7 +472,7 @@ namespace ImgAnalyzer
 
         public void CalculateVPeakByBlock(int tolerance, int block_size)
         {
-
+            const int min_window_size = 5;
             if (a_values == null)
             {
                 MessageBox.Show("Не рассчитаны значения A/B");
@@ -471,7 +489,9 @@ namespace ImgAnalyzer
             int[,] block_counters = new int[0, 0];
             bool[,] in_tol_block = new bool[0, 0];
             int[,] current_vmax_block = new int[0, 0];
-            List<int[,]> v_max_pos = new List<int[,]>();
+            int[,] n_peaks_block = new int[0, 0];
+            int [,] window_size_block = new int[0, 0];
+            List<int[,]> v_max_pos_block = new List<int[,]>();
 
 
             for (int image_counter = 0; image_counter < filenames.Length; image_counter++)
@@ -482,36 +502,41 @@ namespace ImgAnalyzer
                 int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
                 int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
-                if (image_counter == 0)
+                // initializig local arrays
+                if (image_counter == 0) 
                 {
 
                     block_sums = new int[height / block_size, width / block_size];
                     block_counters = new int[height / block_size, width / block_size];
                     in_tol_block = new bool[height / block_size, width / block_size];
                     current_vmax_block = new int[height / block_size, width / block_size];
+                    v_max_pos_block.Add(new int[height / block_size, width / block_size]);
+                    n_peaks_block = new int[height / block_size, width / block_size];
+                    window_size_block = new int[height / block_size, width / block_size];
+                    n_peaks = new int[height, width];
 
-
-                    for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int ii = 0; ii < block_sums.GetLength(0); ii++)            //cleaning and filling function-related arrays
                         for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                         {
-                            block_counters[ii, jj] = 0;
-                            block_sums[ii, jj] = 0;
                             current_vmax_block[ii, jj] = Int32.MinValue;
                             in_tol_block[ii, jj] = false;
+                            v_max_pos_block[0][ii, jj] = 0;
+                            n_peaks_block[ii,jj] = 0;
+                            window_size_block[ii,jj] = 0;
                         }
 
 
                 }
-
-                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                //cleaning and filling frame-related arrays
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)        
                     for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                     {
                         block_counters[ii, jj] = 0;
                         block_sums[ii, jj] = 0;
                     }
 
-
-                for (int line = 0; line < height; line++)
+                //calculating block's mean-values
+                for (int line = 0; line < height; line++)           
                 {
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
@@ -528,54 +553,81 @@ namespace ImgAnalyzer
                     }
                 }
 
-                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                //analyzing blocks in current frame
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)            
                     for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                     {
                         if (block_counters[ii, jj] == 0) continue;
                         int block_value = block_sums[ii, jj] / block_counters[ii, jj];
 
-                        bool in_tolerance = (block_value > a_values[block_to_pix(ii), block_to_pix(jj)] - tolerance);
+                        bool in_tolerance = (block_value > (a_values[block_to_pix(ii), block_to_pix(jj)] - tolerance));
 
-                        if (in_tolerance && !in_tol_block[ii, jj]) 
+                        if (in_tolerance && !in_tol_block[ii, jj])          //entering range
+                        {
+                            in_tol_block[ii, jj] = true;
+                            window_size_block[ii, jj] = 1;
+                            current_vmax_block[ii, jj] = block_value;
+                        } else if (in_tolerance && in_tol_block[ii, jj])   // continuing range
+                        {
+                            window_size_block[ii, jj]++;
+                            if(block_value > current_vmax_block[ii,jj])
+                            {
+                                current_vmax_block[ii, jj] = block_value;
+                            }
+                        } else if ( !in_tolerance && in_tol_block[ii, jj] && window_size_block[ii, jj] > min_window_size) //leaving range with peak registration
                         {
                             
-                        
-                        
-                        
+                            v_max_pos_block[n_peaks_block[ii, jj]][ii,jj] = image_counter;
+                            n_peaks_block[ii, jj]++;
+                            current_vmax_block[ii, jj] = Int32.MinValue;
+                            window_size_block[ii, jj] = 0;
+                            if (n_peaks_block[ii,jj] > currernt_peak)
+                            {
+                                in_tol_block[ii, jj] = false;
+                                currernt_peak++;
+                                v_max_pos_block.Add(new int[height / block_size, width / block_size]);
+                                for (int iii= 0;  iii < n_peaks_block.GetLength(0); iii++)
+                                    for (int jjj = 0; jjj< n_peaks_block.GetLength (1); jjj++)
+                                    {
+                                        v_max_pos_block[currernt_peak][iii, jjj] = 0;
+                                    }
+                            }
+                        } else if (!in_tolerance && in_tol_block[ii, jj])   //leaving range w/o peak registration
+                        {
+                            current_vmax_block[ii, jj] = Int32.MinValue;
+                            window_size_block[ii, jj] = 0;
                         }
-
-
-
                     }
 
 
 
+            } // all images browsed
+
+            // layout block-variables to pixel-variables
+
+            for (int n = 0; n < v_max_pos_block.Count; n++)
+            {
+                v_max_positions.Add(new int[a_values.GetLength(0), a_values.GetLength(1)]);
+                for (int i = 0; i < a_values.GetLength(0);i++)
+                    for (int j = 0; j < a_values.GetLength(1);j++)
+                    {
+                        v_max_positions[n][i, j] =
+                            v_max_pos_block[n][pix_to_block(i),pix_to_block(j)];    
+                    }
+
             }
-
             for (int i = 0; i < a_values.GetLength(0); i++)
-                for (int j = 0; j < b_values.GetLength(1); j++)
+                for (int j = 0; j < a_values.GetLength(1); j++)
                 {
-                    if (a_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MinValue) a_values[i, j] = 0;
-                    else a_values[i, j] = a_block_values[pix_to_block(i), pix_to_block(j)];
-
-                    if (b_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MaxValue) b_values[i, j] = 0;
-                    else b_values[i, j] = b_block_values[pix_to_block(i), pix_to_block(j)];
-
+                    n_peaks[i,j] = n_peaks_block[pix_to_block(i),pix_to_block(j)];
                 }
 
 
+        } // function end
 
 
 
 
-
-        }
-
-
-
-
-
-       
 
 
 
