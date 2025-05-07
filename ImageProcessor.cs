@@ -24,16 +24,16 @@ namespace ImgAnalyzer
 {
     public enum State : byte { Rising, Falling, Unknown };
     public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
-    public enum VariablesToMap : int {Minimum = 0 , Maximum, Amplitude, Pseudophase, DeadAlive }
+    public enum VariablesToMap : int {Minimum = 0 , Maximum, Amplitude, Pseudophase, DeadAlive, A_values, B_values }
 
     delegate void ListUpdatedDelegate();
-    public class ImageProcessor
+    public partial class ImageProcessor
     {
         public Image image;
         public Tiff tiff_img;
 
-       
 
+        public string[] filenames;
 
 
         public Point[] corners;
@@ -51,101 +51,10 @@ namespace ImgAnalyzer
         private int[,] amplitude_values;
         private int[,] good_values;
         private int[,] pseudo_phase_values;
-
-
-
-
-        #region MeasurmentListManagement
-        public List<string> GetMeasurnetNames()
-        {
-            List<string> list = new List<string>();
-            for (int i = 0; i < measurements.Count; i++)
-            {
-                list.Add(measurements[i].Name);
-            }
-            return list;
-        }
-        public void AddPointMeasurment(Point point)
-        {
-            measurements.Add(new PointMeasurment(this,point));
-            ListUpdated?.Invoke(this, EventArgs.Empty);
-        }
-        public void AddPolygonMeasurment(Point[] points)
-        {
-            if (points.Length < 3) return;
-            measurements.Add(new PolygonMeasurment(this, points));
-            ListUpdated?.Invoke(this, EventArgs.Empty);
-        }
-        public void AddNewMatrixMeasurnment(Point[] corners,int nx,int ny)
-        {
-            if (corners.Length != 4) return;
-            measurements.Add(new MatrixMeasurment(this, corners, nx, ny));
-            ListUpdated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void RenameItem(int index, string newName)
-        {
-            try
-            {
-                measurements[index].Name = newName;
-                ListUpdated(this, EventArgs.Empty);
-            }
-            catch { }
-        }
-
-        public void DeleteItem(int index)
-        {
-            try
-            {
-                measurements.RemoveAt(index);
-                ListUpdated(this, EventArgs.Empty);
-            }
-            catch { }
-        }
-
-        public void SaveMeasurmentList(string filename)
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                IncludeFields = true,
-                Converters = { new JsonInterfaceConverter<IMeasurment>() }
-            };
-            string json = JsonSerializer.Serialize(measurements, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filename, json);
-        }
-
-        public void LoadMeasurmentList(string filename)
-        {
-
-            try
-            {
-                var options = new JsonSerializerOptions
-                {
-                    Converters = { new JsonInterfaceConverter<IMeasurment>() }
-                };
-                string jsonString = File.ReadAllText(filename);
-                IMeasurment[] arr_measurements = JsonSerializer.Deserialize<IMeasurment[]>(jsonString, options);
-                measurements.Clear();
-                foreach (var measure in arr_measurements) measurements.Add(measure);
-                ListUpdated(this, EventArgs.Empty);
-            }
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show("Файл не найден!");
-            }
-            catch (JsonException)
-            {
-                MessageBox.Show("Ошибка в формате JSON!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Неизвестная ошибка: {ex.Message}");
-            }
-
-
-        }
-        #endregion
+        private int[,] a_values;
+        private int[,] b_values;
+        private List<int[,]> v_max_positions = new List<int[,]>();
+        private int[,] n_peaks;
 
 
 
@@ -158,8 +67,6 @@ namespace ImgAnalyzer
 
         private byte ConvertIntensity(double intesity)
         { return (byte)intesity; }
-
-
 
 
         public static bool IsPointInPolygonOptimized(PointF point, PointF[] polygon, RectangleF bounds)
@@ -274,7 +181,7 @@ namespace ImgAnalyzer
             return result;
         }
 
-        public void BatchMeasurment(string[] filenames)
+        public void BatchMeasurment()
         {
 
             for (int i =0; i< measurements.Count;i++) measurements[i].ClearData();
@@ -290,7 +197,7 @@ namespace ImgAnalyzer
             return;
         }
 
-        public void FindMinMax(string[] filenames)
+        public void FindMinMax()
         {
             for (int i = 0; i < filenames.Length; i++)
             {
@@ -336,7 +243,7 @@ namespace ImgAnalyzer
 
         }
 
-        public void CalculatePseudoPhase(string[] filenames,int upper_threshold, int lower_threshold, int max_peak, int min_peak)
+        public void CalculatePseudoPhase(int upper_threshold, int lower_threshold, int max_peak, int min_peak)
         {
             
             State[,] previous_state = new State[0,0];
@@ -444,97 +351,231 @@ namespace ImgAnalyzer
                     else good_values[i, j] = 0;
                 }
         }
-
-
-        public void SaveCSV_All(string filename)
+        
+        public void CalculateABByBlocks(int block_size)
         {
-            if (measurements.Count == 0) return;    
-            int rows = measurements[0].DataCount;
-            int cols = measurements.Count;
-
-            var lines = new string[rows+1];
-            lines[0] = "";
-            for (int i = 0; i < measurements.Count; i++) 
+            if (good_values == null)
             {
-                lines[0] += measurements[i].Name;
-                if (i < measurements.Count - 1) lines[0] += ",";
-
+                MessageBox.Show("Не отмечены битые пиксели");
+                return;
             }
-            for (int i = 0; i < rows; i++)
+            //A - maximum
+            //B - minimum
+            Func<int, int> pix_to_block = x => x / block_size;
+            Func<int, int> block_to_pix = x => x * block_size;
+
+            int[,] block_sums = new int[0, 0];
+            int[,] block_counters = new int[0, 0];
+            int[,] a_block_values = new int[0, 0];
+            int[,] b_block_values = new int[0, 0];
+
+
+            for (int image_counter = 0; image_counter < filenames.Length; image_counter++)
             {
-                // Преобразуем строку массива в строку CSV
-                var rowValues = new string[cols];
-                for (int j = 0; j < cols; j++)
+                tiff_img = Tiff.Open(filenames[image_counter], "r");
+                int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+                int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+                int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+                int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
+
+                if (image_counter == 0)
                 {
-                    List<double>[] data2d = measurements[j].RetrieveData();
-                    double[] data = data2d[0].ToArray();
-                    rowValues[j] = data[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    a_values = new int[height, width];
+                    b_values = new int[height, width];
+
+                    block_sums = new int[height / block_size, width / block_size];
+                    block_counters = new int[height / block_size, width / block_size];
+
+                    a_block_values = new int[height / block_size, width / block_size];
+                    b_block_values = new int[height / block_size, width / block_size];
+
+
+                    for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                        for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                        {
+                            a_block_values[ii, jj] = Int32.MinValue;
+                            b_block_values[ii, jj] = Int32.MaxValue;
+                        }
+
                 }
-                lines[i+1] = string.Join(",", rowValues);
+
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                    {
+                        block_counters[ii, jj] = 0;
+                        block_sums[ii, jj] = 0;
+                    }
+
+
+                for (int line = 0; line < height; line++)
+                {
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = pixelData[pixel];
+                        if (good_values[line, pixel] == 1)
+                        {
+                            block_sums[pix_to_block(line), pix_to_block(pixel)] += pixel_value;
+                            block_counters[pix_to_block(line), pix_to_block(pixel)]++;
+                        }
+                    }
+                }
+
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                    {
+                        if (block_counters[ii, jj] == 0) continue;
+                        int block_value = block_sums[ii, jj] / block_counters[ii, jj];
+                        
+
+                        if (block_value > a_block_values[ii, jj]) a_block_values[ii, jj] = block_value;
+                        if (block_value < b_block_values[ii, jj]) b_block_values[ii, jj] = block_value;
+                    }
+
+
+
             }
 
-            File.WriteAllLines(filename, lines);
+            for (int i = 0; i < a_values.GetLength(0); i++)
+                for (int j = 0; j < b_values.GetLength(1); j++)
+                {
+                    if (a_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MinValue) a_values[i, j] = 0;
+                    else a_values[i, j] = a_block_values[pix_to_block(i), pix_to_block(j)];
 
+                    if (b_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MaxValue) b_values[i, j] = 0;
+                    else b_values[i, j] = b_block_values[pix_to_block(i), pix_to_block(j)];
 
+                }
 
         }
 
-        public void PlotValueMap (VariablesToMap variable)
+        public void CalculateVPeakByBlock(int tolerance, int block_size)
         {
-            switch (variable)
-            {
-                case VariablesToMap.Amplitude:
-                    if (amplitude_values != null)
-                    {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(amplitude_values);
-                        thermalMapForm.Show();
-                    } 
-                    else goto default;
-                    break;
-                case VariablesToMap.Maximum:
-                    if (max_values != null)
-                    {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(max_values);
-                        thermalMapForm.Show();
-                    }
-                    else goto default;
-                    break;
-                case VariablesToMap.Minimum:
-                    if (min_values != null)
-                    {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(min_values);
-                        thermalMapForm.Show();
-                    }
-                    else goto default;
-                    break;
-                case VariablesToMap.Pseudophase:
-                    if (pseudo_phase_values != null)
-                    {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(pseudo_phase_values);
-                        thermalMapForm.Show();
-                    }
-                    else goto default;
-                    break;
-                case VariablesToMap.DeadAlive:
-                    if (good_values != null)
-                    {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(good_values);
-                        thermalMapForm.Show();
-                    }
-                    else goto default;
-                    break;
-                default:
-                    MessageBox.Show("Невозможно построить эту карту, возможно данные еще не готовы");
-                    break;
 
+            if (a_values == null)
+            {
+                MessageBox.Show("Не рассчитаны значения A/B");
+                return;
+            }
+
+            int currernt_peak = 0;
+            v_max_positions.Clear();
+
+            Func<int, int> pix_to_block = x => x / block_size;
+            Func<int, int> block_to_pix = x => x * block_size;
+
+            int[,] block_sums = new int[0, 0];
+            int[,] block_counters = new int[0, 0];
+            bool[,] in_tol_block = new bool[0, 0];
+            int[,] current_vmax_block = new int[0, 0];
+            List<int[,]> v_max_pos = new List<int[,]>();
+
+
+            for (int image_counter = 0; image_counter < filenames.Length; image_counter++)
+            {
+                tiff_img = Tiff.Open(filenames[image_counter], "r");
+                int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+                int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+                int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+                int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
+
+                if (image_counter == 0)
+                {
+
+                    block_sums = new int[height / block_size, width / block_size];
+                    block_counters = new int[height / block_size, width / block_size];
+                    in_tol_block = new bool[height / block_size, width / block_size];
+                    current_vmax_block = new int[height / block_size, width / block_size];
+
+
+                    for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                        for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                        {
+                            block_counters[ii, jj] = 0;
+                            block_sums[ii, jj] = 0;
+                            current_vmax_block[ii, jj] = Int32.MinValue;
+                            in_tol_block[ii, jj] = false;
+                        }
+
+
+                }
+
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                    {
+                        block_counters[ii, jj] = 0;
+                        block_sums[ii, jj] = 0;
+                    }
+
+
+                for (int line = 0; line < height; line++)
+                {
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = pixelData[pixel];
+                        if (good_values[line, pixel] == 1)
+                        {
+                            block_sums[pix_to_block(line), pix_to_block(pixel)] += pixel_value;
+                            block_counters[pix_to_block(line), pix_to_block(pixel)]++;
+                        }
+                    }
+                }
+
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                    {
+                        if (block_counters[ii, jj] == 0) continue;
+                        int block_value = block_sums[ii, jj] / block_counters[ii, jj];
+
+                        bool in_tolerance = (block_value > a_values[block_to_pix(ii), block_to_pix(jj)] - tolerance);
+
+                        if (in_tolerance && !in_tol_block[ii, jj]) 
+                        {
+                            
+                        
+                        
+                        
+                        }
+
+
+
+                    }
 
 
 
             }
 
+            for (int i = 0; i < a_values.GetLength(0); i++)
+                for (int j = 0; j < b_values.GetLength(1); j++)
+                {
+                    if (a_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MinValue) a_values[i, j] = 0;
+                    else a_values[i, j] = a_block_values[pix_to_block(i), pix_to_block(j)];
+
+                    if (b_block_values[pix_to_block(i), pix_to_block(j)] == Int32.MaxValue) b_values[i, j] = 0;
+                    else b_values[i, j] = b_block_values[pix_to_block(i), pix_to_block(j)];
+
+                }
+
+
+
+
+
+
 
         }
 
+
+
+
+
+       
 
 
 

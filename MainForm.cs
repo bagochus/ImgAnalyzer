@@ -249,15 +249,15 @@ namespace ImgAnalyzer
                     filePaths.AddRange(openFileDialog.FileNames);
                 }
             }
-
-            batch_filanames = filePaths.ToArray();
+            if (filePaths.Count > 0) 
+                imageProcessor.filenames = filePaths.ToArray();
         }
 
         private void button_start_Click(object sender, EventArgs e)
         {
             if (batch_filanames == null) return;
             label_status.Text = "Обработка начата";
-            imageProcessor.BatchMeasurment(batch_filanames);
+            imageProcessor.BatchMeasurment();
             label_status.Text = "Обработка закончена";
 
 
@@ -368,7 +368,7 @@ namespace ImgAnalyzer
 
         private void button_calcminmax_Click(object sender, EventArgs e)
         {
-            imageProcessor.FindMinMax(batch_filanames);
+            imageProcessor.FindMinMax();
         }
 
         private void button_pseudoph_Click(object sender, EventArgs e)
@@ -393,6 +393,19 @@ namespace ImgAnalyzer
         {
             ValueMapForm valueMapForm = new ValueMapForm(imageProcessor);
             valueMapForm.Show();
+        }
+
+        private void button_ab_Click(object sender, EventArgs e)
+        {
+            int value = 0;
+            string userInput = Interaction.InputBox("Введите размер блока устреднения:",
+               "Поиск максимумов интенсивности",
+               "4");
+            if (Int32.TryParse(userInput, NumberStyles.Any, frmt, out value))
+            {
+                imageProcessor.CalculateABByBlocks(value);
+            }
+            
         }
     }
 }

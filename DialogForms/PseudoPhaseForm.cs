@@ -12,7 +12,7 @@ using ImgAnalyzer;
 namespace ImgAnalyzer.DialogForms
 {
 
-    public delegate void CalculatePseudoPhaseDelegate(string[] filenames, int upper_threshold, int lower_threshold, int max_peak, int min_peak);
+    public delegate void CalculatePseudoPhaseDelegate( int upper_threshold, int lower_threshold, int max_peak, int min_peak);
     public partial class PseudoPhaseForm : Form
     {
         CalculatePseudoPhaseDelegate calculate;
@@ -52,7 +52,7 @@ namespace ImgAnalyzer.DialogForms
             ReadInterface();
             if (read_ok)
             {
-                calculate(filenames, upper_threshold, lower_threshold, max_peak, min_peak);
+                calculate( upper_threshold, lower_threshold, max_peak, min_peak);
                 this.Close();
             }
         }
