@@ -66,6 +66,7 @@
             this.button_peaks = new System.Windows.Forms.Button();
             this.button_editrange = new System.Windows.Forms.Button();
             this.button_invrange = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button_openfile
@@ -261,7 +262,7 @@
             this.button_start.Name = "button_start";
             this.button_start.Size = new System.Drawing.Size(190, 74);
             this.button_start.TabIndex = 23;
-            this.button_start.Text = "Запустить измерения";
+            this.button_start.Text = "Запустить измерения\r\nинтенсивностей";
             this.button_start.UseVisualStyleBackColor = true;
             this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
@@ -271,7 +272,7 @@
             this.button_plot.Name = "button_plot";
             this.button_plot.Size = new System.Drawing.Size(146, 53);
             this.button_plot.TabIndex = 24;
-            this.button_plot.Text = "Построить график";
+            this.button_plot.Text = "Построить график\r\nинтенсивностей";
             this.button_plot.UseMnemonic = false;
             this.button_plot.UseVisualStyleBackColor = true;
             this.button_plot.Click += new System.EventHandler(this.button_plot_Click);
@@ -411,6 +412,7 @@
             this.button_editrange.TabIndex = 38;
             this.button_editrange.Text = "Изменить диапазон";
             this.button_editrange.UseVisualStyleBackColor = true;
+            this.button_editrange.Click += new System.EventHandler(this.button_editrange_Click);
             // 
             // button_invrange
             // 
@@ -420,12 +422,23 @@
             this.button_invrange.TabIndex = 39;
             this.button_invrange.Text = "Инвертировать диапазон";
             this.button_invrange.UseVisualStyleBackColor = true;
+            this.button_invrange.Click += new System.EventHandler(this.button_invrange_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(594, 269);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(146, 42);
+            this.button1.TabIndex = 40;
+            this.button1.Text = "Построить график фаз";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1101, 450);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.button_invrange);
             this.Controls.Add(this.button_editrange);
             this.Controls.Add(this.button_peaks);
@@ -511,6 +524,7 @@
         private System.Windows.Forms.Button button_peaks;
         private System.Windows.Forms.Button button_editrange;
         private System.Windows.Forms.Button button_invrange;
+        private System.Windows.Forms.Button button1;
     }
 }
 

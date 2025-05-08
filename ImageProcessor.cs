@@ -27,6 +27,7 @@ namespace ImgAnalyzer
     
 
     delegate void ListUpdatedDelegate();
+    delegate void LoadFileListDeleggate(string[] filenames);
     public partial class ImageProcessor
     {
         public Image image;
@@ -46,6 +47,7 @@ namespace ImgAnalyzer
         public List<IMeasurment> measurements = new List<IMeasurment>();
         public EventHandler ListUpdated;
 
+        // usage of indexes - [y,x]
         private int[,] max_values;
         private int[,] min_values;
         private int[,] amplitude_values;
@@ -58,6 +60,10 @@ namespace ImgAnalyzer
 
 
 
+        public void LoadFileList(string[] filenames)
+        {
+            this.filenames = filenames;
+        }
 
         public void LoadImage(string filename)
         {
@@ -65,8 +71,22 @@ namespace ImgAnalyzer
             tiff_img = Tiff.Open(filename,"r");
         }
 
-        private byte ConvertIntensity(double intesity)
-        { return (byte)intesity; }
+        private double ConvertIntensityToPhase(int x, int y, int n_frame, int intesity)
+        {
+            if (a_values ==  null) return double.NaN;
+            int a = a_values[y,x];
+            int b = b_values[y,x];
+            int n_period=0;
+            for (int i =0; i < v_max_positions.Count;i++)
+            {
+                if (n_frame > v_max_positions[i][y, x])
+                {
+                    n_period = i;
+                    break;
+                }
+            }
+            return Math.Acos((intesity - b)/(a-b)) + 2 * Math.PI*n_period;    
+        }
 
 
         public static bool IsPointInPolygonOptimized(PointF point, PointF[] polygon, RectangleF bounds)

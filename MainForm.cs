@@ -78,18 +78,7 @@ namespace ImgAnalyzer
             UpdateButtonState();
         }
 
-        private void CatchCorner(Point point)
-        {
-            corners[corner_index] = point;
-            corner_index++;
-            if (corner_index >= 4)
-            {
-                corner_index = 0;
-                MessageBox.Show("Координаты углов считаны");
-            
-            }
 
-        }
 
         private void button_openfile_Click(object sender, EventArgs e)
         {
@@ -113,6 +102,8 @@ namespace ImgAnalyzer
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (imageProcessor.image == null && imageProcessor.filenames == null) return;
+            if (imageProcessor.image == null) imageProcessor.LoadImage(imageProcessor.filenames[0]);
             ImageForm form2 = new ImageForm(imageProcessor.image);
             form2.Show();
             form2.ImageClicked += HookClick;
@@ -411,6 +402,21 @@ namespace ImgAnalyzer
             if (good_input) imageProcessor.CalculateVPeakByBlock(value1,value2);
 
 
+        }
+
+        private void button_editrange_Click(object sender, EventArgs e)
+        {
+            EditRangeForm form = new EditRangeForm(imageProcessor);
+            form.ShowDialog();
+        }
+
+        private void button_invrange_Click(object sender, EventArgs e)
+        {
+            string[] new_filenames = new string[imageProcessor.filenames.Length];
+            int imax = imageProcessor.filenames.Length - 1;
+            for (int i = 0; i < imageProcessor.filenames.Length; i++)
+                new_filenames[i] = imageProcessor.filenames[imax-i];
+            imageProcessor.filenames = new_filenames;
         }
     }
 }
