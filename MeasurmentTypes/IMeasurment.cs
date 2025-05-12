@@ -11,6 +11,8 @@ namespace ImgAnalyzer.MeasurmentTypes
     delegate double MeasurePolygonDelegate(Point[] points);
     delegate int MeasureLineDelegate(int line, int start_x, int count);
 
+    delegate double CalculatePhaseDelegate(int x, int y, int n_frame, int intesity);
+
 
     public interface IMeasurment
     {
@@ -20,6 +22,8 @@ namespace ImgAnalyzer.MeasurmentTypes
         List<double>[] RetrieveData();
         void Measure();
         void ClearData();
+        void MeasurePhase(int n_frame);
+        List<double>[] RetrievePhaseData();
 
 
     }

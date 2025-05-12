@@ -19,10 +19,13 @@ using System.Windows.Forms;
 using ScottPlot.PlotStyles;
 using ScottPlot.Interactivity.UserActions;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace ImgAnalyzer
 {
     public enum State : byte { Rising, Falling, Unknown };
+
+    public enum NearesExtremum:byte {A,B,Undef };
     public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
     
 
@@ -55,8 +58,10 @@ namespace ImgAnalyzer
         private int[,] pseudo_phase_values;
         private int[,] a_values;
         private int[,] b_values;
-        private List<int[,]> v_max_positions = new List<int[,]>();
-        private int[,] n_peaks;
+        private List<int[,]> a_positions = new List<int[,]>();
+        private int[,] a_peaks;
+        private List<int[,]> b_positions = new List<int[,]>();
+        private int[,] b_peaks;
 
 
 
@@ -71,21 +76,80 @@ namespace ImgAnalyzer
             tiff_img = Tiff.Open(filename,"r");
         }
 
-        private double ConvertIntensityToPhase(int x, int y, int n_frame, int intesity)
+        public double ConvertIntensityToPhase(int x, int y, int n_frame, int intesity)
         {
             if (a_values ==  null) return double.NaN;
+            
             int a = a_values[y,x];
             int b = b_values[y,x];
             int n_period=0;
-            for (int i =0; i < v_max_positions.Count;i++)
+
+            int nearestValueMinus = Int32.MinValue;
+            NearesExtremum ne_minus = NearesExtremum.Undef;
+            int nearestValuePlus = Int32.MaxValue;
+            NearesExtremum ne_plus = NearesExtremum.Undef;
+
+
+            for (int i =0; i < a_positions.Count;i++)
             {
-                if (n_frame > v_max_positions[i][y, x])
+                 //if (n_frame == 300) Debugger.Break();
+                if (n_frame > a_positions[i][y, x] && a_positions[i][y, x] !=0)
                 {
                     n_period = i;
-                    break;
+                    //break;
                 }
             }
-            return Math.Acos((intesity - b)/(a-b)) + 2 * Math.PI*n_period;    
+
+            for (int i = 0; i < a_positions.Count; i++)
+            {
+                if (a_positions[i][y, x] > nearestValueMinus &&
+                    a_positions[i][y, x] < intesity &&
+                    a_positions[i][y, x] != 0)
+                {
+                    nearestValueMinus = a_positions[i][y, x];
+                    ne_minus = NearesExtremum.A;
+                }
+
+                if (a_positions[i][y, x] < nearestValuePlus &&
+                    a_positions[i][y, x] > intesity &&
+                    a_positions[i][y, x] != 0)
+                {
+                    nearestValuePlus = a_positions[i][y, x];
+                    ne_plus = NearesExtremum.A;
+                }
+            }
+
+            for (int i = 0; i < b_positions.Count; i++)
+            {
+                if (b_positions[i][y, x] > nearestValueMinus &&
+                    b_positions[i][y, x] < intesity &&
+                    b_positions[i][y, x] != 0)
+                {
+                    nearestValueMinus = b_positions[i][y, x];
+                    ne_minus = NearesExtremum.B;
+                }
+
+                if (b_positions[i][y, x] < nearestValuePlus &&
+                    b_positions[i][y, x] > intesity &&
+                    b_positions[i][y, x] != 0)
+                {
+                    nearestValuePlus = b_positions[i][y, x];
+                    ne_plus = NearesExtremum.B;
+                }
+            }
+
+            
+
+
+
+
+
+            double acos_argument = 0.5 * ((double)intesity - b - 0.5 * (a-b) ) / (a - b);
+            if (acos_argument > 1) acos_argument = 1;
+            if (acos_argument < -1) acos_argument = -1;
+
+
+            return Math.Acos(acos_argument) + 2 * Math.PI*n_period;    
         }
 
 
@@ -216,6 +280,24 @@ namespace ImgAnalyzer
             }
             return;
         }
+
+        public void BatchPhaseMeasurment()
+        {
+            
+
+            for (int i = 0; i < measurements.Count; i++) measurements[i].ClearData();
+
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                tiff_img = Tiff.Open(filenames[i], "r");
+                for (int j = 0; j < measurements.Count; j++)
+                {
+                    measurements[j].MeasurePhase(i);
+                }
+            }
+            return;
+        }
+
 
         public void FindMinMax()
         {
@@ -386,10 +468,66 @@ namespace ImgAnalyzer
                     else good_values[i, j] = 0;
                 }
         }
-
-
-
         
+
+        private int[,] AvgByBlockAvoidDeadPixels(int image_counter, int block_size)
+        {
+            Func<int, int> pix_to_block = x => x / block_size;
+            Func<int, int> block_to_pix = x => x * block_size;
+
+            int[,] result = new int[0,0];
+            Tiff tiff_img = Tiff.Open(filenames[image_counter], "r");
+            int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
+            int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
+            int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+            int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
+            int[,] block_sums = new int[0, 0];
+            int[,] block_counters = new int[0, 0];
+
+            result = new int[height / block_size, width / block_size];
+            block_sums = new int[height / block_size, width / block_size];
+            block_counters = new int[height / block_size, width / block_size];
+
+            for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                {
+                    block_counters[ii, jj] = 0;
+                    block_sums[ii, jj] = 0;
+                }
+
+            for (int line = 0; line < height; line++)
+            {
+                byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                tiff_img.ReadScanline(buffer, line);
+                ushort[] pixelData = new ushort[width * samplesPerPixel];
+                System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                for (int pixel = 0; pixel < width; pixel++)
+                {
+                    ushort pixel_value = pixelData[pixel];
+                    if (good_values[line, pixel] == 1)
+                    {
+                        block_sums[pix_to_block(line), pix_to_block(pixel)] += pixel_value;
+                        block_counters[pix_to_block(line), pix_to_block(pixel)]++;
+                    }
+                }
+            }
+
+            for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                {
+                    int block_value = 0;
+                    if (block_counters[ii, jj] != 0)
+                    { 
+                        block_value = block_sums[ii, jj] / block_counters[ii, jj];
+                    }
+                    result[ii,jj] = block_value;
+                }
+
+            return result;
+        }
+
+
+
         public void CalculateABByBlocks(int block_size)
         {
             if (good_values == null)
@@ -399,6 +537,7 @@ namespace ImgAnalyzer
             }
             //A - maximum
             //B - minimum
+
             Func<int, int> pix_to_block = x => x / block_size;
             Func<int, int> block_to_pix = x => x * block_size;
 
@@ -462,6 +601,8 @@ namespace ImgAnalyzer
                     }
                 }
 
+                
+
                 for (int ii = 0; ii < block_sums.GetLength(0); ii++)
                     for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                     {
@@ -490,7 +631,7 @@ namespace ImgAnalyzer
 
         }
 
-        public void CalculateVPeakByBlock(int tolerance, int block_size)
+        public void CalculateABPosByBlock(int tolerance, int block_size)
         {
             const int min_window_size = 5;
             if (a_values == null)
@@ -499,19 +640,31 @@ namespace ImgAnalyzer
                 return;
             }
 
-            int currernt_peak = 0;
-            v_max_positions.Clear();
+            int currernt_a_peak = 0;
+            int currernt_b_peak = 0;
+            a_positions.Clear();
+            b_positions.Clear();
 
             Func<int, int> pix_to_block = x => x / block_size;
             Func<int, int> block_to_pix = x => x * block_size;
 
             int[,] block_sums = new int[0, 0];
             int[,] block_counters = new int[0, 0];
-            bool[,] in_tol_block = new bool[0, 0];
+
+
+            bool[,] near_a_block = new bool[0, 0];
             int[,] current_vmax_block = new int[0, 0];
-            int[,] n_peaks_block = new int[0, 0];
-            int [,] window_size_block = new int[0, 0];
-            List<int[,]> v_max_pos_block = new List<int[,]>();
+            int[,] a_peaks_block = new int[0, 0];
+            int [,] a_window_size_block = new int[0, 0];
+            List<int[,]> a_pos_block = new List<int[,]>();
+
+            bool[,] near_b_block = new bool[0, 0];
+            int[,] current_vmin_block = new int[0, 0];
+            int[,] b_peaks_block = new int[0, 0];
+            int[,] b_window_size_block = new int[0, 0];
+            List<int[,]> b_pos_block = new List<int[,]>();
+
+
 
 
             for (int image_counter = 0; image_counter < filenames.Length; image_counter++)
@@ -528,21 +681,37 @@ namespace ImgAnalyzer
 
                     block_sums = new int[height / block_size, width / block_size];
                     block_counters = new int[height / block_size, width / block_size];
-                    in_tol_block = new bool[height / block_size, width / block_size];
+
+                    near_a_block = new bool[height / block_size, width / block_size];
                     current_vmax_block = new int[height / block_size, width / block_size];
-                    v_max_pos_block.Add(new int[height / block_size, width / block_size]);
-                    n_peaks_block = new int[height / block_size, width / block_size];
-                    window_size_block = new int[height / block_size, width / block_size];
-                    n_peaks = new int[height, width];
+                    a_pos_block.Add(new int[height / block_size, width / block_size]);
+                    a_peaks_block = new int[height / block_size, width / block_size];
+                    a_window_size_block = new int[height / block_size, width / block_size];
+                    a_peaks = new int[height, width];
+
+                    near_b_block = new bool[height / block_size, width / block_size];
+                    current_vmin_block = new int[height / block_size, width / block_size];
+                    b_pos_block.Add(new int[height / block_size, width / block_size]);
+                    b_peaks_block = new int[height / block_size, width / block_size];
+                    b_window_size_block = new int[height / block_size, width / block_size];
+                    b_peaks = new int[height, width];
+
 
                     for (int ii = 0; ii < block_sums.GetLength(0); ii++)            //cleaning and filling function-related arrays
                         for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                         {
                             current_vmax_block[ii, jj] = Int32.MinValue;
-                            in_tol_block[ii, jj] = false;
-                            v_max_pos_block[0][ii, jj] = 0;
-                            n_peaks_block[ii,jj] = 0;
-                            window_size_block[ii,jj] = 0;
+                            current_vmin_block[ii, jj] = Int32.MaxValue;
+
+                            near_a_block[ii, jj] = false;
+                            a_pos_block[0][ii, jj] = 0;
+                            a_peaks_block[ii,jj] = 0;
+                            a_window_size_block[ii,jj] = 0;
+
+                            near_b_block[ii, jj] = false;
+                            b_pos_block[0][ii, jj] = 0;
+                            b_peaks_block[ii, jj] = 0;
+                            b_window_size_block[ii, jj] = 0;
                         }
 
 
@@ -573,7 +742,7 @@ namespace ImgAnalyzer
                     }
                 }
 
-                //analyzing blocks in current frame
+                //analyzing blocks in current frame - finding A positions
                 for (int ii = 0; ii < block_sums.GetLength(0); ii++)            
                     for (int jj = 0; jj < block_sums.GetLength(1); jj++)
                     {
@@ -582,65 +751,135 @@ namespace ImgAnalyzer
 
                         bool in_tolerance = (block_value > (a_values[block_to_pix(ii), block_to_pix(jj)] - tolerance));
 
-                        if (in_tolerance && !in_tol_block[ii, jj])          //entering range
+                        if (in_tolerance && !near_a_block[ii, jj])          //entering range
                         {
-                            in_tol_block[ii, jj] = true;
-                            window_size_block[ii, jj] = 1;
+                            near_a_block[ii, jj] = true;
+                            a_window_size_block[ii, jj] = 1;
                             current_vmax_block[ii, jj] = block_value;
-                        } else if (in_tolerance && in_tol_block[ii, jj])   // continuing range
+                        } else if (in_tolerance && near_a_block[ii, jj])   // continuing range
                         {
-                            window_size_block[ii, jj]++;
+                            a_window_size_block[ii, jj]++;
                             if(block_value > current_vmax_block[ii,jj])
                             {
                                 current_vmax_block[ii, jj] = block_value;
                             }
-                        } else if ( !in_tolerance && in_tol_block[ii, jj] && window_size_block[ii, jj] > min_window_size) //leaving range with peak registration
+                        } else if ( !in_tolerance && near_a_block[ii, jj] && a_window_size_block[ii, jj] > min_window_size) //leaving range with peak registration
                         {
                             
-                            v_max_pos_block[n_peaks_block[ii, jj]][ii,jj] = image_counter;
-                            n_peaks_block[ii, jj]++;
+                            a_pos_block[a_peaks_block[ii, jj]][ii,jj] = image_counter;
+                            a_peaks_block[ii, jj]++;
                             current_vmax_block[ii, jj] = Int32.MinValue;
-                            window_size_block[ii, jj] = 0;
-                            if (n_peaks_block[ii,jj] > currernt_peak)
+                            a_window_size_block[ii, jj] = 0;
+                            near_a_block[ii, jj] = false;
+                            if (a_peaks_block[ii,jj] > currernt_a_peak)
                             {
-                                in_tol_block[ii, jj] = false;
-                                currernt_peak++;
-                                v_max_pos_block.Add(new int[height / block_size, width / block_size]);
-                                for (int iii= 0;  iii < n_peaks_block.GetLength(0); iii++)
-                                    for (int jjj = 0; jjj< n_peaks_block.GetLength (1); jjj++)
+                                currernt_a_peak++;
+                                a_pos_block.Add(new int[height / block_size, width / block_size]);
+                                for (int iii= 0;  iii < a_peaks_block.GetLength(0); iii++)
+                                    for (int jjj = 0; jjj< a_peaks_block.GetLength (1); jjj++)
                                     {
-                                        v_max_pos_block[currernt_peak][iii, jjj] = 0;
+                                        a_pos_block[currernt_a_peak][iii, jjj] = 0;
                                     }
                             }
-                        } else if (!in_tolerance && in_tol_block[ii, jj])   //leaving range w/o peak registration
+                        } else if (!in_tolerance && near_a_block[ii, jj])   //leaving range w/o peak registration
                         {
+                            near_a_block[ii, jj] = false;
                             current_vmax_block[ii, jj] = Int32.MinValue;
-                            window_size_block[ii, jj] = 0;
+                            a_window_size_block[ii, jj] = 0;
                         }
                     }
 
 
+                //analyzing blocks in current frame - finding B positions
+                for (int ii = 0; ii < block_sums.GetLength(0); ii++)
+                    for (int jj = 0; jj < block_sums.GetLength(1); jj++)
+                    {
+                        if (block_counters[ii, jj] == 0) continue;
+                        int block_value = block_sums[ii, jj] / block_counters[ii, jj];
+
+                        bool in_tolerance = (block_value < (b_values[block_to_pix(ii), block_to_pix(jj)] + tolerance));
+
+                        if (in_tolerance && !near_b_block[ii, jj])          //entering range
+                        {
+                            near_b_block[ii, jj] = true;
+                            b_window_size_block[ii, jj] = 1;
+                            current_vmin_block[ii, jj] = block_value;
+                        }
+                        else if (in_tolerance && near_b_block[ii, jj])   // continuing range
+                        {
+                            b_window_size_block[ii, jj]++;
+                            if (block_value < current_vmin_block[ii, jj])
+                            {
+                                current_vmin_block[ii, jj] = block_value;
+                            }
+                        }
+                        else if (!in_tolerance && near_b_block[ii, jj] && b_window_size_block[ii, jj] > min_window_size) //leaving range with peak registration
+                        {
+
+                            b_pos_block[b_peaks_block[ii, jj]][ii, jj] = image_counter;
+                            b_peaks_block[ii, jj]++;
+                            current_vmin_block[ii, jj] = Int32.MaxValue;
+                            b_window_size_block[ii, jj] = 0;
+                            near_b_block[ii, jj] = false;
+                            if (b_peaks_block[ii, jj] > currernt_b_peak)
+                            {
+                                currernt_b_peak++;
+                                b_pos_block.Add(new int[height / block_size, width / block_size]);
+                                for (int iii = 0; iii < b_peaks_block.GetLength(0); iii++)
+                                    for (int jjj = 0; jjj < b_peaks_block.GetLength(1); jjj++)
+                                    {
+                                        b_pos_block[currernt_b_peak][iii, jjj] = 0;
+                                    }
+                            }
+                        }
+                        else if (!in_tolerance && near_b_block[ii, jj])   //leaving range w/o peak registration
+                        {
+                            current_vmin_block[ii, jj] = Int32.MaxValue;
+                            b_window_size_block[ii, jj] = 0;
+                        }
+                    }
+
 
             } // all images browsed
 
-            // layout block-variables to pixel-variables
+            // laying out block-variables to pixel-variables
 
-            for (int n = 0; n < v_max_pos_block.Count; n++)
+            for (int n = 0; n < a_pos_block.Count; n++)
             {
-                v_max_positions.Add(new int[a_values.GetLength(0), a_values.GetLength(1)]);
+                a_positions.Add(new int[a_values.GetLength(0), a_values.GetLength(1)]);
                 for (int i = 0; i < a_values.GetLength(0);i++)
                     for (int j = 0; j < a_values.GetLength(1);j++)
                     {
-                        v_max_positions[n][i, j] =
-                            v_max_pos_block[n][pix_to_block(i),pix_to_block(j)];    
+                        a_positions[n][i, j] =
+                            a_pos_block[n][pix_to_block(i),pix_to_block(j)];    
                     }
 
             }
+
             for (int i = 0; i < a_values.GetLength(0); i++)
                 for (int j = 0; j < a_values.GetLength(1); j++)
                 {
-                    n_peaks[i,j] = n_peaks_block[pix_to_block(i),pix_to_block(j)];
+                    a_peaks[i,j] = a_peaks_block[pix_to_block(i),pix_to_block(j)];
                 }
+
+            for (int n = 0; n < b_pos_block.Count; n++)
+            {
+                b_positions.Add(new int[b_values.GetLength(0), b_values.GetLength(1)]);
+                for (int i = 0; i < b_values.GetLength(0); i++)
+                    for (int j = 0; j < b_values.GetLength(1); j++)
+                    {
+                        b_positions[n][i, j] =
+                            b_pos_block[n][pix_to_block(i), pix_to_block(j)];
+                    }
+
+            }
+
+            for (int i = 0; i < b_values.GetLength(0); i++)
+                for (int j = 0; j < b_values.GetLength(1); j++)
+                {
+                    b_peaks[i, j] = b_peaks_block[pix_to_block(i), pix_to_block(j)];
+                }
+
 
 
         } // function end

@@ -31,7 +31,7 @@ namespace ImgAnalyzer
         }
 
 
-        public PlotForm(MainForm form1, ImageProcessor imageProcessor)
+        public PlotForm(MainForm form1, ImageProcessor imageProcessor, bool plotPhase)
         {
             InitializeComponent();
             GetSizes();
@@ -48,7 +48,11 @@ namespace ImgAnalyzer
 
             for (int i = 0; i < form1.selected_items.Length; i++)
             {
-                List<double>[] ydata = imageProcessor.measurements[form1.selected_items[i]].RetrieveData();
+                List<double>[] ydata;
+                if (plotPhase)
+                    ydata = imageProcessor.measurements[form1.selected_items[i]].RetrievePhaseData();
+                else
+                    ydata = imageProcessor.measurements[form1.selected_items[i]].RetrieveData();
 
                 for (int j = 0; j < ydata.Length; j++)
                 {

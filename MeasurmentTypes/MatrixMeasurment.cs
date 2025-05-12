@@ -81,7 +81,17 @@ namespace ImgAnalyzer.MeasurmentTypes
             DataCount = 0;
         }
 
+        public void MeasurePhase(int n_frame)
+        {
+            throw new NotImplementedException();
+        }
 
+        public List<double>[] RetrievePhaseData()
+        {
+            throw new NotImplementedException();
+
+
+        }
 
 
 

@@ -11,7 +11,9 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer
 {
-    public enum VariablesToMap : int { Minimum = 0, Maximum, Amplitude, Pseudophase, DeadAlive, A_values, B_values, N_peaks, V_peaks }
+    public enum VariablesToMap : int { Minimum = 0, Maximum, Amplitude, Pseudophase, DeadAlive,
+        A_values, B_values, NA_peaks, VA_peaks, NB_peaks, VB_peaks,
+    }
     public partial class ImageProcessor
     {
 
@@ -210,23 +212,44 @@ namespace ImgAnalyzer
                     }
                     else goto default;
                     break;
-                case VariablesToMap.N_peaks:
-                    if (n_peaks != null)
+                case VariablesToMap.NA_peaks:
+                    if (a_peaks != null)
                     {
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(n_peaks);
-                        thermalMapForm.Text = "N_peaks";
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(a_peaks);
+                        thermalMapForm.Text = "NA_peaks";
                         thermalMapForm.Show();
                     }
                     else goto default;
                     break;
-                case VariablesToMap.V_peaks:
-                    if (v_max_positions?.Count != 0)
+                case VariablesToMap.VA_peaks:
+                    if (a_positions?.Count != 0)
                     {
-                        for (int i = 0; i < v_max_positions.Count; i++)
+                        for (int i = 0; i < a_positions.Count; i++)
                         { 
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(v_max_positions[i]);
-                        thermalMapForm.Text = "V " + i.ToString();
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(a_positions[i]);
+                        thermalMapForm.Text = "VA " + i.ToString();
                         thermalMapForm.Show();
+                        }
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.NB_peaks:
+                    if (a_peaks != null)
+                    {
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(b_peaks);
+                        thermalMapForm.Text = "NB_peaks";
+                        thermalMapForm.Show();
+                    }
+                    else goto default;
+                    break;
+                case VariablesToMap.VB_peaks:
+                    if (a_positions?.Count != 0)
+                    {
+                        for (int i = 0; i < a_positions.Count; i++)
+                        {
+                            ThermalMapForm thermalMapForm = new ThermalMapForm(b_positions[i]);
+                            thermalMapForm.Text = "VB " + i.ToString();
+                            thermalMapForm.Show();
                         }
                     }
                     else goto default;

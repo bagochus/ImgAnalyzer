@@ -254,7 +254,7 @@ namespace ImgAnalyzer
             Double.TryParse(textBox_step.Text, out x_step);
             x_axis_unit = textBox_unitname.Text;
 
-            PlotForm plotForm = new PlotForm(this, imageProcessor);
+            PlotForm plotForm = new PlotForm(this, imageProcessor,false);
             plotForm.Show();
         }
 
@@ -399,7 +399,7 @@ namespace ImgAnalyzer
                "Поиск положения максимумов",
                "4");
             good_input = (Int32.TryParse(userInput, NumberStyles.Any, frmt, out value2));
-            if (good_input) imageProcessor.CalculateVPeakByBlock(value1,value2);
+            if (good_input) imageProcessor.CalculateABPosByBlock(value1,value2);
 
 
         }
@@ -417,6 +417,28 @@ namespace ImgAnalyzer
             for (int i = 0; i < imageProcessor.filenames.Length; i++)
                 new_filenames[i] = imageProcessor.filenames[imax-i];
             imageProcessor.filenames = new_filenames;
+        }
+
+        private void button_calc_phase_Click(object sender, EventArgs e)
+        {
+            if (imageProcessor.filenames == null) return;
+            label_status.Text = "Обработка начата";
+            imageProcessor.BatchPhaseMeasurment();
+            label_status.Text = "Обработка закончена";
+
+
+
+        }
+
+        private void button_plotphase_Click(object sender, EventArgs e)
+        {
+            selected_items = listBox_measurments.SelectedIndices.Cast<int>().ToArray();
+            Double.TryParse(textBox_start.Text, out x_start);
+            Double.TryParse(textBox_step.Text, out x_step);
+            x_axis_unit = textBox_unitname.Text;
+
+            PlotForm plotForm = new PlotForm(this, imageProcessor,true);
+            plotForm.Show();
         }
     }
 }

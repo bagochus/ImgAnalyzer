@@ -66,7 +66,9 @@
             this.button_peaks = new System.Windows.Forms.Button();
             this.button_editrange = new System.Windows.Forms.Button();
             this.button_invrange = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button_plotphase = new System.Windows.Forms.Button();
+            this.button_phasemap = new System.Windows.Forms.Button();
+            this.button_calc_phase = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button_openfile
@@ -424,21 +426,43 @@
             this.button_invrange.UseVisualStyleBackColor = true;
             this.button_invrange.Click += new System.EventHandler(this.button_invrange_Click);
             // 
-            // button1
+            // button_plotphase
             // 
-            this.button1.Location = new System.Drawing.Point(594, 269);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(146, 42);
-            this.button1.TabIndex = 40;
-            this.button1.Text = "Построить график фаз";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button_plotphase.Location = new System.Drawing.Point(594, 269);
+            this.button_plotphase.Name = "button_plotphase";
+            this.button_plotphase.Size = new System.Drawing.Size(146, 42);
+            this.button_plotphase.TabIndex = 40;
+            this.button_plotphase.Text = "Построить график фаз";
+            this.button_plotphase.UseVisualStyleBackColor = true;
+            this.button_plotphase.Click += new System.EventHandler(this.button_plotphase_Click);
+            // 
+            // button_phasemap
+            // 
+            this.button_phasemap.Location = new System.Drawing.Point(594, 240);
+            this.button_phasemap.Name = "button_phasemap";
+            this.button_phasemap.Size = new System.Drawing.Size(146, 23);
+            this.button_phasemap.TabIndex = 41;
+            this.button_phasemap.Text = "Построить карту фазы";
+            this.button_phasemap.UseVisualStyleBackColor = true;
+            // 
+            // button_calc_phase
+            // 
+            this.button_calc_phase.Location = new System.Drawing.Point(220, 271);
+            this.button_calc_phase.Name = "button_calc_phase";
+            this.button_calc_phase.Size = new System.Drawing.Size(190, 44);
+            this.button_calc_phase.TabIndex = 42;
+            this.button_calc_phase.Text = "Запустить расчет фаз";
+            this.button_calc_phase.UseVisualStyleBackColor = true;
+            this.button_calc_phase.Click += new System.EventHandler(this.button_calc_phase_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1101, 450);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.button_calc_phase);
+            this.Controls.Add(this.button_phasemap);
+            this.Controls.Add(this.button_plotphase);
             this.Controls.Add(this.button_invrange);
             this.Controls.Add(this.button_editrange);
             this.Controls.Add(this.button_peaks);
@@ -524,7 +548,9 @@
         private System.Windows.Forms.Button button_peaks;
         private System.Windows.Forms.Button button_editrange;
         private System.Windows.Forms.Button button_invrange;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_plotphase;
+        private System.Windows.Forms.Button button_phasemap;
+        private System.Windows.Forms.Button button_calc_phase;
     }
 }
 
