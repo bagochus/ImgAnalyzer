@@ -25,7 +25,7 @@ namespace ImgAnalyzer
 {
     public enum State : byte { Rising, Falling, Unknown };
 
-    public enum NearesExtremum:byte {A,B,Undef };
+    public enum NearestExtremum:byte {A,B,Undef };
     public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
     
 
@@ -84,10 +84,10 @@ namespace ImgAnalyzer
             int b = b_values[y,x];
             int n_period=0;
 
-            int nearestValueMinus = Int32.MinValue;
-            NearesExtremum ne_minus = NearesExtremum.Undef;
+            int nearestValueMinus = 0;
+            NearestExtremum ne_minus = NearestExtremum.Undef;
             int nearestValuePlus = Int32.MaxValue;
-            NearesExtremum ne_plus = NearesExtremum.Undef;
+            NearestExtremum ne_plus = NearestExtremum.Undef;
 
 
             for (int i =0; i < a_positions.Count;i++)
@@ -103,42 +103,46 @@ namespace ImgAnalyzer
             for (int i = 0; i < a_positions.Count; i++)
             {
                 if (a_positions[i][y, x] > nearestValueMinus &&
-                    a_positions[i][y, x] < intesity &&
+                    a_positions[i][y, x] < n_frame &&
                     a_positions[i][y, x] != 0)
                 {
                     nearestValueMinus = a_positions[i][y, x];
-                    ne_minus = NearesExtremum.A;
+                    ne_minus = NearestExtremum.A;
                 }
 
                 if (a_positions[i][y, x] < nearestValuePlus &&
-                    a_positions[i][y, x] > intesity &&
+                    a_positions[i][y, x] > n_frame &&
                     a_positions[i][y, x] != 0)
                 {
                     nearestValuePlus = a_positions[i][y, x];
-                    ne_plus = NearesExtremum.A;
+                    ne_plus = NearestExtremum.A;
                 }
             }
 
             for (int i = 0; i < b_positions.Count; i++)
             {
                 if (b_positions[i][y, x] > nearestValueMinus &&
-                    b_positions[i][y, x] < intesity &&
+                    b_positions[i][y, x] < n_frame &&
                     b_positions[i][y, x] != 0)
                 {
                     nearestValueMinus = b_positions[i][y, x];
-                    ne_minus = NearesExtremum.B;
+                    ne_minus = NearestExtremum.B;
                 }
 
                 if (b_positions[i][y, x] < nearestValuePlus &&
-                    b_positions[i][y, x] > intesity &&
+                    b_positions[i][y, x] > n_frame &&
                     b_positions[i][y, x] != 0)
                 {
                     nearestValuePlus = b_positions[i][y, x];
-                    ne_plus = NearesExtremum.B;
+                    ne_plus = NearestExtremum.B;
                 }
             }
 
-            
+
+            //undefiened behaviour
+            if (ne_minus == ne_plus && (ne_minus != NearestExtremum.Undef)) return double.NaN;
+            bool ascending_region = (ne_minus == NearestExtremum.B || ne_plus == NearestExtremum.A);
+
 
 
 
@@ -147,9 +151,12 @@ namespace ImgAnalyzer
             double acos_argument = 0.5 * ((double)intesity - b - 0.5 * (a-b) ) / (a - b);
             if (acos_argument > 1) acos_argument = 1;
             if (acos_argument < -1) acos_argument = -1;
+            double phase_value;
 
+            if (ascending_region) phase_value = Math.Acos(acos_argument);
+            else phase_value = 2 * Math.PI - Math.Acos(acos_argument);
 
-            return Math.Acos(acos_argument) + 2 * Math.PI*n_period;    
+            return phase_value + 2 * Math.PI*n_period;    
         }
 
 
