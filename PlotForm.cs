@@ -31,47 +31,30 @@ namespace ImgAnalyzer
         }
 
 
-        public PlotForm(MainForm form1, ImageProcessor imageProcessor, bool plotPhase)
+        public PlotForm(string x_text)
         {
             InitializeComponent();
             GetSizes();
-            saveFile = imageProcessor.SaveCSV_All;
-            // Add the FormsPlot to the panel
             panel1.Controls.Add(FormsPlot1);
-            n_points = imageProcessor.measurements[0].DataCount;
-            double[] x_array = new double[n_points];
-            if (form1.x_step == 0) form1.x_step = 1;
-            for (int i = 0; i < n_points; i++)
-            {
-                x_array[i] = form1.x_start + i * form1.x_step;
-            }
-
-            for (int i = 0; i < form1.selected_items.Length; i++)
-            {
-                List<double>[] ydata;
-                if (plotPhase)
-                    ydata = imageProcessor.measurements[form1.selected_items[i]].RetrievePhaseData();
-                else
-                    ydata = imageProcessor.measurements[form1.selected_items[i]].RetrieveData();
-
-                for (int j = 0; j < ydata.Length; j++)
-                {
-                    var sp = FormsPlot1.Plot.Add.Scatter(x_array, ydata[j].ToArray());
-                    sp.LegendText = imageProcessor.measurements[form1.selected_items[i]].Name;
-                }
-
-            }
-
             FormsPlot1.Plot.ShowLegend();
             ScottPlot.AxisPanels.BottomAxis bottomAxis = new ScottPlot.AxisPanels.BottomAxis()
             {
-                LabelText = form1.x_axis_variable + ", " + form1.x_axis_unit,
+                LabelText = x_text,
             };
             FormsPlot1.Plot.Axes.Remove(FormsPlot1.Plot.Axes.Bottom);
             FormsPlot1.Plot.Axes.AddBottomAxis(bottomAxis);
             FormsPlot1.Refresh();
 
         }
+
+        public void AddData(string name, double[] xdata, double[] ydata)
+        {
+            var sp = FormsPlot1.Plot.Add.Scatter(xdata, ydata);
+            sp.LegendText = name;
+            FormsPlot1.Refresh();
+
+        }
+
 
         private void button_save_Click(object sender, EventArgs e)
         {

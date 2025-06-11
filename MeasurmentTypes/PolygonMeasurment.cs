@@ -16,44 +16,21 @@ namespace ImgAnalyzer.MeasurmentTypes
         public int count;
     }
 
-    internal class PolygonMeasurment : IMeasurment
+    internal class PolygonMeasurment : Measurment
     {
         private bool initialized = false;
-        public string Name { get; set; }
-        public int DataCount { get; set; }
-        [JsonInclude]
-        private Point[] points { get; set; }
-        private MeasurePolygonDelegate measurePolygon;
-        private MeasureLineDelegate measureLine;
-        private List<double>[] data;
+
+        public Point[] points { get; }
+       
         private List<AnalyzeLine> analyzeLines = new List<AnalyzeLine>();
-        public PolygonMeasurment(ImageProcessor imageProcessor, Point[] points)
+        public PolygonMeasurment(Point[] points)
         {
             this.points = points;
             if (points.Length < 3) throw new ArgumentException("Полигон должен имень минимум 3 точки");
-            this.data = new List<double>[1];
-            data[0] = new List<double>();
             Name = "Poly " + points[0].ToString()+"...";
-            this.measurePolygon = imageProcessor.MeasurePolygon;
-            this.measureLine = imageProcessor.MeasureLine;
-            DataCount = 0;
-        }
-        public List<double>[] RetrieveData()
-        { return this.data; }
-        public void Measure()
-        {
-            if (!initialized) Initialize();
-            //data[0].Add(measurePolygon(points));
-            data[0].Add(MeasuseNew());
-            DataCount++;
-        }
-        public void ClearData()
-        {
-            initialized = false;
-            data[0].Clear();
         }
 
-        private void Initialize()
+        public override void Init()
         {
             PointF[] pointsF = new PointF[points.Length];
             for (int i = 0; i < points.Length; i++)
@@ -79,7 +56,7 @@ namespace ImgAnalyzer.MeasurmentTypes
                 bool line_continous = false;    
                 for (int _collumn = min_x; _collumn < max_x; _collumn++)
                 {
-                    if (ImageProcessor.IsPointInPolygon(new PointF(_collumn, _row), pointsF))
+                    if (ImageProcessor_1D.IsPointInPolygon(new PointF(_collumn, _row), pointsF))
                     {
                         if (line_continous)
                         {
@@ -97,15 +74,15 @@ namespace ImgAnalyzer.MeasurmentTypes
             }
             initialized = true;
         }
-
-        private double MeasuseNew()
+        public override double Measure(ImageProcessor_1D imageProcessor)
         {
+            if (!initialized) Init();
             double int_result = 0;
             int pointsCount = 0;
 
             for (int i = 0; i < analyzeLines.Count; i++)
             {
-                int_result += measureLine(analyzeLines[i].line,
+                int_result += imageProcessor.MeasureLine(analyzeLines[i].line,
                     analyzeLines[i].strart_x,
                     analyzeLines[i].count);
                 pointsCount += analyzeLines[i].count;
@@ -114,17 +91,9 @@ namespace ImgAnalyzer.MeasurmentTypes
             return (double)int_result / pointsCount;
         }
 
-
-        public void MeasurePhase(int n_frame)
+        public override IMeasurment Clone()
         {
-            throw new NotImplementedException();
-        }
-
-        public List<double>[] RetrievePhaseData()
-        {
-            throw new NotImplementedException();
-
-
+            return new PolygonMeasurment(points);
         }
 
 

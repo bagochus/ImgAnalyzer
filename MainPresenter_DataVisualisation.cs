@@ -14,8 +14,16 @@ namespace ImgAnalyzer
     public enum VariablesToMap : int { Minimum = 0, Maximum, Amplitude, Pseudophase, DeadAlive,
         A_values, B_values, NA_peaks, VA_peaks, NB_peaks, VB_peaks,
     }
-    public partial class ImageProcessor
+    public partial class MainPresenter
     {
+
+
+
+
+
+
+
+
 
 
 
@@ -31,19 +39,19 @@ namespace ImgAnalyzer
         }
         public void AddPointMeasurment(Point point)
         {
-            measurements.Add(new PointMeasurment(this, point));
+           // measurements.Add(new PointMeasurment(this, PointFrame));
             ListUpdated?.Invoke(this, EventArgs.Empty);
         }
         public void AddPolygonMeasurment(Point[] points)
         {
             if (points.Length < 3) return;
-            measurements.Add(new PolygonMeasurment(this, points));
+          //  measurements.Add(new PolygonMeasurment(this, ovelay_points));
             ListUpdated?.Invoke(this, EventArgs.Empty);
         }
         public void AddNewMatrixMeasurnment(Point[] corners, int nx, int ny)
         {
             if (corners.Length != 4) return;
-            measurements.Add(new MatrixMeasurment(this, corners, nx, ny));
+          //  measurements.Add(new MatrixMeasurment(this, corners, nx, ny));
             ListUpdated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -66,7 +74,7 @@ namespace ImgAnalyzer
             }
             catch { }
         }
-
+        /*
         public void SaveMeasurmentList(string filename)
         {
             var options = new JsonSerializerOptions
@@ -108,10 +116,12 @@ namespace ImgAnalyzer
             }
 
 
-        }
+        } */
         #endregion
+       
 
 
+        /*
         public void SaveCSV_All(string filename)
         {
             if (measurements.Count == 0) return;
@@ -132,9 +142,9 @@ namespace ImgAnalyzer
                 var rowValues = new string[cols];
                 for (int j = 0; j < cols; j++)
                 {
-                    List<double>[] data2d = measurements[j].RetrieveData();
-                    double[] data = data2d[0].ToArray();
-                    rowValues[j] = data[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
+                   // List<double>[] data2d = measurements[j].RetrieveData();
+                   // double[] data = data2d[0].ToArray();
+                 //   rowValues[j] = data[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
                 }
                 lines[i + 1] = string.Join(",", rowValues);
             }
@@ -144,6 +154,7 @@ namespace ImgAnalyzer
 
 
         }
+        */
 
         public void PlotValueMap(VariablesToMap variable)
         {
@@ -222,11 +233,11 @@ namespace ImgAnalyzer
                     else goto default;
                     break;
                 case VariablesToMap.VA_peaks:
-                    if (a_positions?.Count != 0)
+                    if (ax_positions?.Count != 0)
                     {
-                        for (int i = 0; i < a_positions.Count; i++)
+                        for (int i = 0; i < ax_positions.Count; i++)
                         { 
-                        ThermalMapForm thermalMapForm = new ThermalMapForm(a_positions[i]);
+                        ThermalMapForm thermalMapForm = new ThermalMapForm(ax_positions[i]);
                         thermalMapForm.Text = "VA " + i.ToString();
                         thermalMapForm.Show();
                         }
@@ -243,11 +254,11 @@ namespace ImgAnalyzer
                     else goto default;
                     break;
                 case VariablesToMap.VB_peaks:
-                    if (a_positions?.Count != 0)
+                    if (ax_positions?.Count != 0)
                     {
-                        for (int i = 0; i < a_positions.Count; i++)
+                        for (int i = 0; i < ax_positions.Count; i++)
                         {
-                            ThermalMapForm thermalMapForm = new ThermalMapForm(b_positions[i]);
+                            ThermalMapForm thermalMapForm = new ThermalMapForm(bx_positions[i]);
                             thermalMapForm.Text = "VB " + i.ToString();
                             thermalMapForm.Show();
                         }

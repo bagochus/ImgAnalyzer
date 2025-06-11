@@ -16,7 +16,7 @@ namespace ImgAnalyzer.DialogForms
     public partial class ValueMapForm : Form
     {
         PlotValueMapDelegate plotMap;
-        public ValueMapForm(ImageProcessor processor)
+        public ValueMapForm(MainPresenter processor)
         {
 
             InitializeComponent();

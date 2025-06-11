@@ -22,7 +22,7 @@ namespace ImgAnalyzer.DialogForms
         private int min_peak;
         string[] filenames;
         private bool read_ok = false;
-        public PseudoPhaseForm(ImageProcessor processor, string[] filenames)
+        public PseudoPhaseForm(MainPresenter processor, string[] filenames)
         {
             if (processor == null) return;
             InitializeComponent();

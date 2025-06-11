@@ -19,7 +19,7 @@ namespace ImgAnalyzer.DialogForms
         LoadFileListDeleggate loadFilenames;
         string[] filenames;
 
-        public EditRangeForm(ImageProcessor imageProcessor)
+        public EditRangeForm(MainPresenter imageProcessor)
         {
             InitializeComponent();
             if (imageProcessor == null) return;

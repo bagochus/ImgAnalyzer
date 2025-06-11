@@ -9,54 +9,37 @@ using System.Xml.Serialization;
 
 namespace ImgAnalyzer.MeasurmentTypes
 {
-    internal class PointMeasurment : IMeasurment
+    internal class PointMeasurment : Measurment
     {
-        [JsonInclude]
-        private Point point;
-        private MeasurePointDelegate measurePoint;
-        private CalculatePhaseDelegate calculatePhase;
-        private List<double>[] data;
-        private List<double>[] phaseData;
-        public string Name { get; set; }
+
+        public Point point;
+        ImageProcessor_1D _imageProcessor;
+        public ImageBatch _stack;
+
+
+
         public int DataCount { get; set; }
-        public PointMeasurment(ImageProcessor imageProcessor, Point point)
+
+        public PointMeasurment(Point point)
         {
             this.point = point;
-            this.measurePoint = imageProcessor.MeasurePoint;
-            this.calculatePhase = imageProcessor.ConvertIntensityToPhase;
-            this.data = new List<double>[1];
-            data[0] = new List<double>();
-            phaseData = new List<double>[1];
-            phaseData[0] = new List<double>();
             Name = "Point "+ point.X.ToString() + ":" + point.Y.ToString();
-            DataCount = 0;
         }
-        public List<double>[] RetrieveData()
-        { return this.data; }
-        public void Measure()
+
+        public override void Init()
+        { }
+
+        public override double Measure(ImageProcessor_1D processor)
         {
-            data[0].Add(measurePoint(point));
-            DataCount++;
+            double result = Double.NaN;
+            result = processor.MeasurePixel(point.X, point.Y);
+            return result;
         }
-        public void ClearData()
-        { 
-            data[0].Clear();
-            phaseData[0].Clear();
-        }
-        
 
-
-        public void MeasurePhase(int n_frame)
+        public override IMeasurment Clone()
         {
-            int intensity = (int)measurePoint(point);
-            phaseData[0].Add(calculatePhase(point.X,point.Y,n_frame,intensity));
+            return new PointMeasurment(point);  
         }
-
-        public List<double>[] RetrievePhaseData()
-        {
-            return phaseData;
-        }
-
 
 
     }

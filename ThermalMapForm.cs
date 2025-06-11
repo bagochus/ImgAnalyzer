@@ -41,6 +41,18 @@ namespace ImgAnalyzer
             GenerateThermalImage();
         }
 
+        public ThermalMapForm(double[,] data)
+        {
+            if (data == null || data.Length == 0)
+                throw new ArgumentException("Data array cannot be null or empty");
+
+            this.dataArray = new int[data.GetLength(0), data.GetLength(1)];
+            for (int i = 0; i < data.GetLength(0); i++)
+                for (int j = 0; j < data.GetLength(1); j++)
+                    this.dataArray[i, j] = (int)data[i, j];
+            InitializeComponents();
+            GenerateThermalImage();
+        }
 
         private void InitializeComponents()
         {
@@ -148,6 +160,18 @@ namespace ImgAnalyzer
                 coordinatesLabel.Text = "X: -, Y: -";
                 valueLabel.Text = "Value: -";
             }
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // ThermalMapForm
+            // 
+            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Name = "ThermalMapForm";
+            this.ResumeLayout(false);
+
         }
     }
 

@@ -1,0 +1,204 @@
+﻿using BitMiracle.LibTiff.Classic;
+using ScottPlot;
+using ScottPlot.PlotStyles;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ImgAnalyzer
+{
+
+    public class ImageProcessor_2D
+    {
+        protected double[,] dataF = new double[0,0];
+
+
+        public static int[,] MinInt (ImageBatch batch)
+        {
+            int width = batch.Width;
+            int height = batch.Height;
+            int samplesPerPixel = batch.SamplesPerPixel;
+
+
+            int[,] min_values = new int[width, height];
+
+            for (int image_counter = 0; image_counter < batch.Count; image_counter++)
+            {
+                var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
+                for (int line = 0; line < height; line++)
+                {
+                   
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = pixelData[pixel];
+                        if (image_counter == 0)
+                        {
+                            min_values[pixel, line] = pixel_value;
+                        }
+                        else
+                        {
+                            if (pixel_value < min_values[pixel, line]) min_values[pixel, line] = pixel_value;
+                        }
+                    }
+                }
+            }
+            return min_values;
+        }
+
+        public static int[,] MaxInt(ImageBatch batch)
+        {
+            int width = batch.Width;
+            int height = batch.Height;
+            int samplesPerPixel = batch.SamplesPerPixel;
+
+
+            int[,] max_values = new int[width, height];
+
+            for (int image_counter = 0; image_counter < batch.Count; image_counter++)
+            {
+                var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
+                for (int line = 0; line < height; line++)
+                {
+                    
+
+
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = pixelData[pixel];
+                        if (image_counter == 0)
+                        {
+                            max_values[pixel, line] = pixel_value;
+                        }
+                        else
+                        {
+                            if (pixel_value > max_values[pixel, line]) max_values[pixel, line] = pixel_value;
+                        }
+                    }
+                }
+            }
+            return max_values;
+        }
+
+        public static int[,] Amplitude(ImageBatch batch)
+        {
+            int width = batch.Width;
+            int height = batch.Height;
+            int samplesPerPixel = batch.SamplesPerPixel;
+            int[,] min_values = new int[width, height];
+            int[,] max_values = new int[width, height];
+            int[,] amplitude_values = new int[width, height];
+
+            for (int image_counter = 0; image_counter < batch.Count; image_counter++)
+            {
+                var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
+                for (int line = 0; line < height; line++)
+                {
+                    
+
+
+                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                    tiff_img.ReadScanline(buffer, line);
+                    ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    for (int pixel = 0; pixel < width; pixel++)
+                    {
+                        ushort pixel_value = pixelData[pixel];
+                        if (image_counter == 0)
+                        {
+                            min_values[pixel, line] = pixel_value;
+                            max_values[pixel, line] = pixel_value;
+                        }
+                        else
+                        {
+                            if (pixel_value < min_values[pixel, line]) min_values[pixel, line] = pixel_value;
+                            if (pixel_value > max_values[pixel, line]) max_values[pixel, line] = pixel_value;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < min_values.GetLength(0); i++)
+                for (int j = 0; j < min_values.GetLength(1); j++)
+                {
+                    amplitude_values[i, j] = (ushort)(max_values[i, j] - min_values[i, j]);
+                }
+            return amplitude_values;
+        }
+
+        public static double[,] FitData(int[,] data, CoordinateTransformation ct)
+        {
+           /* double[,] result = new double[ct.frame_width, ct.frame_height];
+            if (ct == null) return result;
+
+
+            for (int i = 0; i < ct.frame_width; i++)
+                for (int j = 0; j < ct.frame_height; j++)
+                {
+                    var pw = ct.GeneratePWM_point(new PointF(i, j));
+                    double tempvalue = 0;
+                    for (int k = 0; k < pw.Count; k++)
+                    {
+                        tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
+                    }
+                    tempvalue *= ct.k_area;
+                    result[i, j] = tempvalue;
+
+                }*/
+
+            ImageProcessor_2D proc_instance = new ImageProcessor_2D();
+            proc_instance.FitDataAsync(data, ct);
+
+            return proc_instance.dataF;
+
+        }
+
+        protected async void FitDataAsync(int[,] data, CoordinateTransformation ct)
+        {
+            dataF = new double[ct.frame_width, ct.frame_height];
+
+                await Task.Run(() =>
+                {
+                    lock (dataF)
+                    {
+                        Parallel.For(0, ct.frame_width,
+                            (int i) =>
+                            {
+                                for (int j = 0; j < ct.frame_height; j++)
+                                {
+                                    var pw = ct.GeneratePWM_point(new PointF(i, j));
+                                    double tempvalue = 0;
+                                    for (int k = 0; k < pw.Count; k++)
+                                    {
+                                        tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
+                                    }
+                                    tempvalue *= ct.k_area;
+                                    dataF[i, j] = tempvalue;
+
+                                }
+                            }
+                            );
+                    }
+                });
+            
+
+
+        }
+
+
+
+
+    }
+}

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using ScottPlot;
 
 namespace ImgAnalyzer.MeasurmentTypes
 {
@@ -16,15 +17,15 @@ namespace ImgAnalyzer.MeasurmentTypes
 
     public interface IMeasurment
     {
+
+        ImageBatch Batch { get; }
+        void BindImageStack(ImageBatch stack);
+
         string Name { get; set; }
+        double Measure(ImageProcessor_1D processor);
+        void Init();
 
-        int DataCount { get; set; }
-        List<double>[] RetrieveData();
-        void Measure();
-        void ClearData();
-        void MeasurePhase(int n_frame);
-        List<double>[] RetrievePhaseData();
-
+        IMeasurment Clone();
 
     }
 }

@@ -18,7 +18,7 @@ namespace ImgAnalyzer.DialogForms
         MarkDeadPixelDelegate amp;
         MarkDeadPixelDelegate phase;
 
-        public MarkDeadPixelsForm(ImageProcessor imageProcessor)
+        public MarkDeadPixelsForm(MainPresenter imageProcessor)
         {
             amp = imageProcessor.MarkDeadPixelByAmplitude;
             phase = imageProcessor.MarkDeadPixelByPseudophase;
