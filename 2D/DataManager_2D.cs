@@ -1,7 +1,10 @@
 ﻿
+using ImgAnalyzer.DialogForms;
+using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using ImgAnalyzer.DialogForms;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace ImgAnalyzer._2D
 {
@@ -29,6 +32,15 @@ namespace ImgAnalyzer._2D
 
         }
 
+        public static void ShowCalcForm()
+        {
+            FormCalculations2D form = new FormCalculations2D();
+            form.ShowDialog();
+
+        }
+
+
+
         public static void AddMeasurment()
         {
             AddMeasurment_2D addForm = new AddMeasurment_2D();
@@ -45,10 +57,26 @@ namespace ImgAnalyzer._2D
                 form.Show();
 
             }
+        }
+
+        public static void PerformCalculation (ICalculation2D calculation)
+        {
+            if (calculation == null) return;
+            if (!calculation.Check())
+            {
+                MessageBox.Show(calculation.ErrorMessage);
+                return;
+            }
+            double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);
+            var dc = new Container_2D_double(datafloat);
+            dc.Name = calculation.ToString();
+            dc.ImageGroup = "X";
+            DataManager_2D.containers.Add(dc);
 
 
 
         }
+
 
 
 

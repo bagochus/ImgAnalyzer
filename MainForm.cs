@@ -92,6 +92,10 @@ namespace ImgAnalyzer
                     imageViewForm.LoadImage(filename);
                     imageViewForm.Show();
 
+                    //test2006
+                    //SmoothImageViewer form = new SmoothImageViewer(ImageManager.Batch(batch_index).filenames[0]);
+                    //form.Show();
+
                 }
             }
 

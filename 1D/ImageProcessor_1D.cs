@@ -31,7 +31,7 @@ namespace ImgAnalyzer
         {
             int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
-            int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+            int samplesPerPixel = 1;
             int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
             byte[] buffer = new byte[tiff_img.ScanlineSize()];
@@ -55,7 +55,7 @@ namespace ImgAnalyzer
         {
             int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
-            int samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+            int samplesPerPixel = 1;
             int bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
             byte[] buffer = new byte[tiff_img.ScanlineSize()];

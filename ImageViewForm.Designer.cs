@@ -42,6 +42,7 @@
             this.checkBox_allch_act = new System.Windows.Forms.CheckBox();
             this.checkBox_overlays = new System.Windows.Forms.CheckBox();
             this.button_reset = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -201,11 +202,21 @@
             this.button_reset.UseVisualStyleBackColor = true;
             this.button_reset.Click += new System.EventHandler(this.button_reset_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(324, 635);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(35, 13);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "label3";
+            // 
             // ImageViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1028, 657);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.button_reset);
             this.Controls.Add(this.checkBox_overlays);
             this.Controls.Add(this.checkBox_allch_act);
@@ -246,5 +257,6 @@
         private System.Windows.Forms.CheckBox checkBox_allch_act;
         private System.Windows.Forms.CheckBox checkBox_overlays;
         private System.Windows.Forms.Button button_reset;
+        private System.Windows.Forms.Label label3;
     }
 }

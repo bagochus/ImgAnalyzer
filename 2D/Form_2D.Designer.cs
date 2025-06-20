@@ -68,6 +68,7 @@
             this.button_rename.TabIndex = 2;
             this.button_rename.Text = "Переименовать";
             this.button_rename.UseVisualStyleBackColor = true;
+            this.button_rename.Click += new System.EventHandler(this.button_rename_Click);
             // 
             // button_delete
             // 
@@ -88,6 +89,7 @@
             this.button_math.TabIndex = 4;
             this.button_math.Text = "Калькулятор изображений";
             this.button_math.UseVisualStyleBackColor = true;
+            this.button_math.Click += new System.EventHandler(this.button_math_Click);
             // 
             // button_plot
             // 

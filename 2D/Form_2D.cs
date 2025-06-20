@@ -70,5 +70,15 @@ namespace ImgAnalyzer._2D
             }
             DataManager_2D.PlotMap(selectedIndices.ToArray());
         }
+
+        private void button_math_Click(object sender, EventArgs e)
+        {
+            DataManager_2D.ShowCalcForm();
+        }
+
+        private void button_rename_Click(object sender, EventArgs e)
+        {
+            
+        }
     }
 }

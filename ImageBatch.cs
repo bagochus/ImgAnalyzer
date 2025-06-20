@@ -115,7 +115,7 @@ namespace ImgAnalyzer
             var tiff_img = Tiff.Open(filenames[index], "r");
             width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
-            samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
+            samplesPerPixel = 1;// tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt();
             bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
         }

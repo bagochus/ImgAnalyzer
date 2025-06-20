@@ -112,9 +112,9 @@ namespace ImgAnalyzer
                 selectedIndices.Add(row.Index);
             }
             selectedIndices.Reverse();
-            foreach (int  index in selectedIndices)
+            for (int i = selectedIndices.Count -1; i >=0;i--)
             {
-                DataManager_1D.Instance.DeleteItem(index);
+                DataManager_1D.Instance.DeleteItem(selectedIndices[i]);
             }
         }
 

@@ -29,16 +29,16 @@ namespace ImgAnalyzer
 
 
         //----------Image management--------------------
-        private Image originalImage;
-        private Image scaledImage;
-        private float zoomFactor = 1.0f;
 
+
+
+
+        private Bitmap originalImage;
+        private Bitmap displayImage;
         private PointF imagePosition = new PointF(0, 0);
-        private bool imageRescaled = true;
-
-        private Point dragStart;
-        private bool isDragging = false;
-
+        private Point lastMousePos;
+        private float zoomFactor = 1.0f;
+        private bool isPanning;
 
 
 
@@ -99,6 +99,8 @@ namespace ImgAnalyzer
             pictureBox1.MouseClick += PictureBox_MouseClick;
             pictureBox1.MouseWheel += PictureBox_MouseWheel;
             pictureBox1.Paint += pictureBox1_Paint;
+            this.DoubleBuffered = true;
+
 
             _batch = batch;
             UpdateOverlays();
@@ -109,10 +111,9 @@ namespace ImgAnalyzer
         {
             try
             {
-                originalImage = Image.FromFile(imagePath);
-                pictureBox1.Image = originalImage;
-                scaledImage = originalImage;
-                ResetView(null, null);
+                originalImage = new Bitmap(imagePath);
+                displayImage = new Bitmap(originalImage);
+
             }
             catch (Exception ex)
             {
@@ -125,7 +126,7 @@ namespace ImgAnalyzer
             }
         }
 
-        private Image CreateErrorImage()
+        private Bitmap CreateErrorImage()
         {
             Bitmap bmp = new Bitmap(400, 300);
             using (Graphics g = Graphics.FromImage(bmp))
@@ -139,19 +140,12 @@ namespace ImgAnalyzer
             return bmp;
         }
 
-        private void ZoomImage(float factor)
-        {
-            zoomFactor *= factor;
-            if (pictureBox1.Image.Width < pictureBox1.Width) imagePosition.X = 0;
-            if (pictureBox1.Image.Height < pictureBox1.Height) imagePosition.Y = 0;
-            imageRescaled = true;
 
-            UpdateImageDisplay();
-        }
-
+/*
         private void UpdateImageDisplay()
         {
-            
+        
+
             if (originalImage == null) return;
 
             // Calculate new size
@@ -160,23 +154,36 @@ namespace ImgAnalyzer
 
             // Create a temporary bitmap for zoomed image
 
+            if (imageRescaled)
             scaledImage = new Bitmap(newWidth, newHeight);
 
-            using (Graphics g = Graphics.FromImage(scaledImage))
+            Bitmap shiftedImage = new Bitmap(scaledImage);
+
+            if (imageRescaled)
             {
-                
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(originalImage, imagePosition.X, imagePosition.Y, newWidth, newHeight);
-                imageRescaled = false;
-                DrawOverlays(g);
-                
+                using (Graphics g = Graphics.FromImage(scaledImage))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
+                    g.DrawImage(originalImage, 0, 0, newWidth, newHeight);
+                    imageRescaled = false;
+                }
             }
-            pictureBox1.Image = scaledImage;
+            using (Graphics g = Graphics.FromImage(shiftedImage))
+            {
+                g.DrawImage(scaledImage, imagePosition.X, imagePosition.Y);
+                DrawOverlays(g);
+            }
 
 
 
-        }
-        
+
+            pictureBox1.Image = shiftedImage;
+
+
+        }*/
+
+
+        #region Orerlays
         private void DrawOverlays(Graphics g)
         {
             foreach (Point pt in temp_points)
@@ -201,31 +208,29 @@ namespace ImgAnalyzer
                 DrawPoly(polygons[i], g, polyColor, poly_names[i]);
             }
             //dram polygons - frame
-            for (int i = 0; i < polygons.Count; i++)
+            for (int i = 0; i < polygons_ct.Count; i++)
             {
-                if (polygons.Count != poly_ct_names.Count) break;
-                DrawPoly(polygons[i], g, polyColor, poly_names[i]);
+                if (polygons_ct.Count != poly_ct_names.Count) break;
+                DrawPoly(polygons_ct[i], g, polyctColor, poly_ct_names[i]);
             }
 
 
             if (frame_poly != null) DrawPoly(frame_poly, g, frColor,"Active Area");
 
         }
-
         public void UpdateOverlays()
         {
             ovelay_points = DataManager_1D.Instance.GetPoints(_batch);
             ovelay_points_ct = DataManager_1D.Instance.GetPointsCT(_batch);
             points_ct_coords = DataManager_1D.Instance.GetPoinsCT_Coords(_batch);
             polygons = DataManager_1D.Instance.GetPolys(_batch);
+            polygons_ct = DataManager_1D.Instance.GetPolysCT(_batch);
             poly_names = DataManager_1D.Instance.GetPolyNames(_batch);
+            poly_ct_names = DataManager_1D.Instance.GetPolyCTNames(_batch);
             frame_poly = _batch.coordinateTransformation?.Polygon;
 
-            UpdateImageDisplay();
+            pictureBox1.Invalidate();
         }
-
-        
-
         private void DrawPoint(Point point, Graphics g, Color color,string text)
         {
             Point pt = new Point(0, 0);
@@ -252,7 +257,6 @@ namespace ImgAnalyzer
 
             g.DrawString(text, font, brush, new Point(pt.X + d,pt.Y +d));
         }
-
         private void DrawPoly(Point[] points, Graphics g, Color color, string text)
         {
 
@@ -279,7 +283,9 @@ namespace ImgAnalyzer
 
         }
 
-
+        #endregion
+       
+        #region Image click handlers
         private void ClickPoint(int x,int y)
         {
             PointMeasurment pm = new PointMeasurment(new Point(x,y));
@@ -299,8 +305,6 @@ namespace ImgAnalyzer
             DataManager_1D.Instance.AddPointCTMeasurment(new Point(x,y),_batch,addForAllBatches);
             UpdateOverlays();
         }
-
-
         private void ImageClick(int imageX, int imageY)
         {
             switch (clickMode)
@@ -317,13 +321,11 @@ namespace ImgAnalyzer
             }
 
         }
-
         private void ManagePoly (int x,int y)
         {
             temp_points.Add(new Point(x, y));
             PointCounter++;
         }
-
         private void ClosePoly(bool in_ct)
         {
             if (temp_points.Count < 3)
@@ -345,8 +347,6 @@ namespace ImgAnalyzer
             UpdateOverlays();
 
         }
-
-
         private void ManageSquare(int x,int y)
         {
             temp_points.Add(new Point(x, y));
@@ -367,7 +367,6 @@ namespace ImgAnalyzer
             }
             UpdateOverlays();
         }
-
         private void ManageFrame(int x, int y)
         {
             temp_points.Add(new Point(x, y));
@@ -406,21 +405,23 @@ namespace ImgAnalyzer
             UpdateButtons();
         }
 
+        #endregion
+       
         #region Events
         private void ResetView(object sender, EventArgs e)
         {
             zoomFactor = 1.0f;
             imagePosition = new PointF(0, 0);
-            UpdateImageDisplay();
-            pictureBox1.Location = Point.Empty;
+            pictureBox1.Invalidate();
         }
 
         private void PictureBox_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (Control.ModifierKeys == Keys.Control)
+            if (ModifierKeys == Keys.Control)
             {
                 float zoom = e.Delta > 0 ? 1.1f : 1 / 1.1f;
-                ZoomImage(zoom);
+                zoomFactor *= zoom;
+                pictureBox1.Invalidate();
             }
         }
 
@@ -428,19 +429,23 @@ namespace ImgAnalyzer
         {
             if (e.Button == MouseButtons.Middle)
             {
-                pictureBox1.Cursor = Cursors.Hand;
-                dragStart = e.Location;
-                isDragging = true;
+                isPanning = true;
+                lastMousePos = e.Location;
+                Cursor = Cursors.Hand;
             }
         }
 
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isDragging)
+            if (isPanning)
             {
-                imagePosition.X = e.X - dragStart.X;
-                imagePosition.Y = e.Y - dragStart.Y;
-                UpdateImageDisplay();
+                // Плавное перемещение с коэффициентом сглаживания
+                float smoothFactor = 0.7f;
+                imagePosition.X += (e.X - lastMousePos.X) * smoothFactor;
+                imagePosition.Y += (e.Y - lastMousePos.Y) * smoothFactor;
+
+                lastMousePos = e.Location;
+                pictureBox1.Invalidate();
             }
 
 
@@ -450,13 +455,14 @@ namespace ImgAnalyzer
         {
             if (e.Button == MouseButtons.Middle)
             {
-                isDragging = false;
+                isPanning = false;
+                Cursor = Cursors.Default;
             }
         }
 
         private void PictureBox_MouseClick(object sender, MouseEventArgs e)
         {
-            if (originalImage == null || pictureBox1.Image == null) return;
+            if (originalImage == null ) return;
             if (e.Button == MouseButtons.Left)
             {
                 // Calculate the actual image position considering zoom and pan
@@ -469,7 +475,7 @@ namespace ImgAnalyzer
                 //ovelay_points.Add(new Point(imageX,imageY));
                 ImageClick(imageX, imageY);
 
-                UpdateImageDisplay();
+                pictureBox1.Invalidate();
 
 
 
@@ -480,7 +486,15 @@ namespace ImgAnalyzer
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            //  pictureBox1.Image = scaledImage;
+            if (displayImage == null) return;
+
+            // Отрисовка с учетом позиции и масштаба
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            e.Graphics.DrawImage(displayImage, imagePosition.X, imagePosition.Y,
+                               displayImage.Width * zoomFactor,
+                               displayImage.Height * zoomFactor);
+            DrawOverlays(e.Graphics);
+
         }
 
 
@@ -559,7 +573,7 @@ namespace ImgAnalyzer
         }
         private void checkBox_overlays_CheckedChanged(object sender, EventArgs e)
         {
-            UpdateImageDisplay();
+            pictureBox1.Invalidate();
         }
 
         private void button_pointframe_Click(object sender, EventArgs e)
@@ -575,10 +589,6 @@ namespace ImgAnalyzer
         {
             addForAllBatches = checkBox_allch.Checked;
         }
-
-
-        #endregion
-
         private void button_addsqare_Click(object sender, EventArgs e)
         {
             if (clickMode != ClickModeV2.Sqare)
@@ -626,5 +636,7 @@ namespace ImgAnalyzer
                 
             UpdateButtons();
         }
+        #endregion
+
     }
 }

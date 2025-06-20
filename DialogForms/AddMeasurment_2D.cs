@@ -25,6 +25,9 @@ namespace ImgAnalyzer.DialogForms
             checkBox_B.Enabled = (ImageManager.Batch_B().Count != 0);
             checkBox_C.Enabled = (ImageManager.Batch_C().Count != 0);
 
+            checkBox_A.Checked = checkBox_A.Enabled;
+            checkBox_B.Checked = checkBox_B.Enabled;
+            checkBox_C.Checked = checkBox_C.Enabled;
 
         }
 
@@ -62,6 +65,7 @@ namespace ImgAnalyzer.DialogForms
         private bool CheckCTError()
         {
             bool error = false;
+            if (!checkBox_ct.Checked) { return false; }
             error |= (checkBox_A.Checked && !ImageManager.IsCTDefined(ImageManager.Batch_A()));
             error |= (checkBox_B.Checked && !ImageManager.IsCTDefined(ImageManager.Batch_B()));
             error |= (checkBox_C.Checked && !ImageManager.IsCTDefined(ImageManager.Batch_C()));
@@ -77,6 +81,10 @@ namespace ImgAnalyzer.DialogForms
             measurment2D.Batch = batch;   
             measurments.Add(measurment2D);
         }
+
+
+
+
 
 
     }

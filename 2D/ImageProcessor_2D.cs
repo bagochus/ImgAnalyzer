@@ -1,4 +1,5 @@
 ﻿using BitMiracle.LibTiff.Classic;
+using ImgAnalyzer._2D;
 using ScottPlot;
 using ScottPlot.PlotStyles;
 using System;
@@ -197,7 +198,40 @@ namespace ImgAnalyzer
 
         }
 
+        public static double[,] PerformCalculation(ICalculation2D calculation)
+        {
 
+            ImageProcessor_2D proc_instance = new ImageProcessor_2D();
+            proc_instance.PerformCalculationAsync(calculation);
+            return proc_instance.dataF;
+
+        }
+
+
+        protected async void PerformCalculationAsync(ICalculation2D calculation)
+        {
+            dataF = new double[calculation.Width, calculation.Height];
+
+            await Task.Run(() =>
+            {
+                lock (dataF)
+                {
+                    Parallel.For(0, calculation.Width,
+                        (int i) =>
+                        {
+                            for (int j = 0; j < calculation.Height; j++)
+                            {
+                                dataF[i, j] = calculation.Measure(i,j);
+                            }
+                        }
+                        );
+                }
+            });
+
+
+
+
+        }
 
 
     }

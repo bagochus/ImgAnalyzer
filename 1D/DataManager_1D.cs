@@ -186,6 +186,23 @@ namespace ImgAnalyzer
             return polys;
         }
 
+        public List<Point[]> GetPolysCT(ImageBatch imageBatch)
+        {
+            List<Point[]> polys = new List<Point[]>();
+            for (int i = 0; i < dataContainers.Count; i++)
+            {
+                if (dataContainers[i].measurment == null) continue;
+                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment is PolygonMeasurmentCT)
+                {
+                    IMeasurment ms = dataContainers[i].measurment;
+                    Point[] pts = (ms as PolygonMeasurmentCT).PointsPhotoInt;
+                    polys.Add(pts);
+                }
+            }
+            return polys;
+        }
+
         public List<string> GetPolyNames(ImageBatch imageBatch)
         {
             List<string> names = new List<string>();
@@ -197,6 +214,24 @@ namespace ImgAnalyzer
                 {
                     IMeasurment ms = dataContainers[i].measurment;
                     Point[] pts = (ms as PolygonMeasurment).points;
+                    names.Add(dataContainers[i].Name);
+                }
+            }
+            return names;
+
+
+        }
+
+        public List<string> GetPolyCTNames(ImageBatch imageBatch)
+        {
+            List<string> names = new List<string>();
+            for (int i = 0; i < dataContainers.Count; i++)
+            {
+                if (dataContainers[i].measurment == null) continue;
+                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment is PolygonMeasurmentCT)
+                {
+                    IMeasurment ms = dataContainers[i].measurment;
                     names.Add(dataContainers[i].Name);
                 }
             }
@@ -351,7 +386,7 @@ namespace ImgAnalyzer
                 var options = new ParallelOptions
                 {
                     MaxDegreeOfParallelism = Environment.ProcessorCount // Оптимальное кол-во потоков
-                };
+                }; 
                 await Task.Run(() =>
                 {
                     Parallel.For(0, count, work);
