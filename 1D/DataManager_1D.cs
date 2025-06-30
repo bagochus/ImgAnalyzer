@@ -90,7 +90,8 @@ namespace ImgAnalyzer
             {
                 if (b == batch) continue;
                 PointMeasurmentCT pt_ct_copy = new PointMeasurmentCT();
-                pt_ct_copy.BindImageStack(batch);
+                pt_ct_copy.Name = pt_ct.Name;
+                pt_ct_copy.BindImageStack(b);
                 pt_ct_copy.PointFrame = point_frame;
                 dataContainers.Add(new DataContainer(pt_ct_copy, b));
             }

@@ -2,6 +2,7 @@
 using ImgAnalyzer.DialogForms;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -12,6 +13,9 @@ namespace ImgAnalyzer._2D
     {
 
         public static BindingList<IContainer_2D> containers = new BindingList<IContainer_2D>();
+        public static int workToBeDone = 0;
+        public static int workDone = 0;
+        public static IProgress<int> progress = new Progress<int>();
 
         public static void ShowMainForm()
         {
@@ -41,12 +45,13 @@ namespace ImgAnalyzer._2D
 
 
 
-        public static void AddMeasurment()
+        public static async void AddMeasurment()
         {
             AddMeasurment_2D addForm = new AddMeasurment_2D();
             addForm.ShowDialog();
             if (addForm.measurments.Count == 0) return;
-            foreach (var m in addForm.measurments) m.ProcessMeasurment();
+            foreach (var m in addForm.measurments) 
+                await m.ProcessMeasurment();
         }
 
         public static void PlotMap(int[] indicies)
@@ -67,16 +72,30 @@ namespace ImgAnalyzer._2D
                 MessageBox.Show(calculation.ErrorMessage);
                 return;
             }
-            double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);
-            var dc = new Container_2D_double(datafloat);
-            dc.Name = calculation.ToString();
-            dc.ImageGroup = "X";
-            DataManager_2D.containers.Add(dc);
+            if (calculation.PixByPixCalculation)
+            {
+                double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);
+                var dc = new Container_2D_double(datafloat);
+                dc.Name = calculation.ToString();
+                dc.ImageGroup = "X";
+                DataManager_2D.containers.Add(dc);
+
+            }
+
 
 
 
         }
 
+        public static void CalculateFullCT()
+        {
+            foreach (var ib in ImageManager.Stacks)
+            {
+                ib?.coordinateTransformation?.CalculateFullField();
+            }
+
+
+        }
 
 
 

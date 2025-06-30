@@ -141,47 +141,6 @@ namespace ImgAnalyzer
         }
 
 
-/*
-        private void UpdateImageDisplay()
-        {
-        
-
-            if (originalImage == null) return;
-
-            // Calculate new size
-            int newWidth = (int)(originalImage.Width * zoomFactor);
-            int newHeight = (int)(originalImage.Height * zoomFactor);
-
-            // Create a temporary bitmap for zoomed image
-
-            if (imageRescaled)
-            scaledImage = new Bitmap(newWidth, newHeight);
-
-            Bitmap shiftedImage = new Bitmap(scaledImage);
-
-            if (imageRescaled)
-            {
-                using (Graphics g = Graphics.FromImage(scaledImage))
-                {
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
-                    g.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-                    imageRescaled = false;
-                }
-            }
-            using (Graphics g = Graphics.FromImage(shiftedImage))
-            {
-                g.DrawImage(scaledImage, imagePosition.X, imagePosition.Y);
-                DrawOverlays(g);
-            }
-
-
-
-
-            pictureBox1.Image = shiftedImage;
-
-
-        }*/
-
 
         #region Orerlays
         private void DrawOverlays(Graphics g)
@@ -638,5 +597,9 @@ namespace ImgAnalyzer
         }
         #endregion
 
+        private void checkBox_allch_act_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -13,8 +13,8 @@ namespace ImgAnalyzer._2D
     {
         int Width { get; }
         int Height { get; }
-        
 
+        bool PixByPixCalculation {  get; }
         string Description { get; } 
         double[] SingleValueParameters { get; set; }
         string[] SingleValueNames { get; }

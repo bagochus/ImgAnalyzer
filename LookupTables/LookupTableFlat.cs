@@ -52,8 +52,8 @@ namespace ImgAnalyzer.LookupTables
 
         public LookupTableFlat(MainPresenter processor)
         {
-            measurePolygon = processor.MeasurePolygon;
-            measureLine = processor.MeasureLine;
+           // measurePolygon = processor.MeasurePolygon;
+            //measureLine = processor.MeasureLine;
 
 
         }

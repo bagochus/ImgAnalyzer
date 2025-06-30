@@ -1,23 +1,28 @@
-﻿using ScottPlot.Rendering.RenderActions;
+﻿using ImgAnalyzer._2D;
+//using ClipperLib;
+using NetTopologySuite.Geometries;
+using OpenTK;
+using ScottPlot.Plottables;
+using ScottPlot.Rendering.RenderActions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 //using System.Numerics;
 using System.Runtime.Remoting.Messaging;
-using OpenTK;
-using Vector2 = OpenTK.Vector2;
-//using ClipperLib;
-using NetTopologySuite.Geometries;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
 using Point = System.Drawing.Point;
-using ScottPlot.Plottables;
 using Polygon = NetTopologySuite.Geometries.Polygon;
+using Vector2 = OpenTK.Vector2;
 
 
 namespace ImgAnalyzer
 {
+    
 
     public class PixelWeight
     {
@@ -129,14 +134,14 @@ namespace ImgAnalyzer
           Y направлена вниз 
           X направлена вправо
         */
+        public const string ct_header = "FullFieldMatrix";
 
 
 
-
-        public Point point_BL {  get; set; }
-        public Point point_TL { get; set; }
-        public Point point_TR { get; set; }
-        public Point point_BR {  get; set; }
+        public PointF point_BL {  get; set; }
+        public PointF point_TL { get; set; }
+        public PointF point_TR { get; set; }
+        public PointF point_BR {  get; set; }
         private int width = 1024;
         public int frame_width {
             get { return width; }
@@ -156,6 +161,18 @@ namespace ImgAnalyzer
             }
         }
         public double k_area { get { return ka; } }
+
+        public PixelWeightMatrix[,] FullFiedTransformation { 
+            get 
+            {   if (!fullFieldCalculated) calculateFullField();
+                return fullField;
+            }
+        }
+        private PixelWeightMatrix[,] fullField;
+        public bool FullFieldCalculated { get { return fullFieldCalculated; } }
+        private bool fullFieldCalculated = false;
+
+
 
         public Point[] Polygon { get { return polygon(); } }
 
@@ -191,8 +208,20 @@ namespace ImgAnalyzer
             CalcTranslationVectors();
         }
 
+        public CoordinateTransformation(PointF[] points)
+        {
+            if (points.Length < 3) throw new ArgumentException();
+            point_BL = points[0];
+            point_TL = points[1];
+            point_TR = points[2];
+            CalcTranslationVectors();
+        }
+
+
         private void CalcTranslationVectors()
         {
+            fullFieldCalculated = false;
+
             float Xxt = point_TR.X - point_TL.X;
             float Xyt = point_TR.Y - point_TL.Y;
 
@@ -212,7 +241,7 @@ namespace ImgAnalyzer
             yt = new OpenTK.Vector2(Yxt, Yyt);
 
             // 1 / area of frame pixel in photo system
-            ka = 1 / (xt.Length * Yyt);
+            ka = 1 / Math.Abs(Xxt * Yyt - Xyt * Yxt);
 
             BackMatrix = new Matrix2(Xxt, Xyt, Yxt, Yyt);
             BackMatrix.Invert();
@@ -222,23 +251,22 @@ namespace ImgAnalyzer
 
         }
 
+        private Point ConvertToPoint(PointF point)
+        {
+            return new Point((int)point.X, (int)point.Y);
+        }
 
         private Point[] polygon()
         {
             Point[] points = new Point[4];
-            points[0] = point_TL;
-            points[1] = point_TR;
-            points[2] = point_BR;
-            points[3] = point_BL;
+            points[0] = ConvertToPoint(point_TL);
+            points[1] = ConvertToPoint(point_TR);
+            points[2] = ConvertToPoint(point_BR);
+            points[3] = ConvertToPoint(point_BL);
             return points;
 
         }
         
-
-        
-
-
-
 
 
         //from frame system to photo system
@@ -356,6 +384,104 @@ namespace ImgAnalyzer
             LinearRing lr = new LinearRing(coords);
             Polygon poly = new Polygon(lr);
             return poly;
+        }
+
+        private async void calculateFullField()
+        {
+            fullField = new PixelWeightMatrix[width, height];
+
+            await Task.Run(() =>
+            {
+                lock (fullField)
+                {
+                    DataManager_2D.workToBeDone += width;
+                    Parallel.For(0, width, (int i) =>
+
+                    {
+                        for (int j = 0; j < height; j++)
+                        {
+                            fullField[i, j] = GeneratePWM_point(new PointF(i, j));
+
+                        }
+                        DataManager_2D.progress.Report(1);
+                    });
+
+                }
+                fullFieldCalculated = true;
+            });
+        }
+
+        public void CalculateFullField()
+        {
+            if (fullFieldCalculated) return;
+            calculateFullField();
+
+        }
+
+        public void SaveFullField(string filename)
+        {
+            if (!fullFieldCalculated) return;
+            using (var stream = new FileStream(filename, FileMode.Create))
+            using (var writer = new BinaryWriter(stream))
+            {
+                writer.Write(ct_header);
+                writer.Write(width);
+                writer.Write(height);
+                for (int i = 0; i < fullField.GetLength(0); i++)
+                    for (int j = 0; j < fullField.GetLength(1); j++)
+                    {
+                        writer.Write(fullField[i, j].Count);
+                        foreach (var pw in fullField[i,j].weights)
+                        {
+                            writer.Write(pw.x);
+                            writer.Write(pw.y);
+                            writer.Write(pw.weight);
+                        }
+
+                    }
+            }
+
+        }
+
+        public void LoadFullField(string filename)
+        {
+            using (var stream = new FileStream(filename, FileMode.Open))
+            using (var reader = new BinaryReader(stream))
+            {
+                string header = reader.ReadString();
+                if (header != ct_header)
+                {
+                    MessageBox.Show("Файл не содержит матрицу преобразований");
+                    return;
+                }
+                int file_width = reader.ReadInt32();
+                int file_height = reader.ReadInt32();
+                if (file_width != width || file_height != height)
+                {
+                    MessageBox.Show("Размер матрицы некорректен");
+                    return;
+                }
+                fullField = new PixelWeightMatrix[width,height];
+
+
+                for (int i = 0; i < width; i++)
+                {
+                    for (int j = 0; j < height; j++)
+                    {
+                        var pw = new PixelWeightMatrix();
+                        int count = reader.ReadInt32();
+                        for (int k = 0; k < count; k++)
+                        {
+                            int x = reader.ReadInt32();
+                            int y = reader.ReadInt32();
+                            double w = reader.ReadDouble();
+                            pw.weights.Add(new PixelWeight(x, y, w));
+                        }
+                        fullField[i, j] = pw;
+                    }
+                }
+                fullFieldCalculated = true;
+            }
         }
 
 

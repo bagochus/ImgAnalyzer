@@ -30,12 +30,12 @@ namespace ImgAnalyzer._2D
 
         }
 
-        public void ProcessMeasurment()
+        public async Task ProcessMeasurment()
         {
             if (Type == Measurment2DTypes.Minimum ||
                 Type == Measurment2DTypes.Maximum ||
                 Type == Measurment2DTypes.Amplitude )
-                ProcessIntValues();
+                await Task.Run(()=> ProcessIntValues());
 
             if (CalculateInFrame) name += "*";
             name += ImageManager.GetIndexLabel(Batch);

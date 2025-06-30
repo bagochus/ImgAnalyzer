@@ -1,6 +1,6 @@
 ﻿namespace ImgAnalyzer
 {
-    partial class HystogrammForm
+    partial class HistogramForm
     {
         /// <summary>
         /// Required designer variable.
@@ -41,14 +41,14 @@
             this.panel1.Size = new System.Drawing.Size(776, 426);
             this.panel1.TabIndex = 0;
             // 
-            // HystogrammForm
+            // HistogramForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.panel1);
-            this.Name = "HystogrammForm";
-            this.Text = "HystogrammForm";
+            this.Name = "HistogramForm";
+            this.Text = "Histogram";
             this.ResumeLayout(false);
 
         }

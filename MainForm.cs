@@ -1,15 +1,18 @@
-﻿using System;
+﻿using ImgAnalyzer._2D;
+using ImgAnalyzer.DialogForms;
+using Microsoft.VisualBasic;
+using ScottPlot.PlotStyles;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ImgAnalyzer._2D;
-using ImgAnalyzer.DialogForms;
 
 namespace ImgAnalyzer
 {
@@ -92,9 +95,6 @@ namespace ImgAnalyzer
                     imageViewForm.LoadImage(filename);
                     imageViewForm.Show();
 
-                    //test2006
-                    //SmoothImageViewer form = new SmoothImageViewer(ImageManager.Batch(batch_index).filenames[0]);
-                    //form.Show();
 
                 }
             }
@@ -104,6 +104,37 @@ namespace ImgAnalyzer
         private void button_2d_Click(object sender, EventArgs e)
         {
             DataManager_2D.ShowMainForm();
+        }
+
+        private void button_test_Click(object sender, EventArgs e)
+        {
+            int a;
+            try
+            {
+                a = DB_Manager.SaveImageBatch(ImageManager.Batch_A());
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+
+
+        }
+
+        private void button_test2_Click(object sender, EventArgs e)
+        {
+            ImageManager.Stacks[0] = DB_Manager.LoadImageBatch(4);
+        }
+
+        private void сохранитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string userInput = Interaction.InputBox("Введите имя профиля:",
+               "Сохрание профиля работы",
+               "profile");
+            presenter.SaveProfile(userInput);
+
+        }
+
+        private void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            presenter.LoadProfile();
         }
     }
 }

@@ -13,6 +13,9 @@ namespace ImgAnalyzer._2D
         int Width { get; }
         int Height { get; }
 
+        void SaveToFile(string filname);
+        
+
 
     }
 }

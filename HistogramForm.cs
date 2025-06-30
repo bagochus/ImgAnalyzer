@@ -12,11 +12,11 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer
 {
-    public partial class HystogrammForm : Form
+    public partial class HistogramForm : Form
     {
         readonly FormsPlot FormsPlot1 = new FormsPlot() { Dock = DockStyle.Fill };
 
-        public HystogrammForm(string Header, double[] xdata, int[] ydata)
+        public HistogramForm(string Header, double[] xdata, int[] ydata)
         {
             InitializeComponent();
             panel1.Controls.Add(FormsPlot1);

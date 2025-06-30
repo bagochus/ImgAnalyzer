@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D
 {
-    public class Container_2D : IContainer_2D
+    public abstract class Container_2D : IContainer_2D
     {
+        protected const string header_double = "Container_Double:";
+        protected const string header_int = "Container_Int:";
+
         public string Name { get; set ; }
         public string ImageGroup { get; set; }
         public int Width {get { return width; } }
@@ -15,6 +20,46 @@ namespace ImgAnalyzer._2D
 
         protected int width;
         protected int height;
+        public abstract void SaveToFile(string filename);
+
+        public static IContainer_2D ReadFromFile(string filename)
+        {
+            IContainer_2D container;
+            using (var stream = new FileStream(filename, FileMode.Open))
+            using (var reader = new BinaryReader(stream))
+            { 
+                string header = reader.ReadString();
+                int width = reader.ReadInt32();
+                int height = reader.ReadInt32();
+                if (header.Contains(header_double))
+                {
+                    container = new Container_2D_double(width, height);
+                    container.Name = header.Replace(header_double, "");
+                    for (int i = 0; i < width; i++)
+                    {
+                        for (int j = 0; j < height; j++)
+                        {
+                            (container as Container_2D_double).data[i, j] = reader.ReadDouble();
+                        }
+                    }
+                }
+                else if (header.Contains(header_int))
+                {
+                    container = new Container_2D_int(width, height);
+                    container.Name = header.Replace(header_int, "");
+                    for (int i = 0; i < width; i++)
+                    {
+                        for (int j = 0; j < height; j++)
+                        {
+                            (container as Container_2D_int).data[i, j] = reader.ReadInt32();
+                        }
+                    }
+                }
+                else throw new Exception("Error reading file");
+            }
+            return container;
+        }
+
 
 
 

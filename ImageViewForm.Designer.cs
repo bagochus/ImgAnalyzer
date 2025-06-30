@@ -39,10 +39,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.button_addpointct = new System.Windows.Forms.Button();
             this.button_addpolyct = new System.Windows.Forms.Button();
-            this.checkBox_allch_act = new System.Windows.Forms.CheckBox();
             this.checkBox_overlays = new System.Windows.Forms.CheckBox();
             this.button_reset = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -166,17 +164,6 @@
             this.button_addpolyct.UseVisualStyleBackColor = true;
             this.button_addpolyct.Click += new System.EventHandler(this.button_polyframe_Click);
             // 
-            // checkBox_allch_act
-            // 
-            this.checkBox_allch_act.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox_allch_act.AutoSize = true;
-            this.checkBox_allch_act.Location = new System.Drawing.Point(873, 364);
-            this.checkBox_allch_act.Name = "checkBox_allch_act";
-            this.checkBox_allch_act.Size = new System.Drawing.Size(97, 30);
-            this.checkBox_allch_act.TabIndex = 11;
-            this.checkBox_allch_act.Text = "Добавить для\r\n всех каналов";
-            this.checkBox_allch_act.UseVisualStyleBackColor = true;
-            // 
             // checkBox_overlays
             // 
             this.checkBox_overlays.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -202,24 +189,13 @@
             this.button_reset.UseVisualStyleBackColor = true;
             this.button_reset.Click += new System.EventHandler(this.button_reset_Click);
             // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(324, 635);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "label3";
-            // 
             // ImageViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1028, 657);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.button_reset);
             this.Controls.Add(this.checkBox_overlays);
-            this.Controls.Add(this.checkBox_allch_act);
             this.Controls.Add(this.button_addpolyct);
             this.Controls.Add(this.button_addpointct);
             this.Controls.Add(this.label2);
@@ -254,9 +230,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button_addpointct;
         private System.Windows.Forms.Button button_addpolyct;
-        private System.Windows.Forms.CheckBox checkBox_allch_act;
         private System.Windows.Forms.CheckBox checkBox_overlays;
         private System.Windows.Forms.Button button_reset;
-        private System.Windows.Forms.Label label3;
     }
 }

@@ -22,6 +22,10 @@ namespace ImgAnalyzer
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            DB_Manager.InitializeDatabase();
+
+
             Application.Run(new MainForm());
         }
     }

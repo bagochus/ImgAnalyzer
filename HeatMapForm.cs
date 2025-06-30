@@ -38,15 +38,14 @@ namespace ImgAnalyzer
 
 
         //----------Image management--------------------
-        private Image originalImage;
-        private Image scaledImage;
-        private float zoomFactor = 1.0f;
 
+
+        private Bitmap displayImage;
         private PointF imagePosition = new PointF(0, 0);
-        private bool imageRescaled = true;
+        private Point lastMousePos;
+        private float zoomFactor = 1.0f;
+        private bool isPanning;
 
-        private Point dragStart;
-        private bool isDragging = false;
 
         //--------------------------------------------------
         private bool slice_x= false;
@@ -67,11 +66,13 @@ namespace ImgAnalyzer
             {
                 UseDoubleData = true;
                 dataF = (container as Container_2D_double).data;
+                displayImage = new Bitmap(dataF.GetLength(0), dataF.GetLength(1));
             }
             else
             {
                 {
                     data = (container as Container_2D_int).data;
+                    displayImage = new Bitmap(data.GetLength(0), data.GetLength(1));
                 }
             }
             Text = "Heatmap: " + container.Name;
@@ -83,7 +84,7 @@ namespace ImgAnalyzer
 
             GenerateScaleBarImage();
             SetFields();
-            UpdateImageDisplay();
+
 
 
 
@@ -92,43 +93,25 @@ namespace ImgAnalyzer
             pictureBox1.MouseUp += PictureBox_MouseUp;
             pictureBox1.MouseClick += PictureBox_MouseClick;
             pictureBox1.MouseWheel += PictureBox_MouseWheel;
+            pictureBox1.Paint += pictureBox1_Paint;
+            this.DoubleBuffered = true;
 
-        }
-
-        private void ZoomImage(float factor)
-        {
-            zoomFactor *= factor;
-            if (pictureBox1.Image.Width < pictureBox1.Width) imagePosition.X = 0;
-            if (pictureBox1.Image.Height < pictureBox1.Height) imagePosition.Y = 0;
-            imageRescaled = true;
-
-            UpdateImageDisplay();
-        }
-        private void UpdateImageDisplay()
-        {
-
-            if (originalImage == null) return;
-
-            // Calculate new size
-            int newWidth = (int)(originalImage.Width * zoomFactor);
-            int newHeight = (int)(originalImage.Height * zoomFactor);
-
-            // Create a temporary bitmap for zoomed image
-
-            scaledImage = new Bitmap(newWidth, newHeight);
-
-            using (Graphics g = Graphics.FromImage(scaledImage))
+            try
             {
+              
+                //displayImage = new Bitmap(originalImage);
 
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(originalImage, imagePosition.X, imagePosition.Y, newWidth, newHeight);
-                imageRescaled = false;
             }
-            pictureBox1.Image = scaledImage;
-
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading image: {ex.Message}", "Error",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
 
         }
+
+
 
 
 
@@ -211,7 +194,7 @@ namespace ImgAnalyzer
                 GenerateThermalImage();
             }
             GenerateScaleBarImage();
-            UpdateImageDisplay();
+            pictureBox1.Invalidate();
 
         }
 
@@ -243,9 +226,10 @@ namespace ImgAnalyzer
                 MinInt = MinInt_abs;
                 GenerateThermalImage();
             }
+            SetFields();
                 zoomFactor = 1.0f;
             imagePosition = new PointF(0, 0);
-            UpdateImageDisplay();
+            pictureBox1.Invalidate();
             //pictureBox1.Location = Point.Empty;
 
         }
@@ -272,7 +256,7 @@ namespace ImgAnalyzer
                 }
             }
 
-            HystogrammForm form = new HystogrammForm("Hystogram of " + containerName,xdata,ydata);
+            HistogramForm form = new HistogramForm("Hystogram of " + containerName,xdata,ydata);
             form.Show();
         }
         private void PlotHystogramInt()
@@ -297,7 +281,7 @@ namespace ImgAnalyzer
                 }
             }
 
-            HystogrammForm form = new HystogrammForm("Hystogram of " + containerName, xdata, ydata);
+            HistogramForm form = new HistogramForm("Hystogram of " + containerName, xdata, ydata);
             form.Show();    
         }
 
@@ -372,7 +356,7 @@ namespace ImgAnalyzer
             int width = dataF.GetLength(0);
             int height = dataF.GetLength(1);
 
-            thermalImage = new Bitmap(width, height);
+            //thermalImage = new Bitmap(width, height);
 
 
             // Создаем изображение
@@ -382,11 +366,11 @@ namespace ImgAnalyzer
                 {
                     double value = dataF[x, y];
                     Color pixelColor = GetThermalColor(value, MinDouble, MaxDouble);
-                    thermalImage.SetPixel(x, y, pixelColor);
+                    displayImage.SetPixel(x, y, pixelColor);
                 }
             }
 
-            originalImage = thermalImage;
+            //displayImage = thermalImage;
         }
 
         private void GenerateThermalImage()
@@ -394,7 +378,7 @@ namespace ImgAnalyzer
             int width = data.GetLength(0);
             int height = data.GetLength(1);
 
-            thermalImage = new Bitmap(width, height);
+            //thermalImage = new Bitmap(width, height);
 
 
             // Создаем изображение
@@ -404,11 +388,12 @@ namespace ImgAnalyzer
                 {
                     int value = data[x, y];
                     Color pixelColor = GetThermalColor(value, MinInt, MaxInt);
-                    thermalImage.SetPixel(x, y, pixelColor);
+                    displayImage.SetPixel(x, y, pixelColor);
                 }
             }
 
-            originalImage = thermalImage;
+            //displayImage = thermalImage;
+            
         }
 
         private void GenerateScaleBarImage()
@@ -508,10 +493,11 @@ namespace ImgAnalyzer
 
         private void PictureBox_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (Control.ModifierKeys == Keys.Control)
+            if (ModifierKeys == Keys.Control)
             {
                 float zoom = e.Delta > 0 ? 1.1f : 1 / 1.1f;
-                ZoomImage(zoom);
+                zoomFactor *= zoom;
+                pictureBox1.Invalidate();
             }
         }
 
@@ -519,19 +505,23 @@ namespace ImgAnalyzer
         {
             if (e.Button == MouseButtons.Middle)
             {
-                pictureBox1.Cursor = Cursors.Hand;
-                dragStart = e.Location;
-                isDragging = true;
+                isPanning = true;
+                lastMousePos = e.Location;
+                Cursor = Cursors.Hand;
             }
         }
 
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isDragging)
+            if (isPanning)
             {
-                imagePosition.X = e.X - dragStart.X;
-                imagePosition.Y = e.Y - dragStart.Y;
-                UpdateImageDisplay();
+                // Плавное перемещение с коэффициентом сглаживания
+                float smoothFactor = 0.7f;
+                imagePosition.X += (e.X - lastMousePos.X) * smoothFactor;
+                imagePosition.Y += (e.Y - lastMousePos.Y) * smoothFactor;
+
+                lastMousePos = e.Location;
+                pictureBox1.Invalidate();
             }
 
 
@@ -541,13 +531,14 @@ namespace ImgAnalyzer
         {
             if (e.Button == MouseButtons.Middle)
             {
-                isDragging = false;
+                isPanning = false;
+                Cursor = Cursors.Default;
             }
         }
 
         private void PictureBox_MouseClick(object sender, MouseEventArgs e)
         {
-            if (originalImage == null || pictureBox1.Image == null) return;
+            if (displayImage == null ) return;
             if (e.Button == MouseButtons.Left)
             {
                 // Calculate the actual image position considering zoom and pan
@@ -555,12 +546,12 @@ namespace ImgAnalyzer
                 float relativeY = (e.Y - imagePosition.Y) / zoomFactor;
 
                 // Ensure coordinates are within image bounds
-                int imageX = (int)Math.Max(0, Math.Min(originalImage.Width - 1, relativeX));
-                int imageY = (int)Math.Max(0, Math.Min(originalImage.Height - 1, relativeY));
+                int imageX = (int)Math.Max(0, Math.Min(displayImage.Width - 1, relativeX));
+                int imageY = (int)Math.Max(0, Math.Min(displayImage.Height - 1, relativeY));
                 //ovelay_points.Add(new Point(imageX,imageY));
                 ImageClick(imageX, imageY);
 
-                UpdateImageDisplay();
+                pictureBox1.Invalidate();
 
 
 
@@ -573,6 +564,20 @@ namespace ImgAnalyzer
         {
             UpdateLimits();
         }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            if (displayImage == null) return;
+
+            // Отрисовка с учетом позиции и масштаба
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            e.Graphics.DrawImage(displayImage, imagePosition.X, imagePosition.Y,
+                               displayImage.Width * zoomFactor,
+                               displayImage.Height * zoomFactor);
+            //DrawOverlays(e.Graphics);
+
+        }
+
 
         private void сброситьИзображениеToolStripMenuItem_Click(object sender, EventArgs e)
         {

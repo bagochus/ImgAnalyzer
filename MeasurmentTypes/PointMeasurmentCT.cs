@@ -15,7 +15,7 @@ namespace ImgAnalyzer.MeasurmentTypes
         PixelWeightMatrix _weightMatrix; 
 
         public PointF PointFrame {
-            get { return PointFrame; }
+            get { return pointFrame; }
             set 
             {
                 pointFrame = value;

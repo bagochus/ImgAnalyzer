@@ -36,6 +36,10 @@ namespace ImgAnalyzer._2D
         public string ErrorMessage { get; }
         protected string errorMessage = "";
 
+        public bool PixByPixCalculation { get { return pixbypix; } }
+        private bool pixbypix = true;
+
+
         public abstract double Measure(int x, int y);
 
         public bool Check()
@@ -90,7 +94,7 @@ namespace ImgAnalyzer._2D
                 width = this.SeriesParameters[0].Width;
                 height = this.SeriesParameters[0].Height;
             }
-
+            if (containerNames.Length !=0 )
             foreach (IContainer_2D container in this.ContainerParameters) 
             {
                 if (container.Width != width || container.Height != height)

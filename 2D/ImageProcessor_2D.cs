@@ -33,11 +33,16 @@ namespace ImgAnalyzer
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
                 for (int line = 0; line < height; line++)
                 {
-                   
+
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
-                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    if (batch.BitsPerSample == 16)
+                        System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    else
+                    {
+                        for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+                    }
                     for (int pixel = 0; pixel < width; pixel++)
                     {
                         ushort pixel_value = pixelData[pixel];
@@ -75,11 +80,16 @@ namespace ImgAnalyzer
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
+                    if (batch.BitsPerSample == 16)
                     System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    else
+                    {
+                        for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+                    }
                     for (int pixel = 0; pixel < width; pixel++)
                     {
                         ushort pixel_value = pixelData[pixel];
-                        if (image_counter == 0)
+                        if (image_counter == 16)
                         {
                             max_values[pixel, line] = pixel_value;
                         }
@@ -107,13 +117,18 @@ namespace ImgAnalyzer
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
                 for (int line = 0; line < height; line++)
                 {
-                    
+
 
 
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
-                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    if (batch.BitsPerSample == 16)
+                        System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                    else
+                    {
+                        for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+                    }
                     for (int pixel = 0; pixel < width; pixel++)
                     {
                         ushort pixel_value = pixelData[pixel];
@@ -169,17 +184,23 @@ namespace ImgAnalyzer
         protected async void FitDataAsync(int[,] data, CoordinateTransformation ct)
         {
             dataF = new double[ct.frame_width, ct.frame_height];
-
+            ct.CalculateFullField();
+            
                 await Task.Run(() =>
                 {
+
+                    DataManager_2D.workToBeDone += ct.frame_width;
                     lock (dataF)
                     {
+
+                        while (!ct.FullFieldCalculated) { }
                         Parallel.For(0, ct.frame_width,
                             (int i) =>
                             {
+
                                 for (int j = 0; j < ct.frame_height; j++)
                                 {
-                                    var pw = ct.GeneratePWM_point(new PointF(i, j));
+                                    var pw = ct.FullFiedTransformation[i, j];
                                     double tempvalue = 0;
                                     for (int k = 0; k < pw.Count; k++)
                                     {
@@ -189,14 +210,23 @@ namespace ImgAnalyzer
                                     dataF[i, j] = tempvalue;
 
                                 }
+                                DataManager_2D.progress.Report(1);
                             }
                             );
+
+
+
+
                     }
                 });
             
 
 
         }
+
+
+
+
 
         public static double[,] PerformCalculation(ICalculation2D calculation)
         {
