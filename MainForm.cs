@@ -132,9 +132,19 @@ namespace ImgAnalyzer
 
         }
 
-        private void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            presenter.LoadProfile();
+            this.Cursor = Cursors.WaitCursor;
+            await Task.Run(() =>
+            {
+                presenter.LoadProfile();
+            });
+            this.Cursor = Cursors.Default;
+        }
+
+        private void загрузитьТолькоАктивныеОбластиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            presenter.LoadCT();
         }
     }
 }

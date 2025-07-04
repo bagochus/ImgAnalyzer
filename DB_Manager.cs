@@ -38,7 +38,7 @@ namespace ImgAnalyzer
                 CREATE TABLE IF NOT EXISTS Containers (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     filename TEXT NOT NULL,
-                    image_group TEXT NOT NULL
+                    image_group TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS Transformations (
@@ -161,6 +161,7 @@ namespace ImgAnalyzer
                     }
                 }
 
+                DataManager_2D.ClearContainers();
                 using (SQLiteCommand command = new SQLiteCommand(sql2, connection))
                 {
                     command.Parameters.AddWithValue("@session_id", session_id);
@@ -180,6 +181,48 @@ namespace ImgAnalyzer
 
         }
 
+        public static void LoadCT(string profilename)
+        {
+            int[] batch_id = { 0,0,0};
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string sql = "SELECT * FROM UserSessions WHERE Name = @Name";
+                using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@Name", profilename);
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            batch_id[0] = Convert.ToInt32(reader["BatchA_id"]);
+                            batch_id[1] = Convert.ToInt32(reader["BatchB_id"]);
+                            batch_id[2] = Convert.ToInt32(reader["BatchC_id"]);
+                        }
+                    }
+                }
+
+                string sql2 = "SELECT * FROM ImageBatches WHERE Id = @Id";
+                for (int i = 0; i < batch_id.Length; i++)
+                {
+                    if (batch_id[i] == 0) continue;
+                    using (SQLiteCommand command = new SQLiteCommand(sql2, connection))
+                    {
+                        command.Parameters.AddWithValue("@Id", batch_id[i]);
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                int ct_id = Convert.ToInt32(reader["Transform_id"]);
+                                if (ct_id != 0) ImageManager.Batch(i).coordinateTransformation = LoadTransformation(ct_id);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
 
         public static int SaveTransformation(CoordinateTransformation ct)
         {
@@ -188,10 +231,15 @@ namespace ImgAnalyzer
                 string filename = "";
 
                 connection.Open();
-                if (ct.FullFieldCalculated)
+                if (ct.FullFieldCalculated || ct.FulCTFilename != "")
                 {
+                    if (ct.FulCTFilename != "") filename = ct.FulCTFilename;
+                    else
+                    {
                     filename = "transformation/fullct_" + DateTime.Now.Ticks + ".bin";
                     ct.SaveFullField(filename);
+                    }
+
                 }
 
 
@@ -249,7 +297,7 @@ namespace ImgAnalyzer
 
                             string filename = Convert.ToString(reader["full_ct_filename"]);
                             if (filename != null && filename != "")
-                                try { ct.LoadFullField(filename); }
+                                try { ct.FulCTFilename = filename; }
                                 catch { }
                                 
                         }
@@ -338,12 +386,19 @@ namespace ImgAnalyzer
 
         public static int SaveContainer(IContainer_2D container, int session_id)
         {
+            string filename;
 
-            string filename = "containers/container_" + DateTime.Now.Ticks + ".bin";
-            container.SaveToFile(filename);
+            if (container.Filename == "")
+            {
+                filename = "containers/container_" + DateTime.Now.Ticks + ".bin";
+                container.SaveToFile(filename);
+            }
+            else
+            {
+                filename = container.Filename;
+            }             
+
             int output_id = 0;
-
-
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
@@ -434,6 +489,9 @@ namespace ImgAnalyzer
 
             return names;
         }
+
+
+
 
 
 

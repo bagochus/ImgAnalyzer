@@ -37,6 +37,7 @@
             this.профильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,7 +101,8 @@
             // 
             this.профильToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.сохранитьПрофильToolStripMenuItem,
-            this.загрузитьПрофильToolStripMenuItem});
+            this.загрузитьПрофильToolStripMenuItem,
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem});
             this.профильToolStripMenuItem.Name = "профильToolStripMenuItem";
             this.профильToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
             this.профильToolStripMenuItem.Text = "Профиль";
@@ -108,16 +110,23 @@
             // сохранитьПрофильToolStripMenuItem
             // 
             this.сохранитьПрофильToolStripMenuItem.Name = "сохранитьПрофильToolStripMenuItem";
-            this.сохранитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.сохранитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(272, 22);
             this.сохранитьПрофильToolStripMenuItem.Text = "Сохранить профиль";
             this.сохранитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.сохранитьПрофильToolStripMenuItem_Click);
             // 
             // загрузитьПрофильToolStripMenuItem
             // 
             this.загрузитьПрофильToolStripMenuItem.Name = "загрузитьПрофильToolStripMenuItem";
-            this.загрузитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.загрузитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(272, 22);
             this.загрузитьПрофильToolStripMenuItem.Text = "Загрузить профиль";
             this.загрузитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.загрузитьПрофильToolStripMenuItem_Click);
+            // 
+            // загрузитьТолькоАктивныеОбластиToolStripMenuItem
+            // 
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Name = "загрузитьТолькоАктивныеОбластиToolStripMenuItem";
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Size = new System.Drawing.Size(272, 22);
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Text = "Загрузить только активные области";
+            this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Click += new System.EventHandler(this.загрузитьТолькоАктивныеОбластиToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -149,5 +158,6 @@
         private System.Windows.Forms.ToolStripMenuItem профильToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сохранитьПрофильToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem загрузитьПрофильToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem загрузитьТолькоАктивныеОбластиToolStripMenuItem;
     }
 }

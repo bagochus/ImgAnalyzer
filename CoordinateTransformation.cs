@@ -136,7 +136,10 @@ namespace ImgAnalyzer
         */
         public const string ct_header = "FullFieldMatrix";
 
-
+        public string FulCTFilename { 
+            get { return ct_filename; }
+            set { ct_filename = value; }}
+        private string ct_filename= "";
 
         public PointF point_BL {  get; set; }
         public PointF point_TL { get; set; }
@@ -414,13 +417,24 @@ namespace ImgAnalyzer
         public void CalculateFullField()
         {
             if (fullFieldCalculated) return;
-            calculateFullField();
+            if (ct_filename != "" && !fullFieldCalculated)
+            {
+                try
+                {
+                LoadFullField(ct_filename);
+                }
+                catch
+                {
+                    calculateFullField();
+                }
+            }
 
         }
 
         public void SaveFullField(string filename)
         {
             if (!fullFieldCalculated) return;
+            if (filename == ct_filename) return;
             using (var stream = new FileStream(filename, FileMode.Create))
             using (var writer = new BinaryWriter(stream))
             {
@@ -440,6 +454,7 @@ namespace ImgAnalyzer
 
                     }
             }
+            ct_filename = filename;
 
         }
 
@@ -481,6 +496,7 @@ namespace ImgAnalyzer
                     }
                 }
                 fullFieldCalculated = true;
+                ct_filename = filename;
             }
         }
 

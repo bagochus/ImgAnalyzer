@@ -36,6 +36,8 @@
             this.button_plot = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.button1 = new System.Windows.Forms.Button();
+            this.button_save = new System.Windows.Forms.Button();
+            this.button_load = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -81,6 +83,7 @@
             this.button_delete.TabIndex = 3;
             this.button_delete.Text = "Удалить";
             this.button_delete.UseVisualStyleBackColor = true;
+            this.button_delete.Click += new System.EventHandler(this.button_delete_Click);
             // 
             // button_math
             // 
@@ -114,6 +117,7 @@
             // 
             // button1
             // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(498, 157);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(153, 23);
@@ -122,11 +126,35 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // button_save
+            // 
+            this.button_save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_save.Location = new System.Drawing.Point(498, 186);
+            this.button_save.Name = "button_save";
+            this.button_save.Size = new System.Drawing.Size(153, 23);
+            this.button_save.TabIndex = 8;
+            this.button_save.Text = "Сохранить поля";
+            this.button_save.UseVisualStyleBackColor = true;
+            this.button_save.Click += new System.EventHandler(this.button_save_Click);
+            // 
+            // button_load
+            // 
+            this.button_load.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_load.Location = new System.Drawing.Point(498, 215);
+            this.button_load.Name = "button_load";
+            this.button_load.Size = new System.Drawing.Size(153, 23);
+            this.button_load.TabIndex = 9;
+            this.button_load.Text = "Загрузить поля";
+            this.button_load.UseVisualStyleBackColor = true;
+            this.button_load.Click += new System.EventHandler(this.button_load_Click);
+            // 
             // Form_2D
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(663, 456);
+            this.Controls.Add(this.button_load);
+            this.Controls.Add(this.button_save);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.button_plot);
@@ -152,5 +180,7 @@
         private System.Windows.Forms.Button button_plot;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_save;
+        private System.Windows.Forms.Button button_load;
     }
 }

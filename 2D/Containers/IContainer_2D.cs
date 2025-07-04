@@ -13,8 +13,11 @@ namespace ImgAnalyzer._2D
         int Width { get; }
         int Height { get; }
 
-        void SaveToFile(string filname);
-        
+        void SaveToFile(string filename);
+
+        String Filename { get; set; }
+
+        double[,] ddata { get; }
 
 
     }

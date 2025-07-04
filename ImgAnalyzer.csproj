@@ -133,10 +133,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="1D\DataManager_1D.cs" />
+    <Compile Include="2D\Calculations\Acos.cs" />
+    <Compile Include="2D\Calculations\Asin.cs" />
     <Compile Include="2D\Calculations\Calculation2D.cs" />
+    <Compile Include="2D\Calculations\NormalizeMinMax.cs" />
+    <Compile Include="2D\Calculations\Normalize.cs" />
+    <Compile Include="2D\Calculations\PhaseMeasurment3.cs" />
+    <Compile Include="2D\Calculations\PhaseMeasurment2_acos.cs" />
+    <Compile Include="2D\Calculations\PhaseMeasurment2_asin.cs" />
+    <Compile Include="2D\Calculations\PhaseMeasurment2.cs" />
+    <Compile Include="2D\Calculations\PhaseMeasurment1.cs" />
     <Compile Include="2D\Calculations\Scaling.cs" />
     <Compile Include="2D\Calculations\ICalculation2D.cs" />
     <Compile Include="2D\Calculations\Sum.cs" />
+    <Compile Include="2D\Calculations\Threshold.cs" />
     <Compile Include="2D\Containers\Container_2D_double.cs" />
     <Compile Include="2D\Containers\Container_2D.cs" />
     <Compile Include="2D\Containers\Container_2D_int.cs" />
@@ -168,6 +178,12 @@
     </Compile>
     <Compile Include="DialogForms\EditRange.Designer.cs">
       <DependentUpon>EditRange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\OpenedPlotForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\OpenedPlotForm.Designer.cs">
+      <DependentUpon>OpenedPlotForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DialogForms\FormCalculations2D.cs">
       <SubType>Form</SubType>
@@ -258,6 +274,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="1D\Form_1D.resx">
       <DependentUpon>Form_1D.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\OpenedPlotForm.resx">
+      <DependentUpon>OpenedPlotForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\ProfilesForm.resx">
       <DependentUpon>ProfilesForm.cs</DependentUpon>

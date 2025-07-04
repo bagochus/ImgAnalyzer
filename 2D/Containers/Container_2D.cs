@@ -18,8 +18,17 @@ namespace ImgAnalyzer._2D
         public int Width {get { return width; } }
         public int Height { get { return height; } }
 
+
+        public string Filename { get { return filename; } set { filename = value; } }
+        protected string filename = "";
+
+
         protected int width;
         protected int height;
+
+        public double[,] ddata { get { return GetDData(); } }
+        public abstract double[,] GetDData();
+
         public abstract void SaveToFile(string filename);
 
         public static IContainer_2D ReadFromFile(string filename)
@@ -42,6 +51,8 @@ namespace ImgAnalyzer._2D
                             (container as Container_2D_double).data[i, j] = reader.ReadDouble();
                         }
                     }
+                    container.Filename = filename;
+                    container.ImageGroup = "X";
                 }
                 else if (header.Contains(header_int))
                 {
@@ -54,13 +65,16 @@ namespace ImgAnalyzer._2D
                             (container as Container_2D_int).data[i, j] = reader.ReadInt32();
                         }
                     }
+                    container.Filename = filename;
+                    container.ImageGroup = "X";
                 }
+                
                 else throw new Exception("Error reading file");
             }
             return container;
         }
 
-
+        
 
 
 

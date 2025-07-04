@@ -16,10 +16,10 @@ namespace ImgAnalyzer
 
     public class ImageProcessor_2D
     {
-        protected double[,] dataF = new double[0,0];
+        protected double[,] dataF = new double[0, 0];
 
 
-        public static int[,] MinInt (ImageBatch batch)
+        public static int[,] MinInt(ImageBatch batch)
         {
             int width = batch.Width;
             int height = batch.Height;
@@ -27,7 +27,7 @@ namespace ImgAnalyzer
 
 
             int[,] min_values = new int[width, height];
-
+            DataManager_2D.workToBeDone += batch.Count;
             for (int image_counter = 0; image_counter < batch.Count; image_counter++)
             {
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
@@ -56,6 +56,7 @@ namespace ImgAnalyzer
                         }
                     }
                 }
+                DataManager_2D.progress.Report(1);
             }
             return min_values;
         }
@@ -68,20 +69,20 @@ namespace ImgAnalyzer
 
 
             int[,] max_values = new int[width, height];
-
+            DataManager_2D.workToBeDone += batch.Count;
             for (int image_counter = 0; image_counter < batch.Count; image_counter++)
             {
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
                 for (int line = 0; line < height; line++)
                 {
-                    
+
 
 
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];
                     if (batch.BitsPerSample == 16)
-                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                        System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
                     else
                     {
                         for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
@@ -99,6 +100,7 @@ namespace ImgAnalyzer
                         }
                     }
                 }
+                DataManager_2D.progress.Report(1);
             }
             return max_values;
         }
@@ -112,6 +114,7 @@ namespace ImgAnalyzer
             int[,] max_values = new int[width, height];
             int[,] amplitude_values = new int[width, height];
 
+            DataManager_2D.workToBeDone += batch.Count;
             for (int image_counter = 0; image_counter < batch.Count; image_counter++)
             {
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
@@ -144,6 +147,7 @@ namespace ImgAnalyzer
                         }
                     }
                 }
+                DataManager_2D.progress.Report(1);
             }
 
             for (int i = 0; i < min_values.GetLength(0); i++)
@@ -156,23 +160,23 @@ namespace ImgAnalyzer
 
         public static double[,] FitData(int[,] data, CoordinateTransformation ct)
         {
-           /* double[,] result = new double[ct.frame_width, ct.frame_height];
-            if (ct == null) return result;
+            /* double[,] result = new double[ct.frame_width, ct.frame_height];
+             if (ct == null) return result;
 
 
-            for (int i = 0; i < ct.frame_width; i++)
-                for (int j = 0; j < ct.frame_height; j++)
-                {
-                    var pw = ct.GeneratePWM_point(new PointF(i, j));
-                    double tempvalue = 0;
-                    for (int k = 0; k < pw.Count; k++)
-                    {
-                        tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
-                    }
-                    tempvalue *= ct.k_area;
-                    result[i, j] = tempvalue;
+             for (int i = 0; i < ct.frame_width; i++)
+                 for (int j = 0; j < ct.frame_height; j++)
+                 {
+                     var pw = ct.GeneratePWM_point(new PointF(i, j));
+                     double tempvalue = 0;
+                     for (int k = 0; k < pw.Count; k++)
+                     {
+                         tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
+                     }
+                     tempvalue *= ct.k_area;
+                     result[i, j] = tempvalue;
 
-                }*/
+                 }*/
 
             ImageProcessor_2D proc_instance = new ImageProcessor_2D();
             proc_instance.FitDataAsync(data, ct);
@@ -185,46 +189,80 @@ namespace ImgAnalyzer
         {
             dataF = new double[ct.frame_width, ct.frame_height];
             ct.CalculateFullField();
-            
-                await Task.Run(() =>
+
+            await Task.Run(() =>
+            {
+
+                DataManager_2D.workToBeDone += ct.frame_width;
+                lock (dataF)
                 {
 
-                    DataManager_2D.workToBeDone += ct.frame_width;
-                    lock (dataF)
-                    {
+                    while (!ct.FullFieldCalculated) { }
+                    Parallel.For(0, ct.frame_width,
+                        (int i) =>
+                        {
 
-                        while (!ct.FullFieldCalculated) { }
-                        Parallel.For(0, ct.frame_width,
-                            (int i) =>
+                            for (int j = 0; j < ct.frame_height; j++)
                             {
-
-                                for (int j = 0; j < ct.frame_height; j++)
+                                var pw = ct.FullFiedTransformation[i, j];
+                                double tempvalue = 0;
+                                for (int k = 0; k < pw.Count; k++)
                                 {
-                                    var pw = ct.FullFiedTransformation[i, j];
-                                    double tempvalue = 0;
-                                    for (int k = 0; k < pw.Count; k++)
-                                    {
-                                        tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
-                                    }
-                                    tempvalue *= ct.k_area;
-                                    dataF[i, j] = tempvalue;
-
+                                    tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
                                 }
-                                DataManager_2D.progress.Report(1);
+                                tempvalue *= ct.k_area;
+                                dataF[i, j] = tempvalue;
+
                             }
-                            );
+                            DataManager_2D.progress.Report(1);
+                        }
+                        );
 
 
 
 
-                    }
-                });
-            
+                }
+            });
+
 
 
         }
 
+        public static int[,] Index(ImageBatch batch, int index)
+        {
+            int width = batch.Width;
+            int height = batch.Height;
+            int samplesPerPixel = batch.SamplesPerPixel;
 
+
+            int[,] values = new int[width, height];
+            DataManager_2D.workToBeDone += batch.Count;
+
+            var tiff_img = Tiff.Open(batch.filenames[index], "r");
+            for (int line = 0; line < height; line++)
+            {
+                byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                tiff_img.ReadScanline(buffer, line);
+                ushort[] pixelData = new ushort[width * samplesPerPixel];
+                if (batch.BitsPerSample == 16)
+                    System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+                else
+                {
+                    for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+                }
+                for (int pixel = 0; pixel < width; pixel++)
+                {
+                    ushort pixel_value = pixelData[pixel];
+                    values[pixel, line] = pixel_value;
+                }
+            }
+            DataManager_2D.progress.Report(1);
+
+            return values;
+
+
+
+        }
 
 
 
@@ -251,7 +289,7 @@ namespace ImgAnalyzer
                         {
                             for (int j = 0; j < calculation.Height; j++)
                             {
-                                dataF[i, j] = calculation.Measure(i,j);
+                                dataF[i, j] = calculation.Measure(i, j);
                             }
                         }
                         );

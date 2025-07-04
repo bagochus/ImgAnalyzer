@@ -75,7 +75,7 @@ namespace ImgAnalyzer
                     displayImage = new Bitmap(data.GetLength(0), data.GetLength(1));
                 }
             }
-            Text = "Heatmap: " + container.Name;
+            
 
             InitializeComponent();
             FindLimits();
@@ -85,7 +85,7 @@ namespace ImgAnalyzer
             GenerateScaleBarImage();
             SetFields();
 
-
+            this.Text = "Heatmap: " + container.Name;
 
 
             pictureBox1.MouseDown += PictureBox_MouseDown;
@@ -400,6 +400,7 @@ namespace ImgAnalyzer
         {
             int width = pictureBox_scalebar.Width;
             int height = pictureBox_scalebar.Height;
+            if (width < 1 || height < 1) return;
 
             Bitmap img = new Bitmap(width, height);
 

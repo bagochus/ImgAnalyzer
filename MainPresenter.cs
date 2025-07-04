@@ -26,10 +26,10 @@ namespace ImgAnalyzer
 {
     public enum State : byte { Rising, Falling, Unknown };
 
-    public enum NearestExtremum:byte {A,B,Undef };
-    public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft  };
-    
-    
+    public enum NearestExtremum : byte { A, B, Undef };
+    public enum Vert : int { TopLeft = 0, TopRight, BottomRight, BottomLeft };
+
+
 
 
     delegate void ListUpdatedDelegate();
@@ -90,8 +90,8 @@ namespace ImgAnalyzer
                 }
                 DB_Manager.SaveProfile(profilename);
             }
-            catch (Exception ex) 
-            { MessageBox.Show("Не удалось загрузить профиль: \n" +ex.Message); }
+            catch (Exception ex)
+            { MessageBox.Show("Не удалось загрузить профиль: \n" + ex.Message); }
 
         }
 
@@ -103,16 +103,25 @@ namespace ImgAnalyzer
                 form.ShowDialog();
                 if (form.selected != -1)
                     DB_Manager.LoadProfile(form.selected_name);
-
-
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
 
-
+        public void LoadCT()
+        {
+            try
+            {
+                ProfilesForm form = new ProfilesForm(DB_Manager.GetProfileNames().ToArray());
+                form.ShowDialog();
+                if (form.selected != -1)
+                    DB_Manager.LoadCT(form.selected_name);
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
 
 
-   
+
+
     }
 }

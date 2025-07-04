@@ -26,6 +26,7 @@ namespace ImgAnalyzer._2D
 
         public override void SaveToFile(string filename)
         {
+            this.filename = filename;
             using (var stream = new FileStream(filename, FileMode.Create))
             using (var writer = new BinaryWriter(stream))
             {
@@ -39,7 +40,10 @@ namespace ImgAnalyzer._2D
 
 
         }
-
+        public override double[,] GetDData()
+        {
+            return data;
+        }
 
 
     }

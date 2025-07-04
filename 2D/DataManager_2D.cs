@@ -97,10 +97,38 @@ namespace ImgAnalyzer._2D
 
         }
 
+        public static void SaveContainer(int containerIndex, string filePath)
+
+        {
+            if (containerIndex > containers.Count -1 ) return;
+            if (containers[containerIndex] == null) return;
+            containers[containerIndex].SaveToFile(filePath);
 
 
+        }
+
+        public static void DeleteContainer (int containerIndex)
+        {
+            if (containerIndex > containers.Count - 1) return;
+            containers.RemoveAt(containerIndex);
+        }
+
+        public static void LoadContainer(string filename)
+        {
+            IContainer_2D container = Container_2D.ReadFromFile(filename);
+            if (container != null) containers.Add(container);
+
+        }
+
+        public static void ClearContainers()
+        { containers.Clear(); }
 
 
+        public static void RenameContainer(int index, string newName)
+        {
+            containers[index].Name = newName;
+            containers[index].Filename = "";
+        }
 
     }
 }

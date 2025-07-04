@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 
 namespace ImgAnalyzer._2D
 {
-    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Average}
+    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Index}
     public class Measurment2D
     {
         public Measurment2DTypes Type { get; set; }
         public ImageBatch Batch { get; set; }
         public bool CalculateInFrame { get; set; }
+
+        public int index;
 
         private int[,] dataint = new int[0,0];
         string name = string.Empty;
@@ -23,6 +25,7 @@ namespace ImgAnalyzer._2D
             if (Type == Measurment2DTypes.Minimum) dataint = ImageProcessor_2D.MinInt(Batch);
             if (Type == Measurment2DTypes.Maximum) dataint = ImageProcessor_2D.MaxInt(Batch);
             if (Type == Measurment2DTypes.Amplitude) dataint = ImageProcessor_2D.Amplitude(Batch);
+            if (Type == Measurment2DTypes.Index) dataint = ImageProcessor_2D.Index(Batch,index);
 
             var dc = new Container_2D_int(dataint);
             dc.Name = ImageManager.GetIndexLabel(Batch) +"_"+ Type.ToString();
@@ -34,7 +37,8 @@ namespace ImgAnalyzer._2D
         {
             if (Type == Measurment2DTypes.Minimum ||
                 Type == Measurment2DTypes.Maximum ||
-                Type == Measurment2DTypes.Amplitude )
+                Type == Measurment2DTypes.Amplitude ||
+                Type == Measurment2DTypes.Index)
                 await Task.Run(()=> ProcessIntValues());
 
             if (CalculateInFrame) name += "*";
