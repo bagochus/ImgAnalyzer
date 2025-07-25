@@ -15,13 +15,12 @@ namespace ImgAnalyzer
 {
     public partial class Form_1D : Form
     {
-        DataManager_1D _manager;
 
-        public Form_1D(DataManager_1D manager)
+
+        public Form_1D()
         {
             InitializeComponent();
             ConstructTable();
-            _manager = manager;
         }
 
         public void ConstructTable()
@@ -101,6 +100,7 @@ namespace ImgAnalyzer
             {
                 selectedIndices.Add(row.Index);
             }
+            selectedIndices.Sort();
             DataManager_1D.Instance.PlotSelectedItems(selectedIndices.ToArray());
         }
 
@@ -111,8 +111,8 @@ namespace ImgAnalyzer
             {
                 selectedIndices.Add(row.Index);
             }
-            selectedIndices.Reverse();
-            for (int i = selectedIndices.Count -1; i >=0;i--)
+            selectedIndices.Sort();
+            for (int i = selectedIndices.Count - 1; i >= 0; i--)
             {
                 DataManager_1D.Instance.DeleteItem(selectedIndices[i]);
             }
@@ -125,6 +125,7 @@ namespace ImgAnalyzer
             {
                 selectedIndices.Add(row.Index);
             }
+            selectedIndices.Sort();
             if (selectedIndices.Count == 0) return;
             int index = selectedIndices[0];
 
@@ -134,7 +135,7 @@ namespace ImgAnalyzer
             DataManager_1D.Instance.GetNames()[index]);
             if (!string.IsNullOrEmpty(userInput))
             {
-                DataManager_1D.Instance.RenameItem(index, userInput);
+                DataManager_1D.Instance.RenameItems(selectedIndices.ToArray(), userInput);
             }
 
         }
@@ -144,6 +145,9 @@ namespace ImgAnalyzer
             DataManager_1D.Instance.ClearMeasurment();
         }
 
-
+        private void button_axis_x_Click(object sender, EventArgs e)
+        {
+            DataManager_1D.Instance.EditXAxis();
+        }
     }
 }

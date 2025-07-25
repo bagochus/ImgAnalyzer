@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,6 +23,11 @@ namespace ImgAnalyzer
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            string folderPath = Path.Combine(AppContext.BaseDirectory, "transformation");
+            Directory.CreateDirectory(folderPath); // Создаст папку, только если её нет
+            string folderPath2 = Path.Combine(AppContext.BaseDirectory, "containers");
+            Directory.CreateDirectory(folderPath2); // Создаст папку, только если её нет
 
             DB_Manager.InitializeDatabase();
 

@@ -17,6 +17,8 @@ namespace ImgAnalyzer
     public class ImageProcessor_2D
     {
         protected double[,] dataF = new double[0, 0];
+        public bool DataReady { get { return dataReady; } }
+        private bool dataReady = false;
 
 
         public static int[,] MinInt(ImageBatch batch)
@@ -180,7 +182,7 @@ namespace ImgAnalyzer
 
             ImageProcessor_2D proc_instance = new ImageProcessor_2D();
             proc_instance.FitDataAsync(data, ct);
-
+            while (!proc_instance.dataReady) { }
             return proc_instance.dataF;
 
         }
@@ -222,6 +224,7 @@ namespace ImgAnalyzer
 
 
                 }
+                dataReady = true;
             });
 
 

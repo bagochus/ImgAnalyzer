@@ -1,13 +1,16 @@
-﻿using OpenTK.Graphics.ES11;
+﻿using ImgAnalyzer._2D.Measurments;
+using Microsoft.VisualBasic;
+using OpenTK.Graphics.ES11;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D
 {
-    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Index}
+    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Index, PeakMinimum, PeakMaximum}
     public class Measurment2D
     {
         public Measurment2DTypes Type { get; set; }
@@ -15,6 +18,11 @@ namespace ImgAnalyzer._2D
         public bool CalculateInFrame { get; set; }
 
         public int index;
+
+        private bool error = false;
+
+
+
 
         private int[,] dataint = new int[0,0];
         string name = string.Empty;
@@ -33,13 +41,65 @@ namespace ImgAnalyzer._2D
 
         }
 
-        public async Task ProcessMeasurment()
+
+        private void ProcessExtremum()
+        {
+
+
+
+
+            var extSearch = new ExtremumSearch();
+            if (Type == Measurment2DTypes.PeakMaximum)
+            {
+                int n_peak = 0;
+                double threshold = 1000;
+                int startpos = 0;
+                error &= !AskIntValue(out startpos, "Введите начальный индекс", "Поиск экстремумов", "0");
+                error &= !AskIntValue(out n_peak, "Введите номер пика (0 - первый)", "Поиск экстремумов", "0");
+                error &= !AskDoubleValue(out threshold, "Введите порог различения экстремума", "Поиск экстремумов", "1000");
+                if (error)
+                {
+                    MessageBox.Show("Ошибка ввода");
+                    return;
+                }
+
+                dataint = extSearch.SearchPeak(Batch, n_peak, false, threshold,startpos);
+            }
+
+            if (Type == Measurment2DTypes.PeakMinimum)
+            {
+                int n_peak = 0;
+                double threshold = 1000;
+                int startpos = 0;
+                error &= !AskIntValue(out startpos, "Введите начальный индекс", "Поиск экстремумов", "0");
+                error &= !AskIntValue(out n_peak, "Введите номер пика (0 - первый)", "Поиск экстремумов", "0");
+                error &= !AskDoubleValue(out threshold, "Введите порог различения экстремума", "Поиск экстремумов", "1000");
+                if (error)
+                {
+                    MessageBox.Show("Ошибка ввода");
+                    return;
+                }
+
+                dataint = extSearch.SearchPeak(Batch, n_peak, true, threshold, startpos);
+            }
+
+        }
+
+
+
+        public async Task  ProcessMeasurment()
         {
             if (Type == Measurment2DTypes.Minimum ||
                 Type == Measurment2DTypes.Maximum ||
                 Type == Measurment2DTypes.Amplitude ||
                 Type == Measurment2DTypes.Index)
                 await Task.Run(()=> ProcessIntValues());
+
+            if (Type == Measurment2DTypes.PeakMinimum ||
+                    Type == Measurment2DTypes.PeakMaximum)
+                    await Task.Run(()=> ProcessExtremum());
+            if (error) return;
+
 
             if (CalculateInFrame) name += "*";
             name += ImageManager.GetIndexLabel(Batch);
@@ -64,6 +124,31 @@ namespace ImgAnalyzer._2D
 
 
         }
+
+
+        public bool AskIntValue(out int value,string promt, string title, string default_value)
+        {
+            //int value = -1;
+            string userInput = Interaction.InputBox(promt,
+                   title,
+                   default_value);
+            
+            return Int32.TryParse(userInput, out value);;
+
+        }
+        public bool AskDoubleValue(out double value, string promt, string title, string default_value)
+        {
+            //int value = -1;
+            string userInput = Interaction.InputBox(promt,
+                   title,
+                   default_value);
+
+            return Double.TryParse(userInput, out value); ;
+
+        }
+
+
+
 
     }
 }

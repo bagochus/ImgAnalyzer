@@ -1,5 +1,6 @@
 ﻿using ImgAnalyzer._2D;
 using Microsoft.VisualBasic.ApplicationServices;
+using NetTopologySuite.Noding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
@@ -62,6 +64,14 @@ namespace ImgAnalyzer
                     FOREIGN KEY (Transform_id) REFERENCES Transformations(Id) ON DELETE SET NULL
                 );
 
+                CREATE TABLE IF NOT EXISTS XAxisSettings (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Label TEXT NOT NULL,
+                    Units TEXT NOT NULL,
+                    Xstart DOUBLE NOT NULL,
+                    Xstep DOUBLE NOT NULL
+                );
+
                 CREATE TABLE IF NOT EXISTS UserSessions (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL,
@@ -80,7 +90,21 @@ namespace ImgAnalyzer
                     PRIMARY KEY (session_id, container_id),
                     FOREIGN KEY (session_id) REFERENCES UserSessions(Id) ON DELETE CASCADE,
                     FOREIGN KEY (container_id) REFERENCES Containers(Id) ON DELETE CASCADE
+                );
+
+                CREATE TABLE IF NOT EXISTS AxisSessions (
+                    session_id INTEGER NOT NULL,
+                    xaxis_id INTEGER NOT NULL,
+                    PRIMARY KEY (session_id, xaxis_id),
+                    FOREIGN KEY (session_id) REFERENCES UserSessions(Id) ON DELETE CASCADE,
+                    FOREIGN KEY (xaxis_id) REFERENCES XAxisSettings(Id) ON DELETE CASCADE
                 )";
+
+
+
+
+
+
 
 
 
@@ -131,16 +155,19 @@ namespace ImgAnalyzer
             if (session_id == 0) return;
 
             foreach (var c in DataManager_2D.containers) SaveContainer(c, session_id);  
+            SaveXAxisSettings(session_id);
         }
 
         public static void LoadProfile (string  profilename)
         {
             int session_id = 0;
+            
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
                 string sql = "SELECT * FROM UserSessions WHERE Name = @Name";
                 string sql2 = "SELECT * FROM ContainersSessions WHERE session_id = @session_id";
+                string sql3 = "SELECT * FROM AxisSessions WHERE session_id = @session_id";
 
                 using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                 {
@@ -175,6 +202,25 @@ namespace ImgAnalyzer
                         }
                     }
                 }
+
+                using (SQLiteCommand command = new SQLiteCommand(sql3, connection))
+                {
+                    command.Parameters.AddWithValue("@session_id", session_id);
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+
+                        if (reader.Read())
+                        {
+                            int xaxis_id = Convert.ToInt32(reader["xaxis_id"]);
+                            LoadXAxisSettings(xaxis_id);
+                        }
+                    }
+                }
+
+
+
+
+
             }
 
 
@@ -490,10 +536,84 @@ namespace ImgAnalyzer
             return names;
         }
 
+        public static void LoadXAxisSettings(int Id)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string sql = "SELECT * FROM XAxisSettings WHERE Id = @Id";
+
+                using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", Id);
+
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string label = Convert.ToString(reader["Label"]);
+                            string units = Convert.ToString(reader["Units"]);
+                            double x_start = Convert.ToInt32(reader["Xstart"]);
+                            double x_step = Convert.ToInt32(reader["Xstep"]);
+
+                            DataManager_1D.Instance.VariableName = label;
+                            DataManager_1D.Instance.VariableUnit = units;
+                            DataManager_1D.Instance.x_start = x_start;
+                            DataManager_1D.Instance.x_step = x_step;
+
+
+                        }
+
+                    }
+                }
+
+            }
 
 
 
 
+        }
+
+        public static int SaveXAxisSettings(int session_id)
+        {
+            int output_id = 0;
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string sql = @"INSERT INTO XAxisSettings
+                     (Label, Units, Xstart, Xstep)
+                     VALUES (@Label, @Units, @Xstart, @Xstep);
+                    SELECT last_insert_rowid()";
+
+                string sql2 = @"
+                    INSERT INTO AxisSessions
+                    (session_id, xaxis_id)
+                    VALUES (@sid, @xaxis_id)";
+
+                using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@Label", DataManager_1D.Instance.VariableName);
+                    command.Parameters.AddWithValue("@Units", DataManager_1D.Instance.VariableUnit);
+                    command.Parameters.AddWithValue("@Xstart", DataManager_1D.Instance.x_start);
+                    command.Parameters.AddWithValue("@Xstep", DataManager_1D.Instance.x_step);
+                    output_id = Convert.ToInt32(command.ExecuteScalar());
+                }
+
+                using (SQLiteCommand command = new SQLiteCommand(sql2, connection))
+                {
+                    command.Parameters.AddWithValue("@sid", session_id);
+                    command.Parameters.AddWithValue("@xaxis_id", output_id);
+                    output_id = Convert.ToInt32(command.ExecuteScalar());
+                }
+
+                return output_id;
+
+
+
+            }
+        }
 
     }
 }

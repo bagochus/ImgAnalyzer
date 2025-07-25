@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.CodeDom;
 using System.Xml.Serialization;
+using ImgAnalyzer.DialogForms;
 
 namespace ImgAnalyzer
 {
@@ -30,7 +31,8 @@ namespace ImgAnalyzer
         public BindingList<DataContainer> dataContainers = new BindingList<DataContainer>();
 
         public static DataManager_1D Instance; 
-        public DataManager_1D() { Instance = this; }
+        static DataManager_1D() { Instance = new DataManager_1D(); }
+        private DataManager_1D() { }
 
         // ---------------Local parameters---------------
         private int poly_counter = 0;
@@ -97,18 +99,27 @@ namespace ImgAnalyzer
             }
         }
 
-        
-
-
-
-
-
+       
         public void DeleteItem(int n)
             { dataContainers.RemoveAt(n); }
 
         public void RenameItem(int n, string newName)
         {
             dataContainers[n].Name = newName;   
+        }
+
+        public void RenameItems(int[] n, string newName)
+        {
+            if (n.Count() == 1) RenameItem(n[0], newName);
+            else
+            {
+                int counter = 0;
+                foreach (int i in n)
+                {
+                    dataContainers[i].Name = newName + "_" + counter.ToString();
+                    counter++;
+                }
+            }
         }
 
         public List<string> GetNames()
@@ -288,7 +299,7 @@ namespace ImgAnalyzer
        
         private void CreateForm()
         {
-            Form_1D form_1D = new Form_1D(this);
+            Form_1D form_1D = new Form_1D();
             form_1D.Show();
         }
 
@@ -402,7 +413,17 @@ namespace ImgAnalyzer
         }
 
 
+        public void EditXAxis()
+        {
+            if (in_work)
+            {
+                MessageBox.Show("Process busy");
+                return;
 
+            }
+            Form_X_axis form = new Form_X_axis();
+            form.ShowDialog();
+        }
 
 
 

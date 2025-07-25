@@ -1,26 +1,28 @@
-﻿using System;
+﻿using BitMiracle.LibTiff;
+using BitMiracle.LibTiff.Classic;
+using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.MeasurmentTypes;
+using Microsoft.VisualBasic;
+using OpenTK.Graphics.OpenGL;
+using ScottPlot.Interactivity.UserActions;
+using ScottPlot.PlotStyles;
+using ScottPlot.Plottables;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using BitMiracle.LibTiff;
-using BitMiracle.LibTiff.Classic;
-using ImgAnalyzer.MeasurmentTypes;
-using ScottPlot.Plottables;
-using System.IO;
-using OpenTK.Graphics.OpenGL;
 using System.Windows.Forms;
-using ScottPlot.PlotStyles;
-using ScottPlot.Interactivity.UserActions;
-using System.Reflection;
-using System.Diagnostics;
-using ImgAnalyzer.DialogForms;
 
 namespace ImgAnalyzer
 {
@@ -51,20 +53,21 @@ namespace ImgAnalyzer
         public EventHandler ListUpdated;
 
         // usage of indexes - [y,x]
+        /*
         private int[,] max_values;
         private int[,] min_values;
         private int[,] amplitude_values;
         private int[,] good_values;
         private int[,] pseudo_phase_values;
         private int[,] a_values;
-        private int[,] b_values;
+        private int[,] peak_values;
         private List<int[,]> ax_positions = new List<int[,]>();
         private List<int[,]> ay_positions = new List<int[,]>();
         private int[,] a_peaks;
         private List<int[,]> bx_positions = new List<int[,]>();
         private List<int[,]> by_positions = new List<int[,]>();
         private int[,] b_peaks;
-
+        */
         //test CT
         public CoordinateTransformation ct;
 
@@ -119,6 +122,20 @@ namespace ImgAnalyzer
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
+
+        public async void MeasurePhase()
+        {
+            int n;
+            string userInput = Interaction.InputBox("Введите намер кадра: 0-" + ImageManager.MaxCount().ToString(),
+               "Расчет фазового профиля",
+               "0");
+            Int32.TryParse(userInput, out n);
+            await Task.Run(() => {
+                PhaseMeasurer.GeneratePhaseImage(n);
+            });
+
+
+        }
 
 
 

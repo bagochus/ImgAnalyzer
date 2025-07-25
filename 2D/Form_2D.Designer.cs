@@ -59,7 +59,7 @@
             this.button_measure.Name = "button_measure";
             this.button_measure.Size = new System.Drawing.Size(153, 23);
             this.button_measure.TabIndex = 1;
-            this.button_measure.Text = "Провести измерение";
+            this.button_measure.Text = "Групповые операции";
             this.button_measure.UseVisualStyleBackColor = true;
             this.button_measure.Click += new System.EventHandler(this.button_measure_Click);
             // 

@@ -35,6 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>logo3.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BitMiracle.LibTiff.NET, Version=2.4.660.0, Culture=neutral, PublicKeyToken=53879b3e20e7a7d6, processorArchitecture=MSIL">
       <HintPath>packages\BitMiracle.LibTiff.NET.2.4.660\lib\netstandard2.0\BitMiracle.LibTiff.NET.dll</HintPath>
@@ -136,6 +139,7 @@
     <Compile Include="2D\Calculations\Acos.cs" />
     <Compile Include="2D\Calculations\Asin.cs" />
     <Compile Include="2D\Calculations\Calculation2D.cs" />
+    <Compile Include="2D\Calculations\Rescale1D.cs" />
     <Compile Include="2D\Calculations\NormalizeMinMax.cs" />
     <Compile Include="2D\Calculations\Normalize.cs" />
     <Compile Include="2D\Calculations\PhaseMeasurment3.cs" />
@@ -158,7 +162,9 @@
     <Compile Include="2D\Form_2D.Designer.cs">
       <DependentUpon>Form_2D.cs</DependentUpon>
     </Compile>
+    <Compile Include="2D\Measurments\ExtremumSearch.cs" />
     <Compile Include="2D\Measurments\Measurment2D.cs" />
+    <Compile Include="2D\PhaseMeasurer.cs" />
     <Compile Include="CoordinateTransformation.cs" />
     <Compile Include="DB_Manager.cs" />
     <Compile Include="DialogForms\AddMeasurment_2D.cs">
@@ -178,6 +184,18 @@
     </Compile>
     <Compile Include="DialogForms\EditRange.Designer.cs">
       <DependentUpon>EditRange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\Form_X_axis.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\Form_X_axis.Designer.cs">
+      <DependentUpon>Form_X_axis.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\Form_PhaseMeasurment.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\Form_PhaseMeasurment.Designer.cs">
+      <DependentUpon>Form_PhaseMeasurment.cs</DependentUpon>
     </Compile>
     <Compile Include="DialogForms\OpenedPlotForm.cs">
       <SubType>Form</SubType>
@@ -241,9 +259,6 @@
     <Compile Include="PlotForm.Designer.cs">
       <DependentUpon>PlotForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="MainPresenter.cs" />
     <Compile Include="MeasurmentTypes\IMeasurment.cs" />
     <Compile Include="LookupTables\LookupTableFlat.cs" />
@@ -274,6 +289,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="1D\Form_1D.resx">
       <DependentUpon>Form_1D.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\Form_PhaseMeasurment.resx">
+      <DependentUpon>Form_PhaseMeasurment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\Form_X_axis.resx">
+      <DependentUpon>Form_X_axis.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\OpenedPlotForm.resx">
       <DependentUpon>OpenedPlotForm.cs</DependentUpon>
@@ -325,6 +346,8 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="logo3.ico" />
+    <Content Include="logo7.ico" />
     <Content Include="TODO.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

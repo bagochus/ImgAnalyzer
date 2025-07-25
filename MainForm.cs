@@ -19,7 +19,7 @@ namespace ImgAnalyzer
     public partial class MainForm : Form
     {
         MainPresenter presenter = new MainPresenter();
-        DataManager_1D manager_1D = new DataManager_1D();
+
 
 
 
@@ -30,7 +30,7 @@ namespace ImgAnalyzer
 
         private void button_1d_Click(object sender, EventArgs e)
         {
-            manager_1D.ShowForm();
+            DataManager_1D.Instance.ShowForm();
         }
 
         private void button_selctfiles_Click(object sender, EventArgs e)
@@ -145,6 +145,34 @@ namespace ImgAnalyzer
         private void загрузитьТолькоАктивныеОбластиToolStripMenuItem_Click(object sender, EventArgs e)
         {
             presenter.LoadCT();
+        }
+
+        private void настройкиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form_PhaseMeasurment form = new Form_PhaseMeasurment();
+            form.ShowDialog();
+        }
+
+        private void измеритьФазовыйПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Cursor = Cursors.WaitCursor;
+            presenter.MeasurePhase();
+            this.Cursor = Cursors.Default;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Вы действительно хотите закрыть приложение?",
+                "Подтверждение закрытия",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            // Если пользователь выбрал "Нет", отменяем закрытие формы
+            if (result == DialogResult.No)
+            {
+                e.Cancel = true;
+            }
         }
     }
 }

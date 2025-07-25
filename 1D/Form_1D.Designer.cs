@@ -35,6 +35,7 @@
             this.button_calculate = new System.Windows.Forms.Button();
             this.button_calcall = new System.Windows.Forms.Button();
             this.button_plot = new System.Windows.Forms.Button();
+            this.button_axis_x = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -115,11 +116,23 @@
             this.button_plot.UseVisualStyleBackColor = true;
             this.button_plot.Click += new System.EventHandler(this.button_plot_Click);
             // 
+            // button_axis_x
+            // 
+            this.button_axis_x.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_axis_x.Location = new System.Drawing.Point(660, 186);
+            this.button_axis_x.Name = "button_axis_x";
+            this.button_axis_x.Size = new System.Drawing.Size(130, 23);
+            this.button_axis_x.TabIndex = 7;
+            this.button_axis_x.Text = "Настройка оси X";
+            this.button_axis_x.UseVisualStyleBackColor = true;
+            this.button_axis_x.Click += new System.EventHandler(this.button_axis_x_Click);
+            // 
             // Form_1D
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(812, 450);
+            this.Controls.Add(this.button_axis_x);
             this.Controls.Add(this.button_plot);
             this.Controls.Add(this.button_calcall);
             this.Controls.Add(this.button_calculate);
@@ -143,5 +156,6 @@
         private System.Windows.Forms.Button button_calculate;
         private System.Windows.Forms.Button button_calcall;
         private System.Windows.Forms.Button button_plot;
+        private System.Windows.Forms.Button button_axis_x;
     }
 }

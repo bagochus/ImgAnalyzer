@@ -38,6 +38,8 @@
             this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьТолькоАктивныеОбластиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.измеритьФазовыйПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -90,7 +92,9 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.профильToolStripMenuItem});
+            this.профильToolStripMenuItem,
+            this.настройкиToolStripMenuItem,
+            this.измеритьФазовыйПрофильToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 24);
@@ -128,6 +132,20 @@
             this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Text = "Загрузить только активные области";
             this.загрузитьТолькоАктивныеОбластиToolStripMenuItem.Click += new System.EventHandler(this.загрузитьТолькоАктивныеОбластиToolStripMenuItem_Click);
             // 
+            // настройкиToolStripMenuItem
+            // 
+            this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
+            this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(79, 20);
+            this.настройкиToolStripMenuItem.Text = "Настройки";
+            this.настройкиToolStripMenuItem.Click += new System.EventHandler(this.настройкиToolStripMenuItem_Click);
+            // 
+            // измеритьФазовыйПрофильToolStripMenuItem
+            // 
+            this.измеритьФазовыйПрофильToolStripMenuItem.Name = "измеритьФазовыйПрофильToolStripMenuItem";
+            this.измеритьФазовыйПрофильToolStripMenuItem.Size = new System.Drawing.Size(178, 20);
+            this.измеритьФазовыйПрофильToolStripMenuItem.Text = "Измерить фазовый профиль";
+            this.измеритьФазовыйПрофильToolStripMenuItem.Click += new System.EventHandler(this.измеритьФазовыйПрофильToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -141,6 +159,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "MainForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -159,5 +178,7 @@
         private System.Windows.Forms.ToolStripMenuItem сохранитьПрофильToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem загрузитьПрофильToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem загрузитьТолькоАктивныеОбластиToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem измеритьФазовыйПрофильToolStripMenuItem;
     }
 }
