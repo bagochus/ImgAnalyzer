@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ImgAnalyzer._2D.Measurments
+namespace ImgAnalyzer._2D.GroupOperations
 {
 
     public  class ExtremumSearch
@@ -57,15 +57,16 @@ namespace ImgAnalyzer._2D.Measurments
                 if (data < min_values[x, y])
                 {
                     min_values[x, y] = data;
-                    n_min_values[x, y] = n;    
+                    n_min_values[x, y] = n;
+                    if (max_values[x, y] > min_values[x, y] + threshold)
+                    {
+                        threshold_found[x, y] = true;
+                        max_values[x, y] = Double.MinValue;
+
+                    }
                 }
                 
-                if (max_values[x,y] > min_values[x,y] + threshold)
-                {
-                    threshold_found[x,y] = true;
-                    max_values[x,y] = Double.MinValue;
 
-                }
             }
             else
             {
@@ -101,13 +102,15 @@ namespace ImgAnalyzer._2D.Measurments
                 {
                     max_values[x, y] = data;
                     n_max_values[x, y] = n;
+                    if (max_values[x, y] > min_values[x, y] + threshold)
+                    {
+                        threshold_found[x, y] = true;
+                        min_values[x, y] = Double.MaxValue;
+                    }
+
                 }
 
-                if (max_values[x, y] > min_values[x, y] + threshold)
-                {
-                    threshold_found[x, y] = true;
-                    min_values[x, y] = Double.MaxValue;
-                }
+
             }
             else
             {
@@ -176,6 +179,9 @@ namespace ImgAnalyzer._2D.Measurments
                     peak_found[x, y] = false;
                     peak_counter[x, y] = -1;
                 }
+
+            
+
         }
 
 
@@ -196,13 +202,22 @@ namespace ImgAnalyzer._2D.Measurments
             }
                 int samplesPerPixel = batch.SamplesPerPixel;
 
+
+            DataManager_2D.workToBeDone += batch.Height * (batch.Count - startPosition);
+
             for (int index = start_position; index < batch.Count; index++)
             {
                 var tiff_img = Tiff.Open(batch.filenames[index], "r");
-                for (int line = 0; line < Height; line++)
+                int buffer_size = tiff_img.ScanlineSize();
+
+                Parallel.For(0, Height, (int line) =>
                 {
-                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
-                    tiff_img.ReadScanline(buffer, line);
+                    byte[] buffer = new byte[buffer_size];
+                    lock (tiff_img)
+                    {
+                        tiff_img.ReadScanline(buffer, line);
+                    }
+                    
                     ushort[] pixelData = new ushort[Width * samplesPerPixel];
                     if (batch.BitsPerSample == 16)
                         System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
@@ -214,12 +229,14 @@ namespace ImgAnalyzer._2D.Measurments
                     for (int pixel = 0; pixel < Width; pixel++)
                     {
                         ushort pixel_value = pixelData[pixel];
-                        if (FindMinimum) ProcessPixelMinimum (pixel_value, pixel,line,index);
-                        else ProcessPixelMaximum (pixel_value, pixel,line, index);
+                        if (FindMinimum) ProcessPixelMinimum(pixel_value, pixel, line, index);
+                        else ProcessPixelMaximum(pixel_value, pixel, line, index);
 
                     }
-                }
-                DataManager_2D.progress.Report(1);
+                    DataManager_2D.progress.Report(1);
+
+                });
+                
 
             }
 

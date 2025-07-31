@@ -122,11 +122,6 @@ namespace ImgAnalyzer._2D
 
         }
 
-        public void Test()
-        {
-
-
-        }
 
 
     }

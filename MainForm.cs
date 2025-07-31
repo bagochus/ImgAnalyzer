@@ -128,6 +128,7 @@ namespace ImgAnalyzer
             string userInput = Interaction.InputBox("Введите имя профиля:",
                "Сохрание профиля работы",
                "profile");
+            if (userInput != "")
             presenter.SaveProfile(userInput);
 
         }
@@ -173,6 +174,11 @@ namespace ImgAnalyzer
             {
                 e.Cancel = true;
             }
+        }
+
+        private void button_showContainers_Click(object sender, EventArgs e)
+        {
+            presenter.OpenContainerBatchesForm();
         }
     }
 }

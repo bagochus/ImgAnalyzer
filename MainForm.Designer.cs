@@ -40,6 +40,7 @@
             this.загрузитьТолькоАктивныеОбластиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.измеритьФазовыйПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.button_showContainers = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -146,11 +147,22 @@
             this.измеритьФазовыйПрофильToolStripMenuItem.Text = "Измерить фазовый профиль";
             this.измеритьФазовыйПрофильToolStripMenuItem.Click += new System.EventHandler(this.измеритьФазовыйПрофильToolStripMenuItem_Click);
             // 
+            // button_showContainers
+            // 
+            this.button_showContainers.Location = new System.Drawing.Point(12, 128);
+            this.button_showContainers.Name = "button_showContainers";
+            this.button_showContainers.Size = new System.Drawing.Size(145, 43);
+            this.button_showContainers.TabIndex = 5;
+            this.button_showContainers.Text = "Массивы 2D карт";
+            this.button_showContainers.UseVisualStyleBackColor = true;
+            this.button_showContainers.Click += new System.EventHandler(this.button_showContainers_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button_showContainers);
             this.Controls.Add(this.button_1d);
             this.Controls.Add(this.button_2d);
             this.Controls.Add(this.button_imgview);
@@ -180,5 +192,6 @@
         private System.Windows.Forms.ToolStripMenuItem загрузитьТолькоАктивныеОбластиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem измеритьФазовыйПрофильToolStripMenuItem;
+        private System.Windows.Forms.Button button_showContainers;
     }
 }

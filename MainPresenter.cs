@@ -1,5 +1,6 @@
 ﻿using BitMiracle.LibTiff;
 using BitMiracle.LibTiff.Classic;
+using ImgAnalyzer._2D;
 using ImgAnalyzer.DialogForms;
 using ImgAnalyzer.MeasurmentTypes;
 using Microsoft.VisualBasic;
@@ -136,6 +137,30 @@ namespace ImgAnalyzer
 
 
         }
+
+        public void OpenContainerBatchesForm()
+        {
+            Form form_batches = Application.OpenForms["2D Container Batches"];
+
+            if (form_batches == null)
+            {
+                form_batches = new ContainerBatchesForm();
+                form_batches.Show();
+            }
+            else
+            {
+                form_batches.BringToFront();
+                if (form_batches.WindowState == FormWindowState.Minimized)
+                    form_batches.WindowState = FormWindowState.Normal;
+                form_batches.Focus();
+            }
+
+
+
+        }
+
+
+
 
 
 

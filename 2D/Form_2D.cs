@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using ImgAnalyzer.DialogForms;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -61,9 +62,9 @@ namespace ImgAnalyzer._2D
 
 
             DataGridViewColumn column = new DataGridViewTextBoxColumn();
-            column.Name = "Name";
+            column.Name = "operationName";
             column.DefaultCellStyle.Format = "0.###";
-            column.DataPropertyName = "Name";
+            column.DataPropertyName = "operationName";
             dataGrid.Columns.Add(column);
 
 
@@ -201,6 +202,12 @@ namespace ImgAnalyzer._2D
 
                 }
             }
+        }
+
+        private void button_group_new_Click(object sender, EventArgs e)
+        {
+            Form_GroupOperations form = new Form_GroupOperations();
+            form.ShowDialog();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using ImgAnalyzer._2D.Measurments;
+﻿using ImgAnalyzer._2D.GroupOperations;
 using Microsoft.VisualBasic;
 using OpenTK.Graphics.ES11;
 using System;
@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D
 {
-    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Index, PeakMinimum, PeakMaximum}
+    public enum Measurment2DTypes {Minimum, Maximum, Amplitude, Index, PeakMinimum, PeakMaximum, PeakMinimumAbs, PeakMaximumAbs}
     public class Measurment2D
     {
         public Measurment2DTypes Type { get; set; }
@@ -82,10 +82,43 @@ namespace ImgAnalyzer._2D
 
                 dataint = extSearch.SearchPeak(Batch, n_peak, true, threshold, startpos);
             }
-
         }
 
+        private void ProcessExtremumAbs()
+        {
 
+
+
+
+            var extSearch = new ExtremumSearchAbs();
+            if (Type == Measurment2DTypes.PeakMaximumAbs)
+            {
+                int startpos = 0;
+                error &= !AskIntValue(out startpos, "Введите начальный индекс", "Поиск экстремумов", "0");
+                if (error)
+                {
+                    MessageBox.Show("Ошибка ввода");
+                    return;
+                }
+
+                dataint = extSearch.SearchPeak(Batch,  false, startpos);
+            }
+
+            if (Type == Measurment2DTypes.PeakMinimumAbs)
+            {
+ 
+                int startpos = 0;
+                error &= !AskIntValue(out startpos, "Введите начальный индекс", "Поиск экстремумов", "0");
+
+                if (error)
+                {
+                    MessageBox.Show("Ошибка ввода");
+                    return;
+                }
+
+                dataint = extSearch.SearchPeak(Batch,  true,  startpos);
+            }
+        }
 
         public async Task  ProcessMeasurment()
         {
@@ -96,8 +129,14 @@ namespace ImgAnalyzer._2D
                 await Task.Run(()=> ProcessIntValues());
 
             if (Type == Measurment2DTypes.PeakMinimum ||
-                    Type == Measurment2DTypes.PeakMaximum)
+                Type == Measurment2DTypes.PeakMaximum)
                     await Task.Run(()=> ProcessExtremum());
+
+            if (Type == Measurment2DTypes.PeakMinimumAbs ||
+                Type == Measurment2DTypes.PeakMaximumAbs)
+                await Task.Run(() => ProcessExtremumAbs());
+
+
             if (error) return;
 
 

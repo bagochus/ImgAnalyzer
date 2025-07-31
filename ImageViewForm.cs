@@ -448,7 +448,7 @@ namespace ImgAnalyzer
             if (displayImage == null) return;
 
             // Отрисовка с учетом позиции и масштаба
-            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.DrawImage(displayImage, imagePosition.X, imagePosition.Y,
                                displayImage.Width * zoomFactor,
                                displayImage.Height * zoomFactor);

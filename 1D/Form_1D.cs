@@ -35,9 +35,9 @@ namespace ImgAnalyzer
 
 
             DataGridViewColumn column = new DataGridViewTextBoxColumn();
-            column.Name = "Name";
+            column.Name = "operationName";
             column.DefaultCellStyle.Format = "0.###";
-            column.DataPropertyName = "Name";
+            column.DataPropertyName = "operationName";
             dataGrid.Columns.Add(column);
 
             

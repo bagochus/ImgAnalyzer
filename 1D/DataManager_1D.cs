@@ -284,7 +284,7 @@ namespace ImgAnalyzer
 
         public void ShowForm()
         {
-            Form form_1D = Application.OpenForms["Form1D"];
+            Form form_1D = Application.OpenForms["Form_1D"];
 
             if (form_1D == null) CreateForm();
             else

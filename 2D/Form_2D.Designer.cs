@@ -38,6 +38,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button_save = new System.Windows.Forms.Button();
             this.button_load = new System.Windows.Forms.Button();
+            this.button_group_new = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -148,11 +149,22 @@
             this.button_load.UseVisualStyleBackColor = true;
             this.button_load.Click += new System.EventHandler(this.button_load_Click);
             // 
+            // button_group_new
+            // 
+            this.button_group_new.Location = new System.Drawing.Point(498, 244);
+            this.button_group_new.Name = "button_group_new";
+            this.button_group_new.Size = new System.Drawing.Size(153, 23);
+            this.button_group_new.TabIndex = 10;
+            this.button_group_new.Text = "New GroupOP";
+            this.button_group_new.UseVisualStyleBackColor = true;
+            this.button_group_new.Click += new System.EventHandler(this.button_group_new_Click);
+            // 
             // Form_2D
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(663, 456);
+            this.Controls.Add(this.button_group_new);
             this.Controls.Add(this.button_load);
             this.Controls.Add(this.button_save);
             this.Controls.Add(this.button1);
@@ -182,5 +194,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button_save;
         private System.Windows.Forms.Button button_load;
+        private System.Windows.Forms.Button button_group_new;
     }
 }

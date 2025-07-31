@@ -74,7 +74,7 @@ namespace ImgAnalyzer
 
                 CREATE TABLE IF NOT EXISTS UserSessions (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Name TEXT NOT NULL,
+                    operationName TEXT NOT NULL,
                     BatchA_id INTEGER,
                     BatchB_id INTEGER,
                     BatchC_id INTEGER,
@@ -138,13 +138,13 @@ namespace ImgAnalyzer
 
 
                 string sql = @"INSERT INTO UserSessions
-                     (Name, BatchA_id, BatchB_id, BatchC_id)
-                     VALUES (@Name, @BatchA_id, @BatchB_id, @BatchC_id); 
+                     (operationName, BatchA_id, BatchB_id, BatchC_id)
+                     VALUES (@operationName, @BatchA_id, @BatchB_id, @BatchC_id); 
                     SELECT last_insert_rowid()";
 
                 using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@Name", profilename);
+                    command.Parameters.AddWithValue("@operationName", profilename);
                     command.Parameters.AddWithValue("@BatchA_id", batchA_id);
                     command.Parameters.AddWithValue("@BatchB_id", batchB_id);
                     command.Parameters.AddWithValue("@BatchC_id", batchC_id);
@@ -165,13 +165,13 @@ namespace ImgAnalyzer
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                string sql = "SELECT * FROM UserSessions WHERE Name = @Name";
+                string sql = "SELECT * FROM UserSessions WHERE operationName = @operationName";
                 string sql2 = "SELECT * FROM ContainersSessions WHERE session_id = @session_id";
                 string sql3 = "SELECT * FROM AxisSessions WHERE session_id = @session_id";
 
                 using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@Name", profilename);
+                    command.Parameters.AddWithValue("@operationName", profilename);
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
 
@@ -234,10 +234,10 @@ namespace ImgAnalyzer
             {
                 connection.Open();
 
-                string sql = "SELECT * FROM UserSessions WHERE Name = @Name";
+                string sql = "SELECT * FROM UserSessions WHERE operationName = @operationName";
                 using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@Name", profilename);
+                    command.Parameters.AddWithValue("@operationName", profilename);
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
@@ -527,7 +527,7 @@ namespace ImgAnalyzer
                 {
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
-                        while (reader.Read()) names.Add(Convert.ToString(reader["Name"]));
+                        while (reader.Read()) names.Add(Convert.ToString(reader["operationName"]));
                     }
                 }
 
