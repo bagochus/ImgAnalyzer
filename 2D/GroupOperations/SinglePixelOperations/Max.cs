@@ -27,6 +27,12 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
                     result[i,j]  = Double.MinValue;
         }
 
+        protected override void ProcessLine(int y, int n, ushort[] line)
+        {
+            for (int x = 0; x < width; x++)
+                if (line[x] > result[x, y]) result[x, y] = line[x];
+        }
+
         protected override void ProcessPixel(int x, int y, int n, double value)
         {
             if (value > result[x,y])  result[x,y]  = value;

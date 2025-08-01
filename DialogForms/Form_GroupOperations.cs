@@ -23,20 +23,25 @@ namespace ImgAnalyzer.DialogForms
         private List<Label> labels_containers = new List<Label>();
         private List<ComboBox> comboBox_containers = new List<ComboBox>();
 
+        private List<Label> labels_sources = new List<Label>();
+        private List<ComboBox> comboBox_sources = new List<ComboBox>();
+
+
 
         private List<string> avaiable_containers = new List<string>();
         private List<string> avaiable_imgSources = new List<string>();
 
         private Label singleValuesHeader;
         private Label containerValuesHeader;
+        private Label imageSourcesHeader;
 
         IGroupOperation operation;
 
 
 
         //----------------Positions---------------
-        private int column1_x = 20;
-        private int column2_x = 120;
+        private int column1_x = 230;
+        private int column2_x = 330;
 
         private int y_start = 50;
         private int y_current = 50;
@@ -69,11 +74,11 @@ namespace ImgAnalyzer.DialogForms
 
         }
 
-        private void ConstructForm(IGroupOperation calc)
+        private void ConstructForm(IGroupOperation op)
         {
-            label_description.Text = calc.Description;
+            label_description.Text = op.Description;
 
-            if (calc.SingleValueNames.Length > 0)
+            if (op.SingleValueNames.Length > 0)
             {
                 singleValuesHeader = new Label();
                 singleValuesHeader.Text = "Константы";
@@ -81,10 +86,10 @@ namespace ImgAnalyzer.DialogForms
                 y_current += y_step;
                 this.Controls.Add(singleValuesHeader);
 
-                for (int i = 0; i < calc.SingleValueNames.Length; i++)
+                for (int i = 0; i < op.SingleValueNames.Length; i++)
                 {
                     Label l = new Label();
-                    l.Text = calc.SingleValueNames[i];
+                    l.Text = op.SingleValueNames[i];
                     l.Location = new Point(column1_x, y_current);
                     this.Controls.Add(l);
                     labels_single.Add(l);
@@ -96,7 +101,7 @@ namespace ImgAnalyzer.DialogForms
                 }
             }
 
-            if (calc.ContainerNames.Length > 0)
+            if (op.ContainerNames.Length > 0)
             {
                 containerValuesHeader = new Label();
                 containerValuesHeader.Text = "2D - Массивы";
@@ -104,10 +109,10 @@ namespace ImgAnalyzer.DialogForms
                 y_current += y_step;
                 this.Controls.Add(containerValuesHeader);
 
-                for (int i = 0; i < calc.ContainerNames.Length; i++)
+                for (int i = 0; i < op.ContainerNames.Length; i++)
                 {
                     Label l = new Label();
-                    l.Text = calc.ContainerNames[i];
+                    l.Text = op.ContainerNames[i];
                     l.Location = new Point(column1_x, y_current);
                     this.Controls.Add(l);
                     labels_containers.Add(l);
@@ -119,6 +124,31 @@ namespace ImgAnalyzer.DialogForms
                     y_current += y_step;
                 }
             }
+
+            if (op.imageSourceNames.Length > 0)
+            {
+                imageSourcesHeader = new Label();
+                imageSourcesHeader.Text = "Массивы 2D карт";
+                imageSourcesHeader.Location = new Point(column1_x, y_current);
+                y_current += y_step;
+                this.Controls.Add(imageSourcesHeader);
+
+                for (int i = 0; i < op.imageSourceNames.Length; i++)
+                {
+                    Label l = new Label();
+                    l.Text = op.imageSourceNames[i];
+                    l.Location = new Point(column1_x, y_current);
+                    this.Controls.Add(l);
+                    labels_sources.Add(l);
+                    ComboBox cb = new ComboBox();
+                    cb.Location = new Point(column2_x, y_current);
+                    cb.Items.AddRange(avaiable_imgSources.ToArray());
+                    this.Controls.Add(cb);
+                    comboBox_sources.Add(cb);
+                    y_current += y_step;
+                }
+            }
+
 
 
         }
@@ -142,13 +172,18 @@ namespace ImgAnalyzer.DialogForms
             }
             comboBox_containers.Clear();
 
-
+            foreach (ComboBox cb in comboBox_sources)
+            {
+                RemoveControl(cb);
+            }
+            comboBox_containers.Clear();
 
             foreach (Label l in labels_single) RemoveControl(l);
             labels_single.Clear();
             foreach (Label l in labels_containers) RemoveControl(l);
             labels_containers.Clear();
-
+            foreach (Label l in labels_sources) RemoveControl(l);
+            labels_sources.Clear();
 
 
 
@@ -167,7 +202,7 @@ namespace ImgAnalyzer.DialogForms
         private void SelectItem()
         {
             int index = listBox_operations.SelectedIndex;
-
+            if (index == -1) return;
             var opr = Activator.CreateInstance(types[index]) as IGroupOperation;
             operation = opr;
             ClearForm();
@@ -216,7 +251,19 @@ namespace ImgAnalyzer.DialogForms
                     op.ContainerParameters = containers;
                 }
 
-                
+                if (op.imageSourceNames.Length > 0)
+                {
+                    IImageSource[] sources = new IImageSource[op.imageSourceNames.Length];
+                    for (int i = 0; i < sources.Length; i++)
+                    {
+                        int selected = comboBox_sources[i].SelectedIndex;
+                        if (selected == -1) throw new Exception("Не выбран массив " + op.imageSourceNames[i]);
+                        sources[i] = ImageManager.imageSources[selected];
+                    }
+                    op.imageSources = sources;
+                }
+
+
                 input_valid = true;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -229,6 +276,11 @@ namespace ImgAnalyzer.DialogForms
         private void listBox_operations_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectItem();
+        }
+
+        private void button_exec_Click(object sender, EventArgs e)
+        {
+            Execute();
         }
     }
 }

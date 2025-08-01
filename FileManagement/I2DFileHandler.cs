@@ -11,6 +11,7 @@ namespace ImgAnalyzer
         void LoadFile(IImageSource imageSource, string fileName);
         void LoadFile(IImageSource imageSource, int index);
 
+        double[] GetLineDouble(int index);
         void SelectLine(int line);
         double GetPixelValue(int pixel);
         double GetPixelValue(int line, int pixel);

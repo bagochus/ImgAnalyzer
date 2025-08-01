@@ -9,18 +9,30 @@ namespace ImgAnalyzer
     {
         //private static readonly Lazy<ImageBatch[]> _stacks = new Lazy<ImageBatch[]>(()=> {return new ImageBatch[0];});
         public static ImageBatch[] Stacks;
-        public static BindingList<ContainerBatch> containerBatches;
-        public static BindingList<IImageSource> imageSources;
+        public static BindingList<ContainerBatch> containerBatches = new BindingList<ContainerBatch>();
+        public static BindingList<IImageSource> imageSources
+        {
+
+            get
+            {
+                BindingList<IImageSource> _imageSources = new BindingList<IImageSource>();
+                _imageSources.Add(Batch_A());
+                _imageSources.Add(Batch_B());
+                _imageSources.Add(Batch_C());
+                foreach (var s in containerBatches) _imageSources.Add(s);
+                return _imageSources;
+            }
+        }
 
 
         static ImageManager()
         {
             Stacks = new ImageBatch[3];
-            containerBatches = new BindingList<ContainerBatch>();
+            //containerBatches = new BindingList<ContainerBatch>();
             for (int i = 0; i < Stacks.Length; i++)
             {
                 Stacks[i] = new ImageBatch();
-                imageSources.Add(Stacks[i]);
+                //imageSources.Add(Stacks[i]);
             }
                 
         }

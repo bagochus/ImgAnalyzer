@@ -65,5 +65,26 @@ namespace ImgAnalyzer
         {
             throw new NotImplementedException();
         }
+
+        public ushort[] GetLine(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public double[] GetLineDouble(int index)
+        {
+            if (container_2D is Container_2D_double)
+            {
+                var c = container_2D as Container_2D_double;
+                double[] result = new double[c.Width];
+                Buffer.BlockCopy(c.data, index * c.Height * sizeof(double), result, 0, c.Width * sizeof(double));
+                return result;
+            }
+            else {
+                double[] result = new double[container_2D.Width];
+                for (int x = 0; x < container_2D.Width; x++) result[x] = container_2D.ddata[x,index]; 
+                return result;
+            }
+        }
     }
 }

@@ -97,6 +97,19 @@ namespace ImgAnalyzer
 
         }
 
+        public ushort[] GetLine(int index)
+        {
+            SelectLine(index);
+            return pixelData;
+        }
+
+        public double[] GetLineDouble(int index)
+        {
+            SelectLine(index);
+            double[] result = new double[pixelData.Length];
+            for (int i = 0; i < pixelData.Length; i++) result[i] = pixelData[i];
+            return result;
+        }
 
         public void Dispose()
         {
@@ -120,6 +133,10 @@ namespace ImgAnalyzer
                 _disposed = true;
             }
         }
+
+
+
+
 
         // Финализатор (на случай, если Dispose не вызвали)
         ~TiffImgFileHandler()

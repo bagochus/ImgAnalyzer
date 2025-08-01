@@ -8,7 +8,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 {
     public interface IGroupOperation
     {
-        void Execute();
+        Task Execute();
         string Description { get; }
         double[] SingleValueParameters { get; set; }
         string[] SingleValueNames { get; }

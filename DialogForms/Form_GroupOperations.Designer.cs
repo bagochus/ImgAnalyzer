@@ -53,6 +53,7 @@
             this.button_exec.TabIndex = 2;
             this.button_exec.Text = "Выполнить";
             this.button_exec.UseVisualStyleBackColor = true;
+            this.button_exec.Click += new System.EventHandler(this.button_exec_Click);
             // 
             // label_description
             // 

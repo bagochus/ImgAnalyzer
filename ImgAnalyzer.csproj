@@ -182,6 +182,7 @@
     <Compile Include="2D\GroupOperations\ExtremumSearch.cs" />
     <Compile Include="2D\GroupOperations\IGroupOperation.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
+    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Max.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\SinglePixelOperation.cs" />
     <Compile Include="2D\PhaseMeasurer.cs" />
