@@ -23,7 +23,7 @@ namespace ImgAnalyzer
     {
         //--------------Pointers to global objects------
         public MainPresenter _presenter;
-        private IImageSource _batch;
+        private IImageSource imageSource;
 
 
 
@@ -106,10 +106,8 @@ namespace ImgAnalyzer
 
         public void BindImageSource(IImageSource source)
         {
-            
-
-
-
+            imageSource = source;
+            sources.Add(source);
         }
 
 
@@ -127,8 +125,8 @@ namespace ImgAnalyzer
             this.DoubleBuffered = true;
             
 
-            _batch = batch;
-            sources.Add(_batch);    
+            imageSource = batch;
+            sources.Add(imageSource);    
             UpdateOverlays();
         }
 
@@ -214,14 +212,14 @@ namespace ImgAnalyzer
         }
         public void UpdateOverlays()
         {
-            ovelay_points = DataManager_1D.Instance.GetPoints(_batch);
-            ovelay_points_ct = DataManager_1D.Instance.GetPointsCT(_batch);
-            points_ct_coords = DataManager_1D.Instance.GetPoinsCT_Coords(_batch);
-            polygons = DataManager_1D.Instance.GetPolys(_batch);
-            polygons_ct = DataManager_1D.Instance.GetPolysCT(_batch);
-            poly_names = DataManager_1D.Instance.GetPolyNames(_batch);
-            poly_ct_names = DataManager_1D.Instance.GetPolyCTNames(_batch);
-            frame_poly = _batch.coordinateTransformation?.Polygon;
+            ovelay_points = DataManager_1D.Instance.GetPoints(imageSource);
+            ovelay_points_ct = DataManager_1D.Instance.GetPointsCT(imageSource);
+            points_ct_coords = DataManager_1D.Instance.GetPoinsCT_Coords(imageSource);
+            polygons = DataManager_1D.Instance.GetPolys(imageSource);
+            polygons_ct = DataManager_1D.Instance.GetPolysCT(imageSource);
+            poly_names = DataManager_1D.Instance.GetPolyNames(imageSource);
+            poly_ct_names = DataManager_1D.Instance.GetPolyCTNames(imageSource);
+            frame_poly = imageSource.coordinateTransformation?.Polygon;
 
             pictureBox1.Invalidate();
         }
@@ -290,13 +288,13 @@ namespace ImgAnalyzer
         }
         private void ClickPointCT(int x,int y)
         {
-            if (!ImageManager.IsCTDefined(_batch)) return;
+            if (!ImageManager.IsCTDefined(imageSource)) return;
             if (addForAllBatches && !ImageManager.AllCTDefined())
             {
                 MessageBox.Show("Для одной из групп изображений не определена активная область");
                 return;
             }
-            DataManager_1D.Instance.AddPointCTMeasurment(new Point(x,y),_batch,addForAllBatches);
+            DataManager_1D.Instance.AddPointCTMeasurment(new Point(x,y),imageSource,addForAllBatches);
             UpdateOverlays();
         }
         private void ImageClick(int imageX, int imageY)
@@ -380,12 +378,12 @@ namespace ImgAnalyzer
                    "512");
                 valid_input &= (Int32.TryParse(userInput, NumberStyles.Any, frmt, out height));
 
-                if (valid_input && _batch != null )
+                if (valid_input && imageSource != null )
                 {
                     CoordinateTransformation ct = new CoordinateTransformation(points_for_frame.ToArray());
                     ct.frame_width = width;
                     ct.frame_height = height;
-                    _batch.coordinateTransformation = ct;
+                    imageSource.coordinateTransformation = ct;
                 }
                 else MessageBox.Show("Ошибка ввода!");
 

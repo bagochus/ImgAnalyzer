@@ -270,7 +270,8 @@
     <Compile Include="FileManagement\I2DFileHandler.cs" />
     <Compile Include="FileManagement\ImageManager.cs" />
     <Compile Include="FileManagement\TiffImgFileHandler.cs" />
-    <Compile Include="ImageView\ColorBar.cs" />
+    <Compile Include="ImageView\ColorScheme.cs" />
+    <Compile Include="ImageView\ColorMaps.cs" />
     <Compile Include="ImageView\HeatMapForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -286,6 +287,12 @@
     <Compile Include="FileManagement\IImageSource.cs" />
     <Compile Include="FileManagement\ImageBatch.cs" />
     <Compile Include="2D\ImageProcessor_2D.cs" />
+    <Compile Include="ImageView\ImgViewSettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImageView\ImgViewSettingsForm.Designer.cs">
+      <DependentUpon>ImgViewSettingsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -363,6 +370,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ImageView\ImageViewForm.resx">
       <DependentUpon>ImageViewForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageView\ImgViewSettingsForm.resx">
+      <DependentUpon>ImgViewSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

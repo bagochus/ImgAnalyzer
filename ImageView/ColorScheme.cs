@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace ImgAnalyzer.ImageView
 {
-    internal class ColorBar
+    internal class ColorScheme
     {
         
-
+        public string Name { get; set; }
 
 
         private List<KeyValuePair<Color, double>> colorList = new List<KeyValuePair<Color, double>>();
