@@ -1,4 +1,5 @@
-﻿using ImgAnalyzer.MeasurmentTypes;
+﻿using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.MeasurmentTypes;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,9 @@ namespace ImgAnalyzer
     {
         //--------------Pointers to global objects------
         public MainPresenter _presenter;
-        private ImageBatch _batch;
+        private IImageSource _batch;
+
+
 
         //------------Constants-------------------------
         IFormatProvider frmt = new NumberFormatInfo { NumberDecimalSeparator = "." };
@@ -47,7 +50,7 @@ namespace ImgAnalyzer
         private bool addForAllBatches = false;
         private ClickModeV2 clickMode = ClickModeV2.None;
         private int PointCounter = 0;
-
+        private List<IImageSource> sources = new List<IImageSource>();
 
 
         //----------Overlays from 1D DataManager---------
@@ -85,7 +88,29 @@ namespace ImgAnalyzer
         //-----------------------------------------------
 
 
+        
+        public ImageViewForm()
+        {
+            InitializeComponent();
 
+            pictureBox1.MouseDown += PictureBox_MouseDown;
+            pictureBox1.MouseMove += PictureBox_MouseMove;
+            pictureBox1.MouseUp += PictureBox_MouseUp;
+            pictureBox1.MouseClick += PictureBox_MouseClick;
+            pictureBox1.MouseWheel += PictureBox_MouseWheel;
+            pictureBox1.Paint += pictureBox1_Paint;
+            this.DoubleBuffered = true;
+
+
+        }
+
+        public void BindImageSource(IImageSource source)
+        {
+            
+
+
+
+        }
 
 
 
@@ -100,9 +125,10 @@ namespace ImgAnalyzer
             pictureBox1.MouseWheel += PictureBox_MouseWheel;
             pictureBox1.Paint += pictureBox1_Paint;
             this.DoubleBuffered = true;
-
+            
 
             _batch = batch;
+            sources.Add(_batch);    
             UpdateOverlays();
         }
 
@@ -125,6 +151,15 @@ namespace ImgAnalyzer
 
             }
         }
+
+        public void LoadHeatmap()
+        {
+
+
+
+        }
+
+
 
         private Bitmap CreateErrorImage()
         {
@@ -250,7 +285,7 @@ namespace ImgAnalyzer
             PointMeasurment pm = new PointMeasurment(new Point(x,y));
             if (addForAllBatches) 
             DataManager_1D.Instance.AddMeasurment(pm);
-            else DataManager_1D.Instance.AddMeasurment(pm,_batch);
+            else DataManager_1D.Instance.AddMeasurment(pm,sources);
             UpdateOverlays();
         }
         private void ClickPointCT(int x,int y)
@@ -295,12 +330,12 @@ namespace ImgAnalyzer
             if (in_ct)
             {
                 PolygonMeasurmentCT pmct = new PolygonMeasurmentCT(temp_points.ToArray());
-                DataManager_1D.Instance.AddMeasurment(pmct,_batch);
+                DataManager_1D.Instance.AddMeasurment(pmct,sources);
             }
             else
             {
                 PolygonMeasurment pm = new PolygonMeasurment(temp_points.ToArray());
-                DataManager_1D.Instance.AddMeasurment(pm,_batch);
+                DataManager_1D.Instance.AddMeasurment(pm,sources);
             }
             temp_points.Clear ();
             UpdateOverlays();
@@ -319,7 +354,7 @@ namespace ImgAnalyzer
 
                 PolygonMeasurment ptm = new PolygonMeasurment(points);
                 if (addForAllBatches) DataManager_1D.Instance.AddMeasurment(ptm);
-                else DataManager_1D.Instance.AddMeasurment(ptm,_batch);
+                else DataManager_1D.Instance.AddMeasurment(ptm,sources);
 
                 temp_points.Clear();
                
@@ -598,6 +633,19 @@ namespace ImgAnalyzer
         #endregion
 
         private void checkBox_allch_act_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_sourceSelect_Click(object sender, EventArgs e)
+        {
+            sources.Clear();
+            SourceSelectForm form = new SourceSelectForm();
+            form.ShowDialog();
+            this.sources = form.Sources;
+        }
+
+        private void настройкиОтображенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }

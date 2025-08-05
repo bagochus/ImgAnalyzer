@@ -34,17 +34,17 @@ namespace ImgAnalyzer.MeasurmentTypes
 
         public void PhotoToFrame()
         {
-            if (Batch == null) return;
-            if (Batch.coordinateTransformation == null) return;
-            if (_weightMatrix == null) _weightMatrix = Batch.coordinateTransformation.GeneratePWM_poly(pointsPhoto);
-            pointsFrame = Batch.coordinateTransformation.BackTransformPolygon(pointsPhoto);
+            if (Source == null) return;
+            if (Source.coordinateTransformation == null) return;
+            if (_weightMatrix == null) _weightMatrix = Source.coordinateTransformation.GeneratePWM_poly(pointsPhoto);
+            pointsFrame = Source.coordinateTransformation.BackTransformPolygon(pointsPhoto);
         }
         public void FrameToPhoto()
         {
-            if (Batch == null) return;
-            if (Batch.coordinateTransformation == null) return;
-            if (_weightMatrix == null) _weightMatrix = Batch.coordinateTransformation.GeneratePWM_poly(pointsPhoto);
-            pointsPhoto = Batch.coordinateTransformation.TransformPolygon(pointsFrame);
+            if (Source == null) return;
+            if (Source.coordinateTransformation == null) return;
+            if (_weightMatrix == null) _weightMatrix = Source.coordinateTransformation.GeneratePWM_poly(pointsPhoto);
+            pointsPhoto = Source.coordinateTransformation.TransformPolygon(pointsFrame);
         }
 
 
@@ -78,14 +78,14 @@ namespace ImgAnalyzer.MeasurmentTypes
         {
             double result = Double.NaN;
             if (processor == null) { return result; }
-            if (Batch == null) { return result; }
-            if (Batch.coordinateTransformation == null) { return result; }
+            if (Source == null) { return result; }
+            if (Source.coordinateTransformation == null) { return result; }
             if (_weightMatrix == null)
             {
-                _weightMatrix = Batch.coordinateTransformation.GeneratePWM_poly(pointsFrame);
+                _weightMatrix = Source.coordinateTransformation.GeneratePWM_poly(pointsFrame);
             }
             result = processor.Measure_PWM(_weightMatrix);
-            result *= Batch.coordinateTransformation.k_area;
+            result *= Source.coordinateTransformation.k_area;
 
             return result;
         }
@@ -95,20 +95,20 @@ namespace ImgAnalyzer.MeasurmentTypes
         public override void Init()
         {
             bool error = false;
-            error |= (Batch == null);
-            error |= (Batch.coordinateTransformation == null);
+            error |= (Source == null);
+            error |= (Source.coordinateTransformation == null);
             error |= (pointsFrame == null && pointsPhoto == null);
             if (error) throw new Exception("Неправильно определено измерение");
 
             if (pointsFrame == null) FrameToPhoto();
             else PhotoToFrame();
 
-            _weightMatrix = Batch.coordinateTransformation.GeneratePWM_poly(pointsFrame);    
+            _weightMatrix = Source.coordinateTransformation.GeneratePWM_poly(pointsFrame);    
         }
 
         public override IMeasurment Clone()
         {
-            if (Batch?.coordinateTransformation == null) throw (new Exception("Невозможно копировать измерение, система координат не определена"));
+            if (Source?.coordinateTransformation == null) throw (new Exception("Невозможно копировать измерение, система координат не определена"));
             PolygonMeasurmentCT clone_pt = new PolygonMeasurmentCT();
             clone_pt.PointsFrame = this.pointsFrame;
             return clone_pt;

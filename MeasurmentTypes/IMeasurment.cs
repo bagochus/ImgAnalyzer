@@ -18,8 +18,8 @@ namespace ImgAnalyzer.MeasurmentTypes
     public interface IMeasurment
     {
 
-        ImageBatch Batch { get; }
-        void BindImageStack(ImageBatch stack);
+        IImageSource Source { get; }
+        void BindImageStack(IImageSource source);
 
         string Name { get; set; }
         double Measure(ImageProcessor_1D processor);

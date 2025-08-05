@@ -12,8 +12,9 @@ namespace ImgAnalyzer
         int Height { get; }
         int Count { get; }
 
-        string Name { get; }    
+        string Name { get; set; }
 
+        CoordinateTransformation coordinateTransformation { get; set; }
 
         I2DFileHandler Get2DFileHandler(int index);
 

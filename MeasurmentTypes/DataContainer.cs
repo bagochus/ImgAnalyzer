@@ -30,8 +30,8 @@ namespace ImgAnalyzer.MeasurmentTypes
         public string ImageGroup { get 
             {
                 if (measurment == null) { return "---"; }
-                if (measurment.Batch == null) { return "---"; }
-                return ImageManager.GetIndexLabel(measurment.Batch);
+                if (measurment.Source == null) { return "---"; }
+                return measurment.Source.Name;
             } }
         public string Type { get 
             {
@@ -63,14 +63,14 @@ namespace ImgAnalyzer.MeasurmentTypes
         }
 
 
-        public DataContainer (IMeasurment measurment, ImageBatch imageBatch)
+        public DataContainer (IMeasurment measurment, IImageSource imageSource)
         {
             this.measurment = measurment;
-            this.measurment.BindImageStack (imageBatch);
-            data = new double[imageBatch.Count];
-            imageStatus = new ImageStatus[imageBatch.Count];
-            for (int i = 0; i < imageBatch.Count; i++) imageStatus[i] = ImageStatus.Unprocessed;
-            dataCount = imageBatch.Count;
+            this.measurment.BindImageStack (imageSource);
+            data = new double[imageSource.Count];
+            imageStatus = new ImageStatus[imageSource.Count];
+            for (int i = 0; i < imageSource.Count; i++) imageStatus[i] = ImageStatus.Unprocessed;
+            dataCount = imageSource.Count;
             Name = measurment.Name;
             _status = ContainerStatus.Unprocessed;
             _s_status = _status.ToString ();

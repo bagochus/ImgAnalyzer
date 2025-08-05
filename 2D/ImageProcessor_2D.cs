@@ -187,6 +187,18 @@ namespace ImgAnalyzer
 
         }
 
+        public static double[,] FitDataDouble(double[,] data, CoordinateTransformation ct)
+        {
+
+            ImageProcessor_2D proc_instance = new ImageProcessor_2D();
+            proc_instance.FitDataDoubleAsync(data, ct);
+            while (!proc_instance.dataReady) { }
+            return proc_instance.dataF;
+
+        }
+
+
+
         protected async void FitDataAsync(int[,] data, CoordinateTransformation ct)
         {
             dataF = new double[ct.frame_width, ct.frame_height];
@@ -194,11 +206,9 @@ namespace ImgAnalyzer
 
             await Task.Run(() =>
             {
-
                 DataManager_2D.workToBeDone += ct.frame_width;
                 lock (dataF)
                 {
-
                     while (!ct.FullFieldCalculated) { }
                     Parallel.For(0, ct.frame_width,
                         (int i) =>
@@ -219,17 +229,46 @@ namespace ImgAnalyzer
                             DataManager_2D.progress.Report(1);
                         }
                         );
-
-
-
-
                 }
                 dataReady = true;
             });
-
-
-
         }
+
+        protected async void FitDataDoubleAsync(double[,] data, CoordinateTransformation ct)
+        {
+            dataF = new double[ct.frame_width, ct.frame_height];
+            ct.CalculateFullField();
+
+            await Task.Run(() =>
+            {
+                DataManager_2D.workToBeDone += ct.frame_width;
+                lock (dataF)
+                {
+                    while (!ct.FullFieldCalculated) { }
+                    Parallel.For(0, ct.frame_width,
+                        (int i) =>
+                        {
+
+                            for (int j = 0; j < ct.frame_height; j++)
+                            {
+                                var pw = ct.FullFiedTransformation[i, j];
+                                double tempvalue = 0;
+                                for (int k = 0; k < pw.Count; k++)
+                                {
+                                    tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
+                                }
+                                tempvalue *= ct.k_area;
+                                dataF[i, j] = tempvalue;
+
+                            }
+                            DataManager_2D.progress.Report(1);
+                        }
+                        );
+                }
+                dataReady = true;
+            });
+        }
+
 
         public static int[,] Index(ImageBatch batch, int index)
         {

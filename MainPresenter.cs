@@ -56,7 +56,7 @@ namespace ImgAnalyzer
         // usage of indexes - [y,x]
         /*
         private int[,] max_values;
-        private int[,] min_values;
+        private int[,] max_values;
         private int[,] amplitude_values;
         private int[,] good_values;
         private int[,] pseudo_phase_values;

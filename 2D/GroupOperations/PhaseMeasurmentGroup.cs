@@ -51,10 +51,15 @@ namespace ImgAnalyzer._2D.GroupOperations
             for (int i = 0; i < min_count; i++)
             {
 
-               double[,] phaseData = GeneratePhaseImage(i);
-               Container_2D_double c = new Container_2D_double(phaseData);
-               batch.AddContainer(c);
-                DataManager_2D.progress.Report(1);
+                await Task.Run(() =>
+                {
+                    double[,] phaseData = GeneratePhaseImage(i);
+                    Container_2D_double c = new Container_2D_double(phaseData);
+                    batch.AddContainer(c);
+                    DataManager_2D.progress.Report(1);
+
+                });
+
 
             }
             

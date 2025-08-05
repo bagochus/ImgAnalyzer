@@ -29,7 +29,7 @@ namespace ImgAnalyzer
 
         public EventHandler DataChanged;
 
-
+        public CoordinateTransformation coordinateTransformation { get; set; }
         public List<string> Filenames { get { return filenames; } }
         private List<string> filenames;
 

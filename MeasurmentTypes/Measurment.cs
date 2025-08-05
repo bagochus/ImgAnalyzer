@@ -9,7 +9,7 @@ namespace ImgAnalyzer.MeasurmentTypes
 {
     public abstract class Measurment : IMeasurment
     {
-        public ImageBatch Batch { get; set; }
+        public IImageSource Source { get; set; }
 
         public string Name { get; set; }
         private ImageProcessor_1D _imageProcessor;
@@ -18,9 +18,9 @@ namespace ImgAnalyzer.MeasurmentTypes
         {
             _imageProcessor = imageProcessor;
         }
-        public void BindImageStack(ImageBatch stack)
+        public void BindImageStack(IImageSource source)
         {
-            Batch = stack;
+            Source = source;
         }
         public abstract void Init();
         public abstract double Measure(ImageProcessor_1D processor);

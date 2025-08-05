@@ -165,6 +165,7 @@
     <Compile Include="2D\Calculations\PhaseMeasurment1.cs" />
     <Compile Include="2D\Calculations\Scaling.cs" />
     <Compile Include="2D\Calculations\ICalculation2D.cs" />
+    <Compile Include="2D\Calculations\Divide.cs" />
     <Compile Include="2D\Calculations\Sum.cs" />
     <Compile Include="2D\Calculations\Threshold.cs" />
     <Compile Include="2D\Containers\Container_2D_double.cs" />
@@ -183,6 +184,9 @@
     <Compile Include="2D\GroupOperations\IGroupOperation.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\FitCoordinateSystem.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakMaximum.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakMinimum.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Max.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\SinglePixelOperation.cs" />
     <Compile Include="2D\PhaseMeasurer.cs" />
@@ -255,15 +259,22 @@
     <Compile Include="DialogForms\ProfilesForm.Designer.cs">
       <DependentUpon>ProfilesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DialogForms\SourceSelectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\SourceSelectForm.Designer.cs">
+      <DependentUpon>SourceSelectForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="FileManagement\ContainerBatch.cs" />
     <Compile Include="FileManagement\ContainerFileHandler.cs" />
     <Compile Include="FileManagement\I2DFileHandler.cs" />
     <Compile Include="FileManagement\ImageManager.cs" />
     <Compile Include="FileManagement\TiffImgFileHandler.cs" />
-    <Compile Include="HeatMapForm.cs">
+    <Compile Include="ImageView\ColorBar.cs" />
+    <Compile Include="ImageView\HeatMapForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="HeatMapForm.Designer.cs">
+    <Compile Include="ImageView\HeatMapForm.Designer.cs">
       <DependentUpon>HeatMapForm.cs</DependentUpon>
     </Compile>
     <Compile Include="HistogramForm.cs">
@@ -281,10 +292,10 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageViewForm.cs">
+    <Compile Include="ImageView\ImageViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImageViewForm.Designer.cs">
+    <Compile Include="ImageView\ImageViewForm.Designer.cs">
       <DependentUpon>ImageViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="LookupTables\ILookupTable.cs" />
@@ -341,13 +352,16 @@
     <EmbeddedResource Include="DialogForms\ProfilesForm.resx">
       <DependentUpon>ProfilesForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="HeatMapForm.resx">
+    <EmbeddedResource Include="DialogForms\SourceSelectForm.resx">
+      <DependentUpon>SourceSelectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageView\HeatMapForm.resx">
       <DependentUpon>HeatMapForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HistogramForm.resx">
       <DependentUpon>HistogramForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImageViewForm.resx">
+    <EmbeddedResource Include="ImageView\ImageViewForm.resx">
       <DependentUpon>ImageViewForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">

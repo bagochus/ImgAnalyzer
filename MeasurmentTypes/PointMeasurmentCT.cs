@@ -10,6 +10,7 @@ namespace ImgAnalyzer.MeasurmentTypes
     internal class PointMeasurmentCT : Measurment
     {
         private readonly PointF invalidPoint = new PointF(float.NaN, float.NaN);
+        private ImageBatch Batch;
 
         PixelWeightMatrix _weightMatrix; 
 
@@ -66,14 +67,16 @@ namespace ImgAnalyzer.MeasurmentTypes
             _weightMatrix = Batch.coordinateTransformation.GeneratePWM_point(pointFrame);
         }
 
-        public PointMeasurmentCT(Point point,ImageBatch batch)
+        public PointMeasurmentCT(Point point,IImageSource imageSource)
         {
             this.pointPhoto = point;
-            Batch = batch;
+            Batch = imageSource as ImageBatch;
             PhotoToFrame();
             Name = "PointCT " + point.X.ToString() + ":" + point.Y.ToString();
         }
-        public PointMeasurmentCT() { }
+        public PointMeasurmentCT() 
+        {
+        }
 
 
 

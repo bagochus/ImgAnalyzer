@@ -41,7 +41,11 @@
             this.button_addpolyct = new System.Windows.Forms.Button();
             this.checkBox_overlays = new System.Windows.Forms.CheckBox();
             this.button_reset = new System.Windows.Forms.Button();
+            this.button_sourceSelect = new System.Windows.Forms.Button();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.настройкиОтображенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -50,9 +54,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.BackColor = System.Drawing.Color.DarkGreen;
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 27);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(852, 620);
+            this.pictureBox1.Size = new System.Drawing.Size(852, 477);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
@@ -71,7 +75,7 @@
             // 
             this.CoordinateLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.CoordinateLabel.AutoSize = true;
-            this.CoordinateLabel.Location = new System.Drawing.Point(12, 635);
+            this.CoordinateLabel.Location = new System.Drawing.Point(12, 507);
             this.CoordinateLabel.Name = "CoordinateLabel";
             this.CoordinateLabel.Size = new System.Drawing.Size(35, 13);
             this.CoordinateLabel.TabIndex = 2;
@@ -81,7 +85,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(870, 12);
+            this.label1.Location = new System.Drawing.Point(870, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(140, 39);
             this.label1.TabIndex = 3;
@@ -124,7 +128,7 @@
             // button_frame
             // 
             this.button_frame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_frame.Location = new System.Drawing.Point(873, 202);
+            this.button_frame.Location = new System.Drawing.Point(873, 235);
             this.button_frame.Name = "button_frame";
             this.button_frame.Size = new System.Drawing.Size(140, 39);
             this.button_frame.TabIndex = 7;
@@ -136,7 +140,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(870, 254);
+            this.label2.Location = new System.Drawing.Point(870, 287);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(119, 39);
             this.label2.TabIndex = 8;
@@ -145,7 +149,7 @@
             // button_addpointct
             // 
             this.button_addpointct.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_addpointct.Location = new System.Drawing.Point(873, 306);
+            this.button_addpointct.Location = new System.Drawing.Point(873, 339);
             this.button_addpointct.Name = "button_addpointct";
             this.button_addpointct.Size = new System.Drawing.Size(140, 23);
             this.button_addpointct.TabIndex = 9;
@@ -156,7 +160,7 @@
             // button_addpolyct
             // 
             this.button_addpolyct.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_addpolyct.Location = new System.Drawing.Point(873, 335);
+            this.button_addpolyct.Location = new System.Drawing.Point(873, 368);
             this.button_addpolyct.Name = "button_addpolyct";
             this.button_addpolyct.Size = new System.Drawing.Size(140, 23);
             this.button_addpolyct.TabIndex = 10;
@@ -170,7 +174,7 @@
             this.checkBox_overlays.AutoSize = true;
             this.checkBox_overlays.Checked = true;
             this.checkBox_overlays.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_overlays.Location = new System.Drawing.Point(870, 602);
+            this.checkBox_overlays.Location = new System.Drawing.Point(870, 474);
             this.checkBox_overlays.Name = "checkBox_overlays";
             this.checkBox_overlays.Size = new System.Drawing.Size(109, 30);
             this.checkBox_overlays.TabIndex = 12;
@@ -181,7 +185,7 @@
             // button_reset
             // 
             this.button_reset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_reset.Location = new System.Drawing.Point(873, 573);
+            this.button_reset.Location = new System.Drawing.Point(873, 445);
             this.button_reset.Name = "button_reset";
             this.button_reset.Size = new System.Drawing.Size(140, 23);
             this.button_reset.TabIndex = 13;
@@ -189,11 +193,39 @@
             this.button_reset.UseVisualStyleBackColor = true;
             this.button_reset.Click += new System.EventHandler(this.button_reset_Click);
             // 
+            // button_sourceSelect
+            // 
+            this.button_sourceSelect.Location = new System.Drawing.Point(873, 191);
+            this.button_sourceSelect.Name = "button_sourceSelect";
+            this.button_sourceSelect.Size = new System.Drawing.Size(140, 23);
+            this.button_sourceSelect.TabIndex = 14;
+            this.button_sourceSelect.Text = "Выбрать каналы...";
+            this.button_sourceSelect.UseVisualStyleBackColor = true;
+            this.button_sourceSelect.Click += new System.EventHandler(this.button_sourceSelect_Click);
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.настройкиОтображенияToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1028, 24);
+            this.menuStrip1.TabIndex = 15;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // настройкиОтображенияToolStripMenuItem
+            // 
+            this.настройкиОтображенияToolStripMenuItem.Name = "настройкиОтображенияToolStripMenuItem";
+            this.настройкиОтображенияToolStripMenuItem.Size = new System.Drawing.Size(156, 20);
+            this.настройкиОтображенияToolStripMenuItem.Text = "Настройки отображения";
+            this.настройкиОтображенияToolStripMenuItem.Click += new System.EventHandler(this.настройкиОтображенияToolStripMenuItem_Click);
+            // 
             // ImageViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1028, 657);
+            this.ClientSize = new System.Drawing.Size(1028, 529);
+            this.Controls.Add(this.button_sourceSelect);
             this.Controls.Add(this.button_reset);
             this.Controls.Add(this.checkBox_overlays);
             this.Controls.Add(this.button_addpolyct);
@@ -207,11 +239,15 @@
             this.Controls.Add(this.CoordinateLabel);
             this.Controls.Add(this.button_addpoint);
             this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(228, 502);
             this.Name = "ImageViewForm";
             this.Text = "ImageViewForm";
             this.Load += new System.EventHandler(this.ImageViewForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -232,5 +268,8 @@
         private System.Windows.Forms.Button button_addpolyct;
         private System.Windows.Forms.CheckBox checkBox_overlays;
         private System.Windows.Forms.Button button_reset;
+        private System.Windows.Forms.Button button_sourceSelect;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem настройкиОтображенияToolStripMenuItem;
     }
 }

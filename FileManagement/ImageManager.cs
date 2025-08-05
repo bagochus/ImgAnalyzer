@@ -27,11 +27,14 @@ namespace ImgAnalyzer
 
         static ImageManager()
         {
+            string[] names = new string[] {"A","B","C" };
             Stacks = new ImageBatch[3];
+
             //containerBatches = new BindingList<ContainerBatch>();
             for (int i = 0; i < Stacks.Length; i++)
             {
                 Stacks[i] = new ImageBatch();
+                Stacks[i].Name = names[i];  
                 //imageSources.Add(Stacks[i]);
             }
                 
@@ -79,7 +82,7 @@ namespace ImgAnalyzer
             return result;
         }
 
-        public static bool IsCTDefined(ImageBatch batch)
+        public static bool IsCTDefined(IImageSource batch)
         { return batch.coordinateTransformation != null; }
 
     }

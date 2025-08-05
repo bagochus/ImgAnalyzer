@@ -46,10 +46,10 @@ namespace ImgAnalyzer
 
 
         #region Measurment List Management
-        public void AddMeasurment(IMeasurment measurment, ImageBatch batch)
+        public void AddMeasurment(IMeasurment measurment, IImageSource source)
         {
             bool ct_error = true;
-            ct_error &= (batch.coordinateTransformation == null);
+            ct_error &= (source.coordinateTransformation == null);
             ct_error &= ((measurment is PointMeasurmentCT) || 
                         (measurment is PolygonMeasurmentCT));
             if (ct_error)
@@ -57,7 +57,7 @@ namespace ImgAnalyzer
                 MessageBox.Show("Для выбранной группы изображений не определена активная область");
                 return;
             }
-            DataContainer dc = new DataContainer(measurment, batch);
+            DataContainer dc = new DataContainer(measurment, source);
             if (measurment is PolygonMeasurment)
             {
                 poly_counter++;
@@ -71,6 +71,16 @@ namespace ImgAnalyzer
 
             dataContainers.Add(dc);
         }
+
+        public void AddMeasurment(IMeasurment measurment, List<IImageSource> sources)
+        {
+            foreach (IImageSource source in sources)
+            {
+                AddMeasurment (measurment.Clone(), source);
+            }
+
+        }
+
         public void AddMeasurment(IMeasurment measurment)
         {
             try
@@ -82,15 +92,15 @@ namespace ImgAnalyzer
 
         }
 
-        public void AddPointCTMeasurment(Point point, ImageBatch batch, bool addForAll)
+        public void AddPointCTMeasurment(Point point, IImageSource source, bool addForAll)
         {
-            PointMeasurmentCT pt_ct = new PointMeasurmentCT(point,batch);
-            dataContainers.Add(new DataContainer(pt_ct, batch));
+            PointMeasurmentCT pt_ct = new PointMeasurmentCT(point,source);
+            dataContainers.Add(new DataContainer(pt_ct, source));
             if (!addForAll) return;
             PointF point_frame = pt_ct.PointFrame;
             foreach (ImageBatch b in ImageManager.Stacks) 
             {
-                if (b == batch) continue;
+                if (b == source) continue;
                 PointMeasurmentCT pt_ct_copy = new PointMeasurmentCT();
                 pt_ct_copy.Name = pt_ct.Name;
                 pt_ct_copy.BindImageStack(b);
@@ -129,13 +139,13 @@ namespace ImgAnalyzer
             return names;
         }
 
-        public List<Point> GetPoints(ImageBatch imageBatch)
+        public List<Point> GetPoints(IImageSource imageSource)
         {
             List<Point> points = new List<Point>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue; 
+                if (dataContainers[i].measurment.Source != imageSource) continue; 
                 if (dataContainers[i].measurment is PointMeasurment)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -146,13 +156,13 @@ namespace ImgAnalyzer
             return points;
         }
         
-        public List<Point> GetPointsCT(ImageBatch imageBatch)
+        public List<Point> GetPointsCT(IImageSource imageSource)
         {
             List<Point> points = new List<Point>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageSource) continue;
                 if (dataContainers[i].measurment is PointMeasurmentCT)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -163,13 +173,13 @@ namespace ImgAnalyzer
             return points;
         }
 
-        public List<string> GetPoinsCT_Coords(ImageBatch imageBatch)
+        public List<string> GetPoinsCT_Coords(IImageSource imageSource)
         {
             List<string> coords = new List<string>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageSource) continue;
                 if (dataContainers[i].measurment is PointMeasurmentCT)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -181,13 +191,13 @@ namespace ImgAnalyzer
             return coords;
         }
 
-        public List<Point[]> GetPolys(ImageBatch imageBatch)
+        public List<Point[]> GetPolys(IImageSource imageSource)
         {
             List<Point[]> polys = new List<Point[]>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageSource) continue;
                 if (dataContainers[i].measurment is PolygonMeasurment)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -198,13 +208,13 @@ namespace ImgAnalyzer
             return polys;
         }
 
-        public List<Point[]> GetPolysCT(ImageBatch imageBatch)
+        public List<Point[]> GetPolysCT(IImageSource imageBatch)
         {
             List<Point[]> polys = new List<Point[]>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageBatch) continue;
                 if (dataContainers[i].measurment is PolygonMeasurmentCT)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -215,13 +225,13 @@ namespace ImgAnalyzer
             return polys;
         }
 
-        public List<string> GetPolyNames(ImageBatch imageBatch)
+        public List<string> GetPolyNames(IImageSource imageSource)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageSource) continue;
                 if (dataContainers[i].measurment is PolygonMeasurment)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -234,13 +244,13 @@ namespace ImgAnalyzer
 
         }
 
-        public List<string> GetPolyCTNames(ImageBatch imageBatch)
+        public List<string> GetPolyCTNames(IImageSource imageBatch)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < dataContainers.Count; i++)
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != imageBatch) continue;
+                if (dataContainers[i].measurment.Source != imageBatch) continue;
                 if (dataContainers[i].measurment is PolygonMeasurmentCT)
                 {
                     IMeasurment ms = dataContainers[i].measurment;
@@ -320,7 +330,7 @@ namespace ImgAnalyzer
             for (int i = 0; i < dataContainers.Count; i++) 
             {
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != batch) continue;
+                if (dataContainers[i].measurment.Source != batch) continue;
                 if (dataContainers[i].containerStatus == ContainerStatus.Done) continue;
 
                 dataContainers[i].data[n] = dataContainers[i].measurment.Measure(processor);
@@ -337,7 +347,7 @@ namespace ImgAnalyzer
             {
                 if (!selected.Contains(i)) continue;
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Batch != batch) continue;
+                if (dataContainers[i].measurment.Source != batch) continue;
                 if (dataContainers[i].containerStatus == ContainerStatus.Done) continue;
 
                 dataContainers[i].data[n] = dataContainers[i].measurment.Measure(processor);

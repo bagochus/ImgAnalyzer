@@ -32,7 +32,7 @@ namespace ImgAnalyzer
         public List<string> filenames = new List<string>();
         public CoordinateTransformation coordinateTransformation {  get; set; }
 
-        public string Name { get { return ImageManager.GetIndexLabel(this); } }
+        public string Name { get; set; }
 
         public EventHandler DataChanged;
         public void LocateImageBatch(string[] filenames)
