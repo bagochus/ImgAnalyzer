@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImgAnalyzer._2D.GroupOperations.SinglePixelOperations;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,8 @@ namespace ImgAnalyzer._2D
         public int Height { get { return height; } }
 
 
+
+
         public string Filename { get { return filename; } set { filename = value; } }
         protected string filename = "";
 
@@ -28,6 +31,10 @@ namespace ImgAnalyzer._2D
 
         public double[,] ddata { get { return GetDData(); } }
         public abstract double[,] GetDData();
+        public abstract double Max();
+        public abstract double Min();
+
+        public abstract int GetCount(double v1, double v2);
 
         public abstract void SaveToFile(string filename);
 

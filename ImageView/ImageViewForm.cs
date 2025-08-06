@@ -1,10 +1,13 @@
-﻿using ImgAnalyzer.DialogForms;
+﻿using ImgAnalyzer._2D;
+using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.ImageView;
 using ImgAnalyzer.MeasurmentTypes;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -51,6 +54,9 @@ namespace ImgAnalyzer
         private ClickModeV2 clickMode = ClickModeV2.None;
         private int PointCounter = 0;
         private List<IImageSource> sources = new List<IImageSource>();
+        private ImgViewSettings settings = new ImgViewSettings();
+        private I2DFileHandler hndl;
+        private ColorScheme colorScheme;
 
 
         //----------Overlays from 1D DataManager---------
@@ -88,8 +94,7 @@ namespace ImgAnalyzer
         //-----------------------------------------------
 
 
-        
-        public ImageViewForm()
+        private void Initialize()
         {
             InitializeComponent();
 
@@ -100,6 +105,52 @@ namespace ImgAnalyzer
             pictureBox1.MouseWheel += PictureBox_MouseWheel;
             pictureBox1.Paint += pictureBox1_Paint;
             this.DoubleBuffered = true;
+        }
+
+        public ImageViewForm(IContainer_2D container)
+        {
+            hndl = new ContainerFileHandler(container);
+            Initialize();
+            settings.colorMode = ColorMode.Color;
+            settings.schemeIndex = 0;
+            colorScheme = ColorMaps.Schemes[0].Clone();
+            settings.min = hndl.Min();
+            settings.max = hndl.Max();
+            colorScheme.Min = settings.min;
+            colorScheme.Max = settings.max;
+            ConstructImage();
+        }
+
+        public ImageViewForm(IImageSource imageSource, int index)
+        {
+            Initialize();
+            if (index > imageSource.Count)
+            {
+                MessageBox.Show("Index out od range");
+                originalImage = CreateErrorImage();
+                pictureBox1.Image = originalImage;
+                return;
+            }
+            hndl = imageSource.Get2DFileHandler(index);
+
+            if (imageSource is ImageBatch)
+            {
+                settings.colorMode = ColorMode.Simple;
+                LoadImage((imageSource as ImageBatch).filenames[index]);
+            }
+            else
+            {
+                settings.colorMode= ColorMode.Color;
+                settings.schemeIndex = 0;
+                colorScheme = ColorMaps.Schemes[0].Clone();
+                settings.min = hndl.Min();
+                settings.max = hndl.Max();
+                colorScheme.Min = settings.min;
+                colorScheme.Max = settings.max;
+
+                ConstructImage();
+            }
+
 
 
         }
@@ -114,15 +165,7 @@ namespace ImgAnalyzer
 
         public ImageViewForm(ImageBatch batch)
         {
-            InitializeComponent();
-
-            pictureBox1.MouseDown += PictureBox_MouseDown;
-            pictureBox1.MouseMove += PictureBox_MouseMove;
-            pictureBox1.MouseUp += PictureBox_MouseUp;
-            pictureBox1.MouseClick += PictureBox_MouseClick;
-            pictureBox1.MouseWheel += PictureBox_MouseWheel;
-            pictureBox1.Paint += pictureBox1_Paint;
-            this.DoubleBuffered = true;
+            Initialize();
             
 
             imageSource = batch;
@@ -135,8 +178,14 @@ namespace ImgAnalyzer
         {
             try
             {
+                hndl = new TiffImgFileHandler();
+                hndl.LoadFile(imageSource,imagePath);
+
+                settings.colorMode = ColorMode.Simple;
+                settings.schemeIndex = -1;
                 originalImage = new Bitmap(imagePath);
                 displayImage = new Bitmap(originalImage);
+                
 
             }
             catch (Exception ex)
@@ -150,12 +199,54 @@ namespace ImgAnalyzer
             }
         }
 
-        public void LoadHeatmap()
+        public void ConstructImage()
         {
+            if(originalImage != null) originalImage.Dispose();
+            if(displayImage !=null)  displayImage.Dispose();
 
+
+            originalImage = new Bitmap(hndl.Width, hndl.Height);
+            for (int y = 0; y < hndl.Height; y++) {
+                {
+                    for (int x = 0; x < hndl.Width; x++)
+                    {
+                        if (settings.colorMode == ColorMode.Color)
+                        originalImage.SetPixel(x, y, colorScheme.CalculateColor(hndl.GetPixelValue(x, y)));
+                        if (settings.colorMode == ColorMode.BW)
+                        originalImage.SetPixel(x, y, ColorScheme.CalculateBW(settings.min, settings.max,hndl.GetPixelValue(x, y)));
+
+                    }
+                       
+                    int a = 0;
+                }
+                
+            }
+
+            displayImage = new Bitmap(originalImage);
+        }
+
+
+        private async void OpenSettings()
+        {
+            ImgViewSettingsForm form = new ImgViewSettingsForm(settings);
+            form.ShowDialog();
+
+            if (!form.changed) return;
+            Cursor = Cursors.WaitCursor;
+            await Task.Run(() =>
+            {
+                colorScheme = ColorMaps.Schemes[settings.schemeIndex].Clone();
+                colorScheme.Min = settings.min;
+                colorScheme.Max = settings.max;
+                ConstructImage();
+                pictureBox1.Invalidate();
+
+            });
+            Cursor = Cursors.Default;
 
 
         }
+
 
 
 
@@ -212,6 +303,7 @@ namespace ImgAnalyzer
         }
         public void UpdateOverlays()
         {
+            if (imageSource == null) return;
             ovelay_points = DataManager_1D.Instance.GetPoints(imageSource);
             ovelay_points_ct = DataManager_1D.Instance.GetPointsCT(imageSource);
             points_ct_coords = DataManager_1D.Instance.GetPoinsCT_Coords(imageSource);
@@ -219,7 +311,7 @@ namespace ImgAnalyzer
             polygons_ct = DataManager_1D.Instance.GetPolysCT(imageSource);
             poly_names = DataManager_1D.Instance.GetPolyNames(imageSource);
             poly_ct_names = DataManager_1D.Instance.GetPolyCTNames(imageSource);
-            frame_poly = imageSource.coordinateTransformation?.Polygon;
+            frame_poly = imageSource?.coordinateTransformation?.Polygon;
 
             pictureBox1.Invalidate();
         }
@@ -645,6 +737,15 @@ namespace ImgAnalyzer
 
         private void настройкиОтображенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            OpenSettings();
+
+
+        }
+
+        private void ImageViewForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            originalImage.Dispose();
+            displayImage.Dispose();
 
         }
     }

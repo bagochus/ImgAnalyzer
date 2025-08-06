@@ -16,6 +16,12 @@ namespace ImgAnalyzer
         double GetPixelValue(int pixel);
         double GetPixelValue(int line, int pixel);
 
+        int Width { get; }
+        int Height { get; }
+
+        double Max();
+        double Min();
+        int GetCount(double v1, double v2);
         
 
     }

@@ -244,6 +244,7 @@
             this.MinimumSize = new System.Drawing.Size(228, 502);
             this.Name = "ImageViewForm";
             this.Text = "ImageViewForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ImageViewForm_FormClosing);
             this.Load += new System.EventHandler(this.ImageViewForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);

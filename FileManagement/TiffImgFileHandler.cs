@@ -21,6 +21,10 @@ namespace ImgAnalyzer
         ImageBatch source;
         private bool _disposed = false;
 
+        public int Width {  get { return width; } }
+
+        public int Height {  get { return height; } }
+
         public double GetPixelValue(int pixel)
         {
             if (pixel >= width || pixel < 0) throw new ArgumentException("Wrong x");
@@ -31,6 +35,10 @@ namespace ImgAnalyzer
         public double GetPixelValue(int line, int pixel)
         {
             if (pixel >= width || pixel < 0) throw new ArgumentException("Wrong x");
+            if (line != this.line) SelectLine(line);
+                return this.pixelData[pixel];
+
+
 
             byte[] buffer = new byte[tiff_img.ScanlineSize()];
             lock(tiff_img)
@@ -62,6 +70,7 @@ namespace ImgAnalyzer
              height = source.Height;
              samplesPerPixel = source.SamplesPerPixel;
 
+            SelectLine(0);
 
 
         }
@@ -132,6 +141,52 @@ namespace ImgAnalyzer
                 // Здесь можно освободить неуправляемые ресурсы (если есть)
                 _disposed = true;
             }
+        }
+
+        public double Max()
+        {
+            double result = double.MinValue;
+            lock (tiff_img) 
+            {
+                for (int y = 0; y <height; y++)
+                {
+                    SelectLine(y);
+                    for (int x = 0; x <width; x++)
+                    if (pixelData[x] > result) result = pixelData[x];
+                }
+            }
+            return result;
+        }
+
+        public double Min()
+        {
+            double result = double.MaxValue;
+            lock (tiff_img)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    SelectLine(y);
+                    for (int x = 0; x < width; x++)
+                        if (pixelData[x] < result) result = pixelData[x];
+                }
+            }
+            return result;
+        }
+        
+
+        public int GetCount(double v1, double v2)
+        {
+            int result = 0;
+            lock (tiff_img)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    SelectLine(y);
+                    for (int x = 0; x < width; x++)
+                        if (pixelData[x] >= v1 && pixelData[x] <= v2) result++;
+                }
+            }
+            return result;
         }
 
 

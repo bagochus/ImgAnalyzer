@@ -39,6 +39,7 @@
             this.button_save = new System.Windows.Forms.Button();
             this.button_load = new System.Windows.Forms.Button();
             this.button_group_new = new System.Windows.Forms.Button();
+            this.button_newview = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -159,11 +160,23 @@
             this.button_group_new.UseVisualStyleBackColor = true;
             this.button_group_new.Click += new System.EventHandler(this.button_group_new_Click);
             // 
+            // button_newview
+            // 
+            this.button_newview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_newview.Location = new System.Drawing.Point(498, 273);
+            this.button_newview.Name = "button_newview";
+            this.button_newview.Size = new System.Drawing.Size(153, 23);
+            this.button_newview.TabIndex = 11;
+            this.button_newview.Text = "Отобразить new";
+            this.button_newview.UseVisualStyleBackColor = true;
+            this.button_newview.Click += new System.EventHandler(this.button_newview_Click);
+            // 
             // Form_2D
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(663, 456);
+            this.Controls.Add(this.button_newview);
             this.Controls.Add(this.button_group_new);
             this.Controls.Add(this.button_load);
             this.Controls.Add(this.button_save);
@@ -195,5 +208,6 @@
         private System.Windows.Forms.Button button_save;
         private System.Windows.Forms.Button button_load;
         private System.Windows.Forms.Button button_group_new;
+        private System.Windows.Forms.Button button_newview;
     }
 }

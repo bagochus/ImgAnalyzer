@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанных со сборкой.
 [assembly: AssemblyTitle("ImgAnalyzer")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("semi-stable")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ImgAnalyzer")]
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Номер сборки
 //      Редакция
 //
-[assembly: AssemblyVersion("2.7.4.0")]
+[assembly: AssemblyVersion("2.7.5.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

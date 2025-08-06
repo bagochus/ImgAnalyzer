@@ -209,5 +209,18 @@ namespace ImgAnalyzer._2D
             Form_GroupOperations form = new Form_GroupOperations();
             form.ShowDialog();
         }
+
+        private void button_newview_Click(object sender, EventArgs e)
+        {
+
+
+
+            try
+            {
+                ImageViewForm form = new ImageViewForm(DataManager_2D.containers[dataGrid.SelectedRows[0].Index]);
+                form.Show();
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
     }
 }

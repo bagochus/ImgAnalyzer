@@ -24,6 +24,27 @@ namespace ImgAnalyzer._2D
             this.height = data.GetLength(1);
         }
 
+        public override double Max()
+        {
+            double result = double.MinValue;
+            foreach (var item in data) if (item > result) result = item;
+            return result;
+        }
+
+        public override double Min()
+        {
+            double result = double.MaxValue;
+            foreach (var item in data) if (item < result) result = item;
+            return result;
+        }
+
+        public override int GetCount(double v1, double v2)
+        {
+            int count = 0;
+            foreach (var item in data) if (item >= v1 && item <= v2) count++;
+            return count;
+        }
+
         public override void SaveToFile(string filename)
         {
             this.filename = filename;

@@ -51,6 +51,25 @@ namespace ImgAnalyzer._2D
             return ddata;
         }
 
+        public override double Max()
+        {
+            int result = int.MinValue;
+            foreach (var item in data) if (item > result) result = item;
+            return result;
+        }
 
+        public override double Min()
+        {
+            int result = int.MaxValue;
+            foreach (var item in data) if (item < result) result = item;
+            return result;
+        }
+
+        public override int GetCount(double v1, double v2)
+        {
+            int count = 0;
+            foreach (var item in data) if (item >= v1 && item <= v2) count++;
+            return count;
+        }
     }
 }

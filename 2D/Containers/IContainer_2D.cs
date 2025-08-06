@@ -19,6 +19,10 @@ namespace ImgAnalyzer._2D
 
         double[,] ddata { get; }
 
+        double Max();
+        double Min();
+        int GetCount(double v1, double v2);
+
 
     }
 }

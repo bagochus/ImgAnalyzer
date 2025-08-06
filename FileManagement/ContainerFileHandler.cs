@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ImgAnalyzer
 {
@@ -11,11 +12,32 @@ namespace ImgAnalyzer
     {
         private IContainer_2D container_2D;
         private bool _disposed = false;
+        public int Width { get { return container_2D.Width; } }
+        public int Height { get  { return container_2D.Height; } }
+
+        public double Max() { return container_2D.Max(); }
+        public double Min() { return container_2D.Min(); }
+        public int GetCount(double v1, double v2) {return container_2D.GetCount(v1, v2);}
+
+        int line = 0;
+
+
+
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this); // Отменяет вызов финализатора, если он есть
+        }
+
+        public ContainerFileHandler()
+        {
+            
+        }
+
+        public ContainerFileHandler(IContainer_2D container_2D)
+        {
+            this.container_2D = container_2D;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -41,12 +63,16 @@ namespace ImgAnalyzer
 
         public double GetPixelValue(int pixel)
         {
-            throw new NotImplementedException();
+            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[line, pixel];
+            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[line, pixel];
+            return 0;
         }
 
         public double GetPixelValue(int line, int pixel)
         {
-            throw new NotImplementedException();
+            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[line,pixel];
+            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[line, pixel];
+            return 0;
         }
 
         public void LoadFile(IImageSource imageSource, string fileName)
@@ -63,7 +89,7 @@ namespace ImgAnalyzer
 
         public void SelectLine(int line)
         {
-            throw new NotImplementedException();
+            this.line = line;   
         }
 
         public ushort[] GetLine(int index)
