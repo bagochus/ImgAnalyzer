@@ -1,9 +1,10 @@
-﻿using System;
+﻿using BitMiracle.LibTiff.Classic;
+using ImgAnalyzer._2D;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BitMiracle.LibTiff.Classic;
 
 namespace ImgAnalyzer
 {
@@ -17,6 +18,13 @@ namespace ImgAnalyzer
         int width;
         int height;
         int samplesPerPixel;
+        double min;
+        double max;
+        bool min_calculated = false;
+        bool max_calculated = false;
+
+        private string filename;
+        public string Name { get { return filename; } }
 
         ImageBatch source;
         private bool _disposed = false;
@@ -32,30 +40,11 @@ namespace ImgAnalyzer
             return pixelData[pixel];
         }
 
-        public double GetPixelValue(int line, int pixel)
+        public double GetPixelValue(int pixel, int line)
         {
             if (pixel >= width || pixel < 0) throw new ArgumentException("Wrong x");
             if (line != this.line) SelectLine(line);
                 return this.pixelData[pixel];
-
-
-
-            byte[] buffer = new byte[tiff_img.ScanlineSize()];
-            lock(tiff_img)
-            {
-                tiff_img.ReadScanline(buffer, line);
-            }
-
-
-            ushort[] pixelData = new ushort[width * samplesPerPixel];
-
-            if (source.BitsPerSample == 16)
-                System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
-            else
-            {
-                for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
-            }
-            return pixelData[pixel];
 
         }
 
@@ -65,6 +54,7 @@ namespace ImgAnalyzer
             {  throw new TypeAccessException("Wrong source type"); }
             source = imageSource as ImageBatch;
             tiff_img = Tiff.Open(fileName, "r");
+            filename = fileName;
 
              width = source.Width;
              height = source.Height;
@@ -82,6 +72,7 @@ namespace ImgAnalyzer
             source = imageSource as ImageBatch;
             tiff_img = Tiff.Open(source.filenames[index], "r");
 
+            filename = source.filenames[index];
             width = source.Width;
             height = source.Height;
             samplesPerPixel = source.SamplesPerPixel;
@@ -145,6 +136,7 @@ namespace ImgAnalyzer
 
         public double Max()
         {
+            if (max_calculated) return max;
             double result = double.MinValue;
             lock (tiff_img) 
             {
@@ -155,11 +147,13 @@ namespace ImgAnalyzer
                     if (pixelData[x] > result) result = pixelData[x];
                 }
             }
+            max = result; max_calculated = true;
             return result;
         }
 
         public double Min()
         {
+            if (min_calculated) return min;
             double result = double.MaxValue;
             lock (tiff_img)
             {
@@ -170,6 +164,7 @@ namespace ImgAnalyzer
                         if (pixelData[x] < result) result = pixelData[x];
                 }
             }
+            min_calculated = true; min = result;    
             return result;
         }
         

@@ -8,13 +8,14 @@ namespace ImgAnalyzer
 {
     public interface I2DFileHandler : IDisposable
     {
+        string Name { get; }    
         void LoadFile(IImageSource imageSource, string fileName);
         void LoadFile(IImageSource imageSource, int index);
 
         double[] GetLineDouble(int index);
         void SelectLine(int line);
         double GetPixelValue(int pixel);
-        double GetPixelValue(int line, int pixel);
+        double GetPixelValue(int pixel, int line);
 
         int Width { get; }
         int Height { get; }

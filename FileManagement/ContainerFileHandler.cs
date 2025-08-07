@@ -21,6 +21,7 @@ namespace ImgAnalyzer
 
         int line = 0;
 
+        public string Name {get { return container_2D.Name; } }
 
 
 
@@ -63,15 +64,15 @@ namespace ImgAnalyzer
 
         public double GetPixelValue(int pixel)
         {
-            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[line, pixel];
-            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[line, pixel];
+            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[pixel, line];
+            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[pixel, line];
             return 0;
         }
 
-        public double GetPixelValue(int line, int pixel)
+        public double GetPixelValue(int pixel, int line)
         {
-            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[line,pixel];
-            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[line, pixel];
+            if (container_2D is Container_2D_double) return (container_2D as Container_2D_double).data[pixel,line];
+            if (container_2D is Container_2D_int) return (container_2D as Container_2D_int).data[pixel, line];
             return 0;
         }
 

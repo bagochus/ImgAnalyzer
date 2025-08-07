@@ -1,4 +1,5 @@
 ﻿using ScottPlot;
+using ScottPlot.Plottables;
 using ScottPlot.WinForms;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,19 @@ namespace ImgAnalyzer
             var bars1 = FormsPlot1.Plot.Add.Bars(xdata, ydata);
             bars1.LegendText = Header;
 
+
+
+
+        }
+
+
+        public HistogramForm(string Header, double[] xdata, int[] ydata,float width)
+        {
+            InitializeComponent();
+            panel1.Controls.Add(FormsPlot1);
+            var bars1 = FormsPlot1.Plot.Add.Bars(xdata, ydata);
+            foreach (var bar in bars1.Bars) bar.Size = width;
+            bars1.LegendText = Header;
 
 
 

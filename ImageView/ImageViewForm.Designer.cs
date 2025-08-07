@@ -44,6 +44,12 @@
             this.button_sourceSelect = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.настройкиОтображенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.измеренияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.срезПоXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.срезПоYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.гистограммаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nСтолбцовToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.построитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -195,6 +201,7 @@
             // 
             // button_sourceSelect
             // 
+            this.button_sourceSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_sourceSelect.Location = new System.Drawing.Point(873, 191);
             this.button_sourceSelect.Name = "button_sourceSelect";
             this.button_sourceSelect.Size = new System.Drawing.Size(140, 23);
@@ -206,7 +213,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.настройкиОтображенияToolStripMenuItem});
+            this.настройкиОтображенияToolStripMenuItem,
+            this.измеренияToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1028, 24);
@@ -219,6 +227,55 @@
             this.настройкиОтображенияToolStripMenuItem.Size = new System.Drawing.Size(156, 20);
             this.настройкиОтображенияToolStripMenuItem.Text = "Настройки отображения";
             this.настройкиОтображенияToolStripMenuItem.Click += new System.EventHandler(this.настройкиОтображенияToolStripMenuItem_Click);
+            // 
+            // измеренияToolStripMenuItem
+            // 
+            this.измеренияToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.срезПоXToolStripMenuItem,
+            this.срезПоYToolStripMenuItem,
+            this.гистограммаToolStripMenuItem});
+            this.измеренияToolStripMenuItem.Name = "измеренияToolStripMenuItem";
+            this.измеренияToolStripMenuItem.Size = new System.Drawing.Size(81, 20);
+            this.измеренияToolStripMenuItem.Text = "Измерения";
+            this.измеренияToolStripMenuItem.Click += new System.EventHandler(this.измеренияToolStripMenuItem_Click);
+            // 
+            // срезПоXToolStripMenuItem
+            // 
+            this.срезПоXToolStripMenuItem.Name = "срезПоXToolStripMenuItem";
+            this.срезПоXToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.срезПоXToolStripMenuItem.Text = "Срез по X";
+            this.срезПоXToolStripMenuItem.Click += new System.EventHandler(this.срезПоXToolStripMenuItem_Click);
+            // 
+            // срезПоYToolStripMenuItem
+            // 
+            this.срезПоYToolStripMenuItem.Name = "срезПоYToolStripMenuItem";
+            this.срезПоYToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.срезПоYToolStripMenuItem.Text = "Срез по Y";
+            this.срезПоYToolStripMenuItem.Click += new System.EventHandler(this.срезПоYToolStripMenuItem_Click);
+            // 
+            // гистограммаToolStripMenuItem
+            // 
+            this.гистограммаToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.построитьToolStripMenuItem,
+            this.nСтолбцовToolStripMenuItem});
+            this.гистограммаToolStripMenuItem.Name = "гистограммаToolStripMenuItem";
+            this.гистограммаToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.гистограммаToolStripMenuItem.Text = "Гистограмма";
+            this.гистограммаToolStripMenuItem.Click += new System.EventHandler(this.гистограммаToolStripMenuItem_Click);
+            // 
+            // nСтолбцовToolStripMenuItem
+            // 
+            this.nСтолбцовToolStripMenuItem.Name = "nСтолбцовToolStripMenuItem";
+            this.nСтолбцовToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.nСтолбцовToolStripMenuItem.Text = "Выбрать параметры";
+            this.nСтолбцовToolStripMenuItem.Click += new System.EventHandler(this.nСтолбцовToolStripMenuItem_Click);
+            // 
+            // построитьToolStripMenuItem
+            // 
+            this.построитьToolStripMenuItem.Name = "построитьToolStripMenuItem";
+            this.построитьToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.построитьToolStripMenuItem.Text = "Построить";
+            this.построитьToolStripMenuItem.Click += new System.EventHandler(this.построитьToolStripMenuItem_Click);
             // 
             // ImageViewForm
             // 
@@ -272,5 +329,11 @@
         private System.Windows.Forms.Button button_sourceSelect;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem настройкиОтображенияToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem измеренияToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem срезПоXToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem срезПоYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem гистограммаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem nСтолбцовToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem построитьToolStripMenuItem;
     }
 }

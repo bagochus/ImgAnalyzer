@@ -57,6 +57,9 @@ namespace ImgAnalyzer
         private ImgViewSettings settings = new ImgViewSettings();
         private I2DFileHandler hndl;
         private ColorScheme colorScheme;
+        private bool slice_x = false;
+        private bool slice_y = false;
+
 
 
         //----------Overlays from 1D DataManager---------
@@ -181,6 +184,8 @@ namespace ImgAnalyzer
                 hndl = new TiffImgFileHandler();
                 hndl.LoadFile(imageSource,imagePath);
 
+                settings.min = hndl.Min();
+                settings.max = hndl.Max();
                 settings.colorMode = ColorMode.Simple;
                 settings.schemeIndex = -1;
                 originalImage = new Bitmap(imagePath);
@@ -247,7 +252,94 @@ namespace ImgAnalyzer
 
         }
 
+        private async void PlotHystogramDouble()
+        {
+            int barCount = 50;
+            double[] xdata = new double[barCount];
+            int[] ydata = new int[barCount];
+            double xstep = (hndl.Max() - hndl.Min()) / barCount;
 
+            for (int i = 0; i < barCount; i++)
+            {
+                xdata[i] = hndl.Min() + xstep * i;
+                ydata[i] = 0;
+            }
+            Cursor = Cursors.WaitCursor;
+            await Task.Run(() =>
+            {
+                for (int i = 0; i < barCount; i++)
+                {
+                    ydata[i] = hndl.GetCount(xdata[i], xdata[i] + xstep);
+                }
+            });
+            Cursor = Cursors.Default;
+            HistogramForm form = new HistogramForm("Hystogram of " + hndl.Name, xdata, ydata,(float)xstep);
+            form.Show();
+        }
+
+        private async void PlotHystogram(double min, double max,int barCount)
+        {
+            
+            double[] xdata = new double[barCount];
+            int[] ydata = new int[barCount];
+            double xstep = (max - min) / (barCount+1);
+
+            for (int i = 0; i < barCount; i++)
+            {
+                xdata[i] = min + xstep * i;
+                ydata[i] = 0;
+            }
+            Cursor = Cursors.WaitCursor;
+            await Task.Run(() =>
+            {
+                for (int i = 0; i < barCount; i++)
+                {
+                    ydata[i] = hndl.GetCount(xdata[i], xdata[i] + xstep);
+                }
+            });
+            Cursor = Cursors.Default;
+            HistogramForm form = new HistogramForm("Hystogram of " + hndl.Name, xdata, ydata, (float)xstep);
+            form.Show();
+        }
+
+
+        private void SliceX(int y)
+        {
+            double[] xdata = new double[hndl.Width];
+            double[] ydata = new double[hndl.Width];
+
+
+            for (int x = 0; x < xdata.Length; x++)
+            {
+                xdata[x] = x;
+                ydata[x] = hndl.GetPixelValue(x,y);
+            }
+
+            PlotForm plotForm = new PlotForm("X, pixels");
+            plotForm.Text = "X slice of " + hndl.Name;
+            plotForm.AddData($"y = {y}", xdata, ydata);
+
+            plotForm.Show();
+        }
+
+        private void SliceY(int x)
+        {
+            double[] xdata = new double[hndl.Height];
+            double[] ydata = new double[hndl.Height];
+
+
+            for (int y = 0; y < xdata.Length; y++)
+            {
+                xdata[y] = y;
+                ydata[y] = hndl.GetPixelValue(x, y);
+            }
+
+            PlotForm plotForm = new PlotForm("Y, pixels");
+            plotForm.Text = "Y slice of " + hndl.Name;
+            plotForm.AddData($"X = {x}", xdata, ydata);
+
+            plotForm.Show();
+        }
 
 
         private Bitmap CreateErrorImage()
@@ -563,7 +655,10 @@ namespace ImgAnalyzer
 
 
 
-                CoordinateLabel.Text = $"Coordinates: ({imageX}, {imageY})";
+                CoordinateLabel.Text = $"Coordinates: ({imageX}, {imageY}) Value = " + hndl.GetPixelValue(imageX,imageY).ToString() ;
+                if (slice_x) SliceX(imageY);
+                if (slice_y) SliceY(imageX);
+
             }
 
         }
@@ -747,6 +842,61 @@ namespace ImgAnalyzer
             originalImage.Dispose();
             displayImage.Dispose();
 
+        }
+
+        private void измеренияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void срезПоXToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            slice_x = !slice_x;
+            срезПоXToolStripMenuItem.Checked = slice_x;
+            
+        }
+
+        private void срезПоYToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            slice_y = !slice_y;
+            срезПоYToolStripMenuItem.Checked = slice_y;
+        }
+
+        private void гистограммаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void nСтолбцовToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var form = new ParameterRequestForm();
+            form.Text = "Введите параметры";
+            form.AddDoubleRequest("Минимум");
+            form.AddDoubleRequest("Максимум");
+            form.AddIntRequest("Столбцов");
+
+            // Показываем форму как диалоговое окно
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    double min = form.RequestDouble("Минимум");
+                    double max = form.RequestDouble("Максимум");
+                    int count = form.RequestInt("Столбцов");
+
+                    PlotHystogram(min, max, count);
+                    
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void построитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PlotHystogramDouble();
         }
     }
 }
