@@ -55,6 +55,7 @@
             this.button_show.TabIndex = 1;
             this.button_show.Text = "Открыть карту";
             this.button_show.UseVisualStyleBackColor = true;
+            this.button_show.Click += new System.EventHandler(this.button_show_Click);
             // 
             // button_delete
             // 
@@ -73,6 +74,7 @@
             this.button_add.TabIndex = 3;
             this.button_add.Text = "Добавить массив";
             this.button_add.UseVisualStyleBackColor = true;
+            this.button_add.Click += new System.EventHandler(this.button_add_Click);
             // 
             // button_load
             // 

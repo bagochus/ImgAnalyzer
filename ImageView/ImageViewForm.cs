@@ -135,7 +135,7 @@ namespace ImgAnalyzer
                 return;
             }
             hndl = imageSource.Get2DFileHandler(index);
-
+            this.imageSource = imageSource;
             if (imageSource is ImageBatch)
             {
                 settings.colorMode = ColorMode.Simple;

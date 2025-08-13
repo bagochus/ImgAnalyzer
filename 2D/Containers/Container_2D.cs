@@ -14,9 +14,9 @@ namespace ImgAnalyzer._2D
         protected const string header_double = "Container_Double:";
         protected const string header_int = "Container_Int:";
 
-        public string Name { get; set ; }
+        public string Name { get; set; }
         public string ImageGroup { get; set; }
-        public int Width {get { return width; } }
+        public int Width { get { return width; } }
         public int Height { get { return height; } }
 
 
@@ -43,7 +43,7 @@ namespace ImgAnalyzer._2D
             IContainer_2D container;
             using (var stream = new FileStream(filename, FileMode.Open))
             using (var reader = new BinaryReader(stream))
-            { 
+            {
                 string header = reader.ReadString();
                 int width = reader.ReadInt32();
                 int height = reader.ReadInt32();
@@ -75,17 +75,46 @@ namespace ImgAnalyzer._2D
                     container.Filename = filename;
                     container.ImageGroup = "X";
                 }
-                
+
                 else throw new Exception("Error reading file");
             }
             return container;
         }
 
-        
+        public static bool GetParameters(string filename, out Type type, out int width, out int height)
+        {
+            bool result = true;
+            using (var stream = new FileStream(filename, FileMode.Open))
+            using (var reader = new BinaryReader(stream))
+            {
+                string header = reader.ReadString();
+                width = reader.ReadInt32();
+                height = reader.ReadInt32();
+                if (header.Contains(header_double))
+                {
+                    type = typeof(Container_2D_double);
+                }
+                else if (header.Contains(header_int))
+                {
+                    type = typeof(Container_2D_int);
+                }
+                else
+
+                {
+                    result = false;
+                    type = null;
+                }
+
+                return result;
+
+
+
+            }
 
 
 
 
 
+        }
     }
 }

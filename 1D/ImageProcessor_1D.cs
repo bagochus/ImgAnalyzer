@@ -11,12 +11,17 @@ using System.Threading.Tasks;
 
 namespace ImgAnalyzer
 {
+    
 
 
 
     public class ImageProcessor_1D
     {
         public Tiff tiff_img;
+        bool container_mode = false;
+
+        private I2DFileHandler hndl;
+
 
         public ImageProcessor_1D (string filename)
         {
@@ -25,10 +30,20 @@ namespace ImgAnalyzer
 
         }
 
-
-
-        public int MeasurePixel(int x, int y)
+        public ImageProcessor_1D(I2DFileHandler hndl)
         {
+            this.hndl = hndl;
+            container_mode = true;
+
+        }
+
+
+
+        public double MeasurePixel(int x, int y)
+        {
+            if (container_mode) return hndl.GetPixelValue(x, y);
+
+
             int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
             int samplesPerPixel = 1;
@@ -37,7 +52,12 @@ namespace ImgAnalyzer
             byte[] buffer = new byte[tiff_img.ScanlineSize()];
             tiff_img.ReadScanline(buffer, y);
             ushort[] pixelData = new ushort[width * samplesPerPixel];
-            System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+            if (bitsPerSample == 16)
+                System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+            else
+            {
+                for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+            }
             return pixelData[x];
         }
 
@@ -51,8 +71,10 @@ namespace ImgAnalyzer
             return tempvalue;
         }
 
-        public int MeasureLine(int line, int start_index, int count)
+        public double MeasureLine(int line, int start_index, int count)
         {
+            if (container_mode) return MeasureLineContainer(line, start_index, count);
+
             int width = tiff_img.GetField(TiffTag.IMAGEWIDTH)[0].ToInt();
             int height = tiff_img.GetField(TiffTag.IMAGELENGTH)[0].ToInt();
             int samplesPerPixel = 1;
@@ -61,7 +83,12 @@ namespace ImgAnalyzer
             byte[] buffer = new byte[tiff_img.ScanlineSize()];
             tiff_img.ReadScanline(buffer, line);
             ushort[] pixelData = new ushort[width * samplesPerPixel];
-            System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+            if (bitsPerSample == 16)
+                System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
+            else
+            {
+                for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+            }
             int result = 0;
             for (int i = start_index; i < start_index + count; i++)
             {
@@ -70,6 +97,29 @@ namespace ImgAnalyzer
 
             return result;
         }
+
+        private double MeasureLineContainer(int line, int start_index, int count)
+        {
+            double result = 0;
+            for (int i = start_index; i < start_index + count; i++)
+            {
+                result += hndl.GetPixelValue(i,line);
+            }
+
+
+            return result;
+
+        }
+
+        public void Dispose()
+        {
+            tiff_img.Dispose();
+
+        }
+
+
+
+
 
 
         #region Static functions

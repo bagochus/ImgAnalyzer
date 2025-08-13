@@ -152,6 +152,7 @@
             // 
             // button_group_new
             // 
+            this.button_group_new.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_group_new.Location = new System.Drawing.Point(498, 244);
             this.button_group_new.Name = "button_group_new";
             this.button_group_new.Size = new System.Drawing.Size(153, 23);

@@ -7,22 +7,23 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class PhaseMeasurmentGroup : IGroupOperation
+    public class PhaseMeasurmentGroup2 : IGroupOperation
     {
 
         //-------------interface properties-----------------------------
-        public string Description { get { return "Вычисляет фазу на основании 3 каналов."; } }
+        public string Description { get { return "Вычисляет фазу на основании 2 каналов.\n Минимум интенсивности - const, k1= А1/А2 = const"; } }
 
         public double[] SingleValueParameters {  get; set; }
 
-        public string[] SingleValueNames { get { return new string[0]; } }
+        private string[] singleValueNames = { "k1" ,"A_min", "B_min" };
+        public string[] SingleValueNames { get { return singleValueNames; } }
 
         public IContainer_2D[] ContainerParameters { get; set; }
 
-        private string[] containerNames = { "A_min", "A_max", "B_min", "B_max", "C_min", "C_max" };
-        public string[] ContainerNames { get { return containerNames; } }
+        //private string[] containerNames = { "A_min", "A_max", "B_min", "B_max", "C_min", "C_max" };
+        public string[] ContainerNames { get { return new string[0]; } }
 
-        public IImageSource[] imageSources { get; set; }
+        public IImageSource[] imageSources {  get; set; }
 
         private string[] imgSourceNames = { "A(sin)","B(cos)","C(-cos)" };
         public string[] imageSourceNames { get { return imgSourceNames; } }
@@ -34,6 +35,11 @@ namespace ImgAnalyzer._2D.GroupOperations
         string error_message = "";
         int min_count = Int32.MaxValue;
 
+        private double a_min;
+        private double b_min;
+        private double k1;
+
+
 
 
         public async Task Execute()
@@ -42,6 +48,13 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 MessageBox.Show(error_message); return;
             }
+            k1 = SingleValueParameters[0];
+
+            a_min= SingleValueParameters[1];
+            b_min= SingleValueParameters[2];
+
+
+
 
             ContainerBatch batch = new ContainerBatch();
             batch.Name = "Phase";
@@ -94,44 +107,20 @@ namespace ImgAnalyzer._2D.GroupOperations
             for (int i = 0; i < ddataA.GetLength(0); i++)
                 for (int j = 0; j < ddataA.GetLength(1); j++)
                 {
-                    double a_min = ContainerParameters[0].ddata[i, j];
-                    double a_max = ContainerParameters[1].ddata[i, j];
-                    double b_min = ContainerParameters[2].ddata[i, j];
-                    double b_max = ContainerParameters[3].ddata[i, j];
-                    double c_min = ContainerParameters[4].ddata[i, j];
-                    double c_max = ContainerParameters[5].ddata[i, j];
+
 
                     double a = ddataA[i, j];
                     double b = ddataB[i, j];
                     double c = ddataB[i, j];
 
-                    double a_value = 2 * ((a - a_min) / (a_max - a_min)) - 1;
-                    if (a_value > 1) a_value = 1;
-                    if (a_value < -1) a_value = -1;
 
-                    double b_value = 2 * ((b - b_min) / (b_max - b_min)) - 1;
-                    if (b_value > 1) b_value = 1;
-                    if (b_value < -1) b_value = -1;
 
-                    double c_value = 2 * ((c - c_min) / (c_max - c_min)) - 1;
-                    if (c_value > 1) c_value = 1;
-                    if (c_value < -1) c_value = -1;
-
-                    phase[i, j] = Math.Atan2(a_value, (b_value-c_value)/2) / Math.PI * 180;
+                    phase[i, j] = Math.Atan(((a-a_min)/(b_min))*k1) / Math.PI * 180;
 
 
                 }
             return phase;
 
-            Container_2D_double cont = new Container_2D_double(phase.GetLength(0), phase.GetLength(1));
-            cont.data = phase;
-            cont.Name = "Phase_" + n.ToString();
-            cont.ImageGroup = "F";
-            //if (CreateContainer) DataManager_2D.containers.Add(cont);
-
-
-
-            HeatMapForm form = new HeatMapForm(cont);
 
 
 
@@ -187,17 +176,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 return false;
 
             }
-            for (int i = 0; i< 6 ; i++)
-            {
-                result &= (ct1.frame_width == ContainerParameters[i].Width);
-                result &= (ct1.frame_height == ContainerParameters[i].Height);
-            }
-            if (!result)
-            {
-                error_message = "Размер одной из карт не совпадает с размером активных областей ";
-                return false;
-
-            }
+            
 
 
             return result;

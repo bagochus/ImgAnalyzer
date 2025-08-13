@@ -55,6 +55,7 @@ namespace ImgAnalyzer.MeasurmentTypes
 
         public override void Init()
         {
+            this.Batch = (Source as ImageBatch);
             bool error = false;
             error |= (Batch == null);
             error |= (Batch.coordinateTransformation == null);

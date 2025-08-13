@@ -197,9 +197,13 @@
     <Compile Include="2D\GroupOperations\ExtremumSearch.cs" />
     <Compile Include="2D\GroupOperations\IGroupOperation.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
+    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup2.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\FitCoordinateSystem.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\Index.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakMaximum.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakAbstract.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakMaximum2.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakMinimum.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Max.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\SinglePixelOperation.cs" />

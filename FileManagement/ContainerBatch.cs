@@ -13,7 +13,7 @@ namespace ImgAnalyzer
     public class ContainerBatch : IImageSource
     {
         private Type containerType = null;
-        private List<string> containers = new List<string>();
+        //private List<string> containers = new List<string>();
         private string workFolder = "";
 
 
@@ -25,19 +25,27 @@ namespace ImgAnalyzer
         private int height;
         public int Height { get { return height; } }
 
-        public int Count {  get { return containers.Count; } }
+        public int Count {  get { return Filenames.Count; } }
 
         public EventHandler DataChanged;
 
         public CoordinateTransformation coordinateTransformation { get; set; }
         public List<string> Filenames { get { return filenames; } }
-        private List<string> filenames;
+        private List<string> filenames = new List<string>();
 
         public void LocateImageBatch(string[] filenames)
         {
-            this.filenames = new List<string>(filenames);
-            GetParameters(0);
-            CheckAllFiles();
+            if (filenames.Length == 0) return;
+            if (this.filenames.Count == 0) GetParameters(filenames[0]);
+
+
+
+            foreach (string filename in filenames) 
+            {
+                if (CheckParamenters(filename)) this.filenames.Add(filename);
+            
+            }
+
 
             DataChanged?.Invoke(this, new EventArgs());
 
@@ -45,23 +53,17 @@ namespace ImgAnalyzer
 
 
 
-        private void GetParameters(int index) 
+        private void GetParameters(string filename) 
         {
-         
-            IContainer_2D container = Container_2D.ReadFromFile(filenames[index]);
-            this.width = container.Width;
-            this.height = container.Height; 
-            this.containerType = container.GetType();
         
-        
-        
+            Container_2D.GetParameters(filename,out containerType,out width, out height);    
         }
         private void CheckAllFiles()
         {
 
             for (int i = 0; i < filenames.Count; i++)
             {
-                if (!CheckParamenters(i))
+                if (!CheckParamenters(filenames[i]))
                 {
                     DialogResult dialogResult = MessageBox.Show("Файл " + filenames[i] +
                         " не соответсвтует остальным файлам. Исключить его из набора?"
@@ -74,13 +76,15 @@ namespace ImgAnalyzer
             }
         }
 
-        private bool CheckParamenters(int index)
+        private bool CheckParamenters(string filename)
         {
 
-            IContainer_2D container = Container_2D.ReadFromFile(filenames[index]);
-            int _width = container.Width;
-            int _height = container.Height;
-            Type _containerType = container.GetType();
+
+            int _width;
+            int _height;
+            Type _containerType;
+            Container_2D.GetParameters(filename, out _containerType, out _width, out _height);
+
 
             return (width == _width) &&
                 (height == _height) &&

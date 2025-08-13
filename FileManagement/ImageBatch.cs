@@ -42,6 +42,7 @@ namespace ImgAnalyzer
             CheckAllFiles();
             
             DataChanged?.Invoke(this, new EventArgs());
+            if (bitsPerSample == 8) MessageBox.Show("Данные в 8-битном формате");
             
         }
 

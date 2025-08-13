@@ -76,6 +76,8 @@ namespace ImgAnalyzer
         {
             foreach (IImageSource source in sources)
             {
+                IMeasurment m = measurment.Clone();
+                m.BindImageStack(source);
                 AddMeasurment (measurment.Clone(), source);
             }
 
@@ -273,10 +275,15 @@ namespace ImgAnalyzer
             }
             PlotForm plotForm = new PlotForm(VariableName+", " + VariableUnit);
 
-            double[] xdata = new double[ImageManager.MaxCount()];
-            for (int j = 0; j < ImageManager.MaxCount(); j++) xdata[j] = x_start + x_step * j;
 
-            foreach (int i in  selected) plotForm.AddData(dataContainers[i].Name, xdata, dataContainers[i].data);
+
+            foreach (int i in selected)
+            {
+                double[] xdata = new double[dataContainers[i].data.Length];
+                for (int j = 0; j < xdata.Length; j++) xdata[j] = x_start + x_step * j;
+                plotForm.AddData(dataContainers[i].Name, xdata, dataContainers[i].data);
+
+            }
 
 
             plotForm.Show();
@@ -320,24 +327,34 @@ namespace ImgAnalyzer
 
         #endregion
 
-
-
-
-        private void ProcessImage(ImageBatch batch, int n)
+        private void ProcessImage(IImageSource source, int n, int[] selected)
         {
-            ImageProcessor_1D processor = new ImageProcessor_1D(batch.filenames[n]);
+            if (source is ImageBatch) ProcessImage((ImageBatch)source, n,selected);
+            if (source is ContainerBatch) ProcessContainer((ContainerBatch)source, n,selected);
 
-            for (int i = 0; i < dataContainers.Count; i++) 
+        }
+
+
+
+        private void ProcessContainer(ContainerBatch source, int n, int[] selected)
+        {
+            I2DFileHandler hndl = source.Get2DFileHandler(n);
+            ImageProcessor_1D processor = new ImageProcessor_1D(hndl);
+            for (int i = 0; i < dataContainers.Count; i++)
             {
+                if (!selected.Contains(i)) continue;
                 if (dataContainers[i].measurment == null) continue;
-                if (dataContainers[i].measurment.Source != batch) continue;
+                if (dataContainers[i].measurment.Source != source) continue;
                 if (dataContainers[i].containerStatus == ContainerStatus.Done) continue;
 
                 dataContainers[i].data[n] = dataContainers[i].measurment.Measure(processor);
                 dataContainers[i].imageStatus[n] = ImageStatus.Done;
-            
+
             }
+            hndl.Dispose();
+
         }
+
 
         private void ProcessImage(ImageBatch batch, int n, int[] selected)
         {
@@ -354,74 +371,53 @@ namespace ImgAnalyzer
                 dataContainers[i].imageStatus[n] = ImageStatus.Done;
 
             }
-        }
-
-        public void InitContainers()
-        {
-            foreach (var container in dataContainers)
-                container.measurment?.Init();
+            processor.Dispose();
+            
         }
 
 
-        public async void ProcessAllImages()
+        public void ProcessAllImages()
         {
-            if (in_work) return;
-            in_work = true;
-            InitContainers();
-            foreach (DataContainer c in dataContainers) c.containerStatus = ContainerStatus.InWork;
-            for (int i = 0; i < 3; i++) 
+            List<int> containersToProcess = new List<int>();
+            for (int i = 0;i < dataContainers.Count;i++) 
             {
-                Action<int> work = (int n) => ProcessImage(ImageManager.Batch(i), n);
-                int count = ImageManager.Batch(i).Count;
-
-                var options = new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = Environment.ProcessorCount // Оптимальное кол-во потоков
-                };
-                await Task.Run(() =>
-                {
-                    Parallel.For(0, count, work);
-                });
-                
+                if (dataContainers[i].containerStatus == ContainerStatus.Unprocessed
+                    || dataContainers[i].containerStatus == ContainerStatus.Obsolete)
+                    containersToProcess.Add(i);
             }
-            foreach (DataContainer c in dataContainers) c.containerStatus = ContainerStatus.Done;
+            ProcessAllImages(containersToProcess.ToArray());
 
-            in_work = false;
         }
 
-        public async void ProcessAllImages(int[] selected)
+        public void ProcessAllImages(int[] selected)
         {
             if (in_work) return;
             in_work = true;
-            InitContainers();
-            for (int i = 0; i < dataContainers.Count; i++)
+
+            List<IImageSource> sourcesToProcess = new List<IImageSource>();
+            foreach (var dc in dataContainers)
             {
-                if (selected.Contains(i))
-                    dataContainers[i].containerStatus = ContainerStatus.InWork;
+                if (!sourcesToProcess.Contains(dc.measurment.Source)) sourcesToProcess.Add(dc.measurment.Source);
             }
 
-            for (int i = 0; i < 3; i++)
-            {
-                Action<int> work = (int n) => ProcessImage(ImageManager.Batch(i), n, selected);
-                int count = ImageManager.Batch(i).Count;
 
-                var options = new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = Environment.ProcessorCount // Оптимальное кол-во потоков
-                }; 
-                await Task.Run(() =>
-                {
-                    Parallel.For(0, count, work);
-                });
-            }
-            for (int i = 0; i<dataContainers.Count; i++)
+            foreach (int i in selected)
             {
-                if(selected.Contains(i))
-                    dataContainers[i].containerStatus = ContainerStatus.Done;
+                dataContainers[i].containerStatus = ContainerStatus.InWork;
+                dataContainers[i].measurment?.Init();
             }
+            for (int sources_counter = 0; sources_counter < sourcesToProcess.Count; sources_counter++) 
+            {
+              
+                for (int items_counter = 0; items_counter < sourcesToProcess[sources_counter].Count; items_counter++)
+                    ProcessImage(sourcesToProcess[sources_counter], items_counter, selected);
+
+            }
+            foreach (int i in selected) dataContainers[i].containerStatus = ContainerStatus.Done;
+
             in_work = false;
         }
-
+        
 
         public void EditXAxis()
         {

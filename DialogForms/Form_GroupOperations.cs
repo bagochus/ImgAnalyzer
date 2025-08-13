@@ -76,7 +76,11 @@ namespace ImgAnalyzer.DialogForms
 
         private void ConstructForm(IGroupOperation op)
         {
+
+            
+
             label_description.Text = op.Description;
+            y_current += label_description.Height;
 
             if (op.SingleValueNames.Length > 0)
             {
@@ -159,6 +163,7 @@ namespace ImgAnalyzer.DialogForms
 
             RemoveControl(singleValuesHeader);
             RemoveControl(containerValuesHeader);
+            RemoveControl(imageSourcesHeader);
 
             foreach (TextBox tb in values_single)
             {

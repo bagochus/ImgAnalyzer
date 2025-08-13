@@ -66,30 +66,41 @@ namespace ImgAnalyzer
 
         //-----------------Controls events----------------------------
 
-        private void button_calculate_Click(object sender, EventArgs e)
+        private async void button_calculate_Click(object sender, EventArgs e)
         {
-            if (DataManager_1D.Instance.InWork)
+            try
             {
-                MessageBox.Show("В настоящий момент процесс занят");
-                return;
+                if (DataManager_1D.Instance.InWork)
+                {
+                    MessageBox.Show("В настоящий момент процесс занят");
+                    return;
+                }
+                List<int> selectedIndices = new List<int>();
+                foreach (DataGridViewRow row in dataGrid.SelectedRows)
+                {
+                    selectedIndices.Add(row.Index);
+                }
+                await Task.Run(()=>DataManager_1D.Instance.ProcessAllImages(selectedIndices.ToArray()));
             }
-            List<int> selectedIndices = new List<int>();
-            foreach (DataGridViewRow row in dataGrid.SelectedRows)
-            {
-                selectedIndices.Add(row.Index);
-            }
-            DataManager_1D.Instance.ProcessAllImages(selectedIndices.ToArray());
+            catch (Exception ex) { MessageBox.Show(ex.Message);  }
+
+
 
         }
 
-        private void button_calcall_Click(object sender, EventArgs e)
+        private async void button_calcall_Click(object sender, EventArgs e)
         {
-            if (DataManager_1D.Instance.InWork)
+            try
             {
-                MessageBox.Show("В настоящий момент процесс занят");
-                return;
+                if (DataManager_1D.Instance.InWork)
+                {
+                    MessageBox.Show("В настоящий момент процесс занят");
+                    return;
+                }
+                await Task.Run(()=>DataManager_1D.Instance.ProcessAllImages());
             }
-            DataManager_1D.Instance.ProcessAllImages();
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+
 
         }
 
