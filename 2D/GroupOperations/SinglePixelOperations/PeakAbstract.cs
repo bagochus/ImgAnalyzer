@@ -9,23 +9,23 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
     internal abstract class PeakAbstract : SinglePixelOperation
     {
 
-        private double[,] n_start_positions; // точни начала поиска, из данных пользователя
-        
-        private double[,] peak_values = null; // найденные z-значения пиков
+        protected double[,] n_start_positions; // точни начала поиска, из данных пользователя
 
-        private double[,] min_values = null; // текущие минимальные и максимальные найденные значения
-        private double[,] max_values = null;
+        protected double[,] peak_values = null; // найденные z-значения пиков
 
-        private int[,] n_min_values = null; // текущие номера кадров, соответсвующие минимума и максимумам
-        private int[,] n_max_values = null;
+        protected double[,] min_values = null; // текущие минимальные и максимальные найденные значения
+        protected double[,] max_values = null;
 
-        private bool[,] peak_found = null;          // найден пик, прекращаем поиск для данного XY
-        private bool[,] threshold_found = null;     // найдено превышение порога, ищем превышение с обратным знаком
+        protected int[,] n_min_values = null; // текущие номера кадров, соответсвующие минимума и максимумам
+        protected int[,] n_max_values = null;
 
-        private int[,] npeak_values = null;           //текущие номера кадров, соответсвующие пикам
+        protected bool[,] peak_found = null;          // найден пик, прекращаем поиск для данного XY
+        protected bool[,] threshold_found = null;     // найдено превышение порога, ищем превышение с обратным знаком
+
+        protected int[,] npeak_values = null;           //текущие номера кадров, соответсвующие пикам
 
 
-        double threshold;
+        protected double threshold;
 
 
         public PeakAbstract()

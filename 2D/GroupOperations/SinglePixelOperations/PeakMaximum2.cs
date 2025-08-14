@@ -23,5 +23,11 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
             ProcessPixelMaximum(x, y, n, value);
         }
 
+        public new void Finish()
+        {
+            result = npeak_values;
+
+
+        }
     }
 }
