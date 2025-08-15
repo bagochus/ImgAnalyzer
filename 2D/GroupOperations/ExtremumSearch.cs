@@ -49,15 +49,18 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             if (!threshold_found[x,y])
             {
+                // До того как найдено превышение порогового значения 
+                // идет поиск минимума
                 if (data > max_values[x, y])
                 {
                     max_values[x, y] = data ;
                 }
-
                 if (data < min_values[x, y])
                 {
                     min_values[x, y] = data;
                     n_min_values[x, y] = n;
+                    // Чтобы исключить срабатывание поиска порога на экстремум-максимум
+                    // превышение порога регистрируется только при нахождении нового минимума
                     if (max_values[x, y] > min_values[x, y] + threshold)
                     {
                         threshold_found[x, y] = true;
@@ -65,8 +68,6 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                     }
                 }
-                
-
             }
             else
             {
@@ -74,14 +75,15 @@ namespace ImgAnalyzer._2D.GroupOperations
                 {
                     max_values[x, y] = data;
                 }
-
+                //все равно обновляем минимум - вдруг найдется значение получше
                 if (data < min_values[x, y])
                 {
                     min_values[x, y] = data;
                     n_min_values[x, y] = n;
                 }
-
-                if (max_values[x, y] > min_values[x, y] + threshold) CountPeak(data,x, y, n);
+                // мы "понимаем" что обнаружили пик только после того, как второй раз прошли порог
+                // поэтому в счетчик пиков передаем значение ранее найденного минимального значения
+                if (max_values[x, y] > min_values[x, y] + threshold) CountPeak(data,x, y, n_min_values[x,y]);
 
             }
 
@@ -125,14 +127,15 @@ namespace ImgAnalyzer._2D.GroupOperations
                     n_max_values[x, y] = n;
                 }
 
-                if (max_values[x, y] > min_values[x, y] + threshold) CountPeak(data,x, y, n);
+                if (max_values[x, y] > min_values[x, y] + threshold) CountPeak(data,x, y, n_max_values[x,y]);
 
             }
 
         }
 
 
-
+        //счетчик пиков - так как нам может быть нужен не первый обнаруженный пик
+        //при необходимости - регистируем пик и начинаем процесс заново
         private void CountPeak(double data, int x, int y, int n)
         {
             peak_counter[x,y]++;

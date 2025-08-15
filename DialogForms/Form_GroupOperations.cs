@@ -181,7 +181,7 @@ namespace ImgAnalyzer.DialogForms
             {
                 RemoveControl(cb);
             }
-            comboBox_containers.Clear();
+            comboBox_sources.Clear();
 
             foreach (Label l in labels_single) RemoveControl(l);
             labels_single.Clear();
@@ -214,11 +214,11 @@ namespace ImgAnalyzer.DialogForms
             ConstructForm(opr);
         }
 
-        private void Execute()
+        private async void Execute()
         {
             if (ReadForm(operation))
             {
-                operation.Execute();
+                await operation.Execute();
                 this.Close();
 
             }

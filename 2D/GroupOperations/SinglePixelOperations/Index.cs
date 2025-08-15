@@ -39,7 +39,7 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
                 for (int j = 0; j < result.GetLength(1); j++)
                 {
                     result[i, j] = x;
-                    indicies[i, j] = (int)ContainerParameters[0].ddata[i,j];    
+                    indicies[i, j] = (int)ContainerParameters[0].ddata(i, j);    
                 }
                     
         }

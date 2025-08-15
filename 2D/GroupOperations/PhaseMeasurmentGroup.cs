@@ -94,12 +94,12 @@ namespace ImgAnalyzer._2D.GroupOperations
             for (int i = 0; i < ddataA.GetLength(0); i++)
                 for (int j = 0; j < ddataA.GetLength(1); j++)
                 {
-                    double a_min = ContainerParameters[0].ddata[i, j];
-                    double a_max = ContainerParameters[1].ddata[i, j];
-                    double b_min = ContainerParameters[2].ddata[i, j];
-                    double b_max = ContainerParameters[3].ddata[i, j];
-                    double c_min = ContainerParameters[4].ddata[i, j];
-                    double c_max = ContainerParameters[5].ddata[i, j];
+                    double a_min = ContainerParameters[0].ddata(i, j);
+                    double a_max = ContainerParameters[1].ddata(i, j);
+                    double b_min = ContainerParameters[2].ddata(i, j);
+                    double b_max = ContainerParameters[3].ddata(i, j);
+                    double c_min = ContainerParameters[4].ddata(i, j);
+                    double c_max = ContainerParameters[5].ddata(i, j);
 
                     double a = ddataA[i, j];
                     double b = ddataB[i, j];

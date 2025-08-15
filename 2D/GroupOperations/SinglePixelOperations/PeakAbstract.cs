@@ -40,9 +40,7 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
         }
         
 
-        protected override void Finish()
-        {
-        }
+
 
         protected override void Prepare()
         {
@@ -58,25 +56,28 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
 
             peak_found = new bool[width, height];
             peak_values = new double[width, height];
+            threshold_found = new bool[width, height];
+            
 
-            threshold = SingleValueParameters[0];
-
-
+            
             for (int i = 0; i < width; i++)
+            {
                 for (int j = 0; j < height; j++)
                 {
-                    min_values[i,j] = Double.MaxValue;
+                    min_values[i, j] = Double.MaxValue;
                     max_values[i, j] = Double.MinValue;
 
                     n_max_values[i, j] = -1;
                     n_min_values[i, j] = -1;
                     npeak_values[i, j] = -1;
-                    n_start_positions[i,j] = (int)ContainerParameters[0].ddata[i,j];
-                    peak_found[i,j] = false;
+                    n_start_positions[i, j] = (int)ContainerParameters[0].ddata(i,j);
+                    peak_found[i, j] = false;
                     threshold_found[i, j] = false;
 
                 }
-
+            }
+            
+            threshold = SingleValueParameters[0];
         }
 
         protected override void ProcessLine(int y, int n, ushort[] line)
@@ -130,7 +131,11 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
                     n_max_values[x, y] = n;
                 }
 
-                if (max_values[x, y] > min_values[x, y] + threshold) peak_found[x, y] = true ;
+                if (max_values[x, y] > min_values[x, y] + threshold)
+                {
+                    peak_found[x, y] = true;
+
+                }
 
             }
         }
@@ -173,7 +178,14 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
                     n_max_values[x, y] = n;
                 }
 
-                if (max_values[x, y] > min_values[x, y] + threshold) peak_found[x, y] = true; ;
+                if (max_values[x, y] > min_values[x, y] + threshold)
+                {
+                    peak_found[x, y] = true;
+                    npeak_values[x, y] = n;
+                    peak_values[x, y] = value;
+                }
+                    
+
 
             }
 

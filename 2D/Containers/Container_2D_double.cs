@@ -61,11 +61,14 @@ namespace ImgAnalyzer._2D
 
 
         }
-        public override double[,] GetDData()
+        public override double ddata(int x, int y)
+        {
+            return data[x,y];
+        }
+
+        protected override double[,] GetDoubleData()
         {
             return data;
         }
-
-
     }
 }

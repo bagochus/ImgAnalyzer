@@ -19,9 +19,9 @@ namespace ImgAnalyzer._2D.Calculations
         {
 
 
-            double a_min = ContainerParameters[0].ddata[x, y];
-            double a_max = ContainerParameters[1].ddata[x, y];
-            double a = ContainerParameters[2].ddata[x, y];
+            double a_min = ContainerParameters[0].ddata(x, y);
+            double a_max = ContainerParameters[1].ddata(x, y);
+            double a = ContainerParameters[2].ddata(x, y);
             double min = SingleValueParameters[0];
             double max = SingleValueParameters[1];
 

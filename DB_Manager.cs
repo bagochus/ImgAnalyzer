@@ -398,6 +398,8 @@ namespace ImgAnalyzer
 
         public static ImageBatch LoadImageBatch(int Id)
         {
+             string[] labels = { "A", "B", "C" };
+            
             ImageBatch imageBatch = new ImageBatch();
 
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -414,11 +416,14 @@ namespace ImgAnalyzer
                     {
                         if (reader.Read())
                         {
+
                             string flnms = Convert.ToString(reader["filenames_json"]);
                             List<string> filenames = JsonSerializer.Deserialize<List<string>>(flnms);
                             imageBatch.LocateImageBatch(filenames.ToArray());
                             int ct_id = Convert.ToInt32(reader["Transform_id"]);
                             if (ct_id != 0) imageBatch.coordinateTransformation = LoadTransformation(ct_id);
+                            int name_id = Convert.ToInt32(reader["InnerID"]);
+                            if (name_id >= 0 && name_id < 3) imageBatch.Name = labels[name_id];
 
 
                         }

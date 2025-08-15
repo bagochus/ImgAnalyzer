@@ -29,10 +29,14 @@ namespace ImgAnalyzer._2D
         protected int width;
         protected int height;
 
-        public double[,] ddata { get { return GetDData(); } }
-        public abstract double[,] GetDData();
+        public double[,] DoubleData { get { return GetDoubleData(); } }
+
+        protected abstract double[,] GetDoubleData();
+
         public abstract double Max();
         public abstract double Min();
+
+        public abstract double ddata(int x, int y);
 
         public abstract int GetCount(double v1, double v2);
 

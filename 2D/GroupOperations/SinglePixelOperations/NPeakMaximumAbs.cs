@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
+﻿namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
 {
-    internal class PeakMaximumAbs : SinglePixelOperation
+    internal class NPeakMaximumAbs : SinglePixelOperation
     {
         private int xmin;
         private int xmax;
         private double[,] max_values;
 
         
-        public PeakMaximumAbs()
+        public NPeakMaximumAbs()
         {
-            operationName = "X максимум абс.";
-            description = "Находит X соответстующий максимальной интенсивности";
+            operationName = "N max abs";
+            description = "Находит номер кадра соответстующий максимальной интенсивности\n" +
+                "Nmin, Nmax - границы для поиска";
             this.singeValueNames = new string[] { "X min", "X_max" }; // пределы для поиска
 
         }

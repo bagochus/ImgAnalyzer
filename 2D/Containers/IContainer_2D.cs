@@ -17,7 +17,8 @@ namespace ImgAnalyzer._2D
 
         String Filename { get; set; }
 
-        double[,] ddata { get; }
+        double ddata(int x, int y);
+        double[,] DoubleData { get;  }
 
         double Max();
         double Min();

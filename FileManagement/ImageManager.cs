@@ -25,6 +25,7 @@ namespace ImgAnalyzer
         }
 
 
+
         static ImageManager()
         {
             string[] names = new string[] {"A","B","C" };

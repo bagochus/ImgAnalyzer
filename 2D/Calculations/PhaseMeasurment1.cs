@@ -18,15 +18,15 @@ namespace ImgAnalyzer._2D.Calculations
         {
 
 
-            double a_min = ContainerParameters[0].ddata[x, y];
-            double a_max = ContainerParameters[1].ddata[x, y];
-            double b_min = ContainerParameters[2].ddata[x, y];
-            double b_max = ContainerParameters[3].ddata[x, y];
-            double c_min = ContainerParameters[4].ddata[x, y];
-            double c_max = ContainerParameters[5].ddata[x, y];
-            double a = ContainerParameters[6].ddata[x, y];
-            double b = ContainerParameters[7].ddata[x, y];
-            double c = ContainerParameters[8].ddata[x, y];
+            double a_min = ContainerParameters[0].ddata(x, y);
+            double a_max = ContainerParameters[1].ddata(x, y);
+            double b_min = ContainerParameters[2].ddata(x, y);
+            double b_max = ContainerParameters[3].ddata(x, y);
+            double c_min = ContainerParameters[4].ddata(x, y);
+            double c_max = ContainerParameters[5].ddata(x, y);
+            double a = ContainerParameters[6].ddata(x, y);
+            double b = ContainerParameters[7].ddata(x, y);
+            double c = ContainerParameters[8].ddata(x, y);
             double acos_th = SingleValueParameters[0];
 
             double a_value = 2 * ((a - a_min) / (a_max - a_min)) - 1;

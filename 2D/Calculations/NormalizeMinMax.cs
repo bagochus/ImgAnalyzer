@@ -18,7 +18,7 @@ namespace ImgAnalyzer._2D.Calculations
         {
 
             double result = SingleValueParameters[0];
-            int a = (int)ContainerParameters[0].ddata[x, y];
+            int a = (int)ContainerParameters[0].ddata(x, y);
             try
             {
                 result = DataManager_1D.Instance.x_start + DataManager_1D.Instance.x_step * a;

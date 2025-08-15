@@ -18,7 +18,7 @@ namespace ImgAnalyzer._2D.Calculations
 
         public override double Measure(int x, int y)
         {
-            double a = ContainerParameters[0].ddata[x, y];
+            double a = ContainerParameters[0].ddata(x, y);
             if (a < -1) a = -1;
             if (a > 1) a = 1;
             return Math.Asin(a) * (180 / Math.PI) ;

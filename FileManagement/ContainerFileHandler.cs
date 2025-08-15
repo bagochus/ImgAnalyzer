@@ -109,7 +109,7 @@ namespace ImgAnalyzer
             }
             else {
                 double[] result = new double[container_2D.Width];
-                for (int x = 0; x < container_2D.Width; x++) result[x] = container_2D.ddata[x,index]; 
+                for (int x = 0; x < container_2D.Width; x++) result[x] = container_2D.ddata(x,index); 
                 return result;
             }
         }

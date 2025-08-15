@@ -37,10 +37,10 @@ namespace ImgAnalyzer
             for (int i = 0; i < ddataA.GetLength(0); i++)
                 for (int j = 0; j < ddataA.GetLength(1); j++)
                 {
-                    double a_min = DataManager_2D.containers[a_min_id].ddata[i, j];
-                    double a_max = DataManager_2D.containers[a_max_id].ddata[i, j];
-                    double b_min = DataManager_2D.containers[b_min_id].ddata[i, j];
-                    double b_max = DataManager_2D.containers[b_max_id].ddata[i, j];
+                    double a_min = DataManager_2D.containers[a_min_id].ddata(i, j);
+                    double a_max = DataManager_2D.containers[a_max_id].ddata(i, j);
+                    double b_min = DataManager_2D.containers[b_min_id].ddata(i, j);
+                    double b_max = DataManager_2D.containers[b_max_id].ddata(i, j);
 
                     double a = ddataA[i, j];
                     double b = ddataB[i, j];

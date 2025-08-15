@@ -43,7 +43,9 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
 
             await Task.Run(() => 
             {
-                 result = ImageProcessor_2D.FitDataDouble(ContainerParameters[0].ddata,
+                
+
+                 result = ImageProcessor_2D.FitDataDouble(ContainerParameters[0].DoubleData,
                     (imageSources[0] as ImageBatch).coordinateTransformation);
 
                 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define Multithread // Вкл многопоточность
+
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,11 +44,11 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             if (imageSources[0] is ImageBatch)
             {
-                await ProcessTiff();
+                 ProcessTiff();
             }
             else
             {
-                await ProcessContainer();
+                 ProcessContainer();
 
             }
 
@@ -58,27 +61,39 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         }
 
-        private async Task ProcessTiff()
+        private  void ProcessTiff()
         {
-            await Task.Run(() =>
-            {
-                Prepare();
-                for (int image_counter = 0; image_counter < imageSources[0].Count; image_counter++)
-                {
-                    using (var hndl = imageSources[0].Get2DFileHandler(image_counter) as TiffImgFileHandler)
-                    {
-                        Parallel.For(0, height, (int y) => {
-                            ushort[] line;
-                            lock (hndl) { line = hndl.GetLine(y); }
-                            ProcessLine(y, image_counter,line);
+            Prepare();
 
-                        });
+            for (int image_counter = 0; image_counter < imageSources[0].Count; image_counter++)
+            {
+                using (var hndl = imageSources[0].Get2DFileHandler(image_counter) as TiffImgFileHandler)
+                {
+#if Multithread
+                    Parallel.For(0, height, (int y) =>
+                    {
+                        ushort[] line;
+                        lock (hndl) { line = hndl.GetLine(y); }
+                        ProcessLine(y, image_counter, line);
+
+                    });
+#else
+                    for (int y =0; y<height; y++)
+                    {
+                        ushort[] line;
+                        lock (hndl) { line = hndl.GetLine(y); }
+                        ProcessLine(y, image_counter, line);
+
                     }
-                    DataManager_2D.progress.Report(1);
+                    
+#endif
 
                 }
-                Finish();
-            });
+                DataManager_2D.progress.Report(1);
+
+            }
+
+            Finish();
         }
         private async Task ProcessContainer()
         {

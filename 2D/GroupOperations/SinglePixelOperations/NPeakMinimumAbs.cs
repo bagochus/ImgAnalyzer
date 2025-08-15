@@ -6,18 +6,19 @@ using System.Threading.Tasks;
 
 namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
 {
-    internal class PeakMinimumAbs : SinglePixelOperation
+    internal class NPeakMinimumAbs : SinglePixelOperation
     {
         private int xmin;
         private int xmax;
         private double[,] min_values;
 
         
-        public PeakMinimumAbs()
+        public NPeakMinimumAbs()
         {
-            operationName = "X минимум абс.";
-            description = "Находит X соответстующий минимальной интенсивности";
-            this.singeValueNames = new string[] { "X min", "X_max" };
+            operationName = "N минимум абс.";
+            description = "Находит номер кадра соответстующий минимальной интенсивности\n" +
+                "Nmin, Nmax - границы для поиска";
+            this.singeValueNames = new string[] { "N min", "N max" };
 
         }
         

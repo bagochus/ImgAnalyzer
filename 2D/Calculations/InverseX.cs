@@ -20,7 +20,7 @@ namespace ImgAnalyzer._2D.Calculations
         public override double Measure(int x, int y)
         {
             int w = ContainerParameters[0].Width - 1;
-            return ContainerParameters[0].ddata[w-x, y];
+            return ContainerParameters[0].ddata(w - x, y);
         }
     }
 

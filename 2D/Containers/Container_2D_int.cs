@@ -42,13 +42,9 @@ namespace ImgAnalyzer._2D
 
         }
 
-        public override double[,] GetDData()
+        public override double ddata(int x, int y)
         {
-            double[,] ddata = new double[width, height];
-            for (int i = 0; i < width;i++)
-                for (int j = 0;j < height;j++)
-                    ddata[i,j] = data[i,j];
-            return ddata;
+            return data[x,y];
         }
 
         public override double Max()
@@ -70,6 +66,15 @@ namespace ImgAnalyzer._2D
             int count = 0;
             foreach (var item in data) if (item >= v1 && item <= v2) count++;
             return count;
+        }
+
+        protected override double[,] GetDoubleData()
+        {
+            double[,] d_data = new double[width,height];
+            for (int i = 0; i< width; i++)
+                for(int j = 0; j< height;j++)
+                    d_data[i,j] = data[i,j];
+            return d_data;
         }
     }
 }
