@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ImgAnalyzer
 {
-    internal class TiffImgFileHandler : I2DFileHandler
+    public class TiffImgFileHandler : I2DFileHandler
     {
         private int line = 0;
         Tiff tiff_img = null;
@@ -76,7 +76,7 @@ namespace ImgAnalyzer
             width = source.Width;
             height = source.Height;
             samplesPerPixel = source.SamplesPerPixel;
-
+            SelectLine(0);
 
 
         }

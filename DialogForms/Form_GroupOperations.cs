@@ -218,7 +218,7 @@ namespace ImgAnalyzer.DialogForms
         {
             if (ReadForm(operation))
             {
-                await operation.Execute();
+                DataManager_2D.tasks.Add( operation.Execute());
                 this.Close();
 
             }
@@ -231,7 +231,7 @@ namespace ImgAnalyzer.DialogForms
 
         private bool ReadForm(IGroupOperation op)
         {
-            bool input_valid = false;
+            bool input_valid = true;
             try
             {
                 if (op.SingleValueNames.Length > 0)
@@ -268,9 +268,17 @@ namespace ImgAnalyzer.DialogForms
                     op.imageSources = sources;
                 }
 
+                op.UseTransformation = checkBox_use_ct.Checked;
+                if (checkBox_use_ct.Checked)
+                {
+
+                    foreach (var s in op.imageSources) input_valid &= s.coordinateTransformation != null;
+                }
+                if (!input_valid) throw new Exception("Не укзанана система координат");
 
                 input_valid = true;
             }
+
             catch (Exception ex) { MessageBox.Show(ex.Message); }
             return input_valid;
 

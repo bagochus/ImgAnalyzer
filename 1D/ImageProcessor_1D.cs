@@ -114,6 +114,7 @@ namespace ImgAnalyzer
         public void Dispose()
         {
             tiff_img.Dispose();
+            if(hndl!=null) hndl.Dispose();  
 
         }
 

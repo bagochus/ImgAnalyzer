@@ -37,10 +37,22 @@ namespace ImgAnalyzer._2D
         protected string errorMessage = "";
 
         public bool PixByPixCalculation { get { return pixbypix; } }
-        private bool pixbypix = true;
+        protected bool pixbypix = true;
 
+        protected bool nonReturning = false;
+        public bool NonReturning { get { return nonReturning; } }
 
         public abstract double Measure(int x, int y);
+
+        public double[,] MeasureFull()
+        {
+            return new double[0, 0]; 
+        }
+
+        public void Process()
+        {
+
+        }
 
         public bool Check()
         {

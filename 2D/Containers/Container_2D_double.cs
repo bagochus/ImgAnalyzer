@@ -19,9 +19,14 @@ namespace ImgAnalyzer._2D
 
         public Container_2D_double(double[,] data)
         {
-            this.data = data;
             this.width = data.GetLength(0);
             this.height = data.GetLength(1);
+
+            this.data = new double[width, height];
+
+            for (int i = 0; i < data.GetLength(0); i++)
+                for (int j = 0; j < data.GetLength(1); j++)
+                    this.data[i,j] = data[i, j];
         }
 
         public override double Max()

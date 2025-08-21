@@ -173,6 +173,7 @@ namespace ImgAnalyzer._2D
             {
                 DataManager_2D.DeleteContainer(dataGrid.SelectedRows[i].Index);
             }
+            GC.Collect();
         }
 
         private void button_save_Click(object sender, EventArgs e)

@@ -1,4 +1,6 @@
-﻿using BitMiracle.LibTiff.Classic;
+﻿#define Multithread
+
+using BitMiracle.LibTiff.Classic;
 using ImgAnalyzer._2D;
 using ScottPlot;
 using ScottPlot.PlotStyles;
@@ -312,36 +314,110 @@ namespace ImgAnalyzer
         {
 
             ImageProcessor_2D proc_instance = new ImageProcessor_2D();
+
             proc_instance.PerformCalculationAsync(calculation);
             return proc_instance.dataF;
 
         }
 
 
-        protected async void PerformCalculationAsync(ICalculation2D calculation)
+        protected void PerformCalculationAsync(ICalculation2D calculation)
         {
             dataF = new double[calculation.Width, calculation.Height];
 
-            await Task.Run(() =>
-            {
-                lock (dataF)
+
+
+#if Multithread
+
+            Parallel.For(0, calculation.Width,
+                (int i) =>
                 {
-                    Parallel.For(0, calculation.Width,
-                        (int i) =>
-                        {
-                            for (int j = 0; j < calculation.Height; j++)
-                            {
-                                dataF[i, j] = calculation.Measure(i, j);
-                            }
-                        }
-                        );
+                    for (int j = 0; j < calculation.Height; j++)
+                    {
+                        dataF[i, j] = calculation.Measure(i, j);
+                    }
                 }
-            });
+                );
+
+#else
+            for (int i = 0; i < calculation.Width; i++)
+                    for (int j = 0; j < calculation.Height; j++)
+                    {
+                        dataF[i, j] = calculation.Measure(i, j);
+
+                    }
+#endif
 
 
 
 
         }
+
+
+        public static async Task<double[,]> FitImage(TiffImgFileHandler hndl, CoordinateTransformation ct)
+        {
+
+            ImageProcessor_2D proc_instance = new ImageProcessor_2D();
+            await proc_instance.FitImageAsync(hndl, ct);
+            while (!proc_instance.dataReady) { }
+            return proc_instance.dataF;
+
+        }
+
+        protected async Task FitImageAsync(TiffImgFileHandler hndl, CoordinateTransformation ct)
+        {
+            dataF = new double[ct.frame_width, ct.frame_height];
+
+            await Task.Run(() =>
+            {
+                DataManager_2D.workToBeDone += ct.frame_width;
+
+                ct.CalculateFullField();
+
+                ushort[,] imgData = new ushort[hndl.Width, hndl.Height];
+
+                for (int j = 0; j < hndl.Height; j++)
+                {
+                    ushort[] line = hndl.GetLine(j);
+                    for (int i = 0; i < hndl.Width; i++)
+                    {
+                        imgData[i, j] = line[i];
+                    }
+                }
+
+
+                lock (dataF)
+                {
+                    while (!ct.FullFieldCalculated) { }
+                    Parallel.For(0, ct.frame_width,
+                            (int i) =>
+                            {
+
+                                for (int j = 0; j < ct.frame_height; j++)
+                                {
+                                    var pw = ct.FullFiedTransformation[i, j];
+                                    double tempvalue = 0;
+                                    for (int k = 0; k < pw.Count; k++)
+                                    {
+                                        tempvalue += pw.weights[k].weight * imgData[pw.weights[k].x, pw.weights[k].y];
+                                    }
+                                    tempvalue *= ct.k_area;
+                                    dataF[i, j] = tempvalue;
+
+                                }
+                                DataManager_2D.progress.Report(1);
+                            }
+                            );
+                }
+
+                imgData = null; 
+                GC.Collect();
+
+                dataReady = true;
+            });
+        }
+
+
 
 
     }

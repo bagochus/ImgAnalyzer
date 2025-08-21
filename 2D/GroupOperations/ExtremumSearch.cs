@@ -3,6 +3,7 @@ using ImgAnalyzer;
 using ScottPlot.PlotStyles;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
@@ -25,18 +26,18 @@ namespace ImgAnalyzer._2D.GroupOperations
         private int Height;
         
 
-        private double[,] peak_values = null;
+        private double[,] peak_values = null;       // найденные z-значения пиков
 
-        private double[,] min_values = null;
+        private double[,] min_values = null;        // текущие минимальные и максимальные найденные z-значения
         private double[,] max_values = null;
 
-        private int[,] n_min_values = null;
+        private int[,] n_min_values = null;         // текущие номера кадров, соответсвующие минимума и максимумам
         private int[,] n_max_values = null;
 
-        private bool[,] peak_found = null;
-        private bool[,] threshold_found = null;
+        private bool[,] peak_found = null;          // найден пик, прекращаем поиск для данного XY
+        private bool[,] threshold_found = null;     // найдено превышение порога, ищем превышение с обратным знаком
 
-        private int[,] npeak_values = null;
+        private int[,] npeak_values = null;         //текущие номера кадров, соответсвующие пикам
 
         private int[,] peak_counter = null;
 
@@ -45,6 +46,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         private void ProcessPixelMinimum(double data, int x, int y, int n)
         {
+            //if (x == 1327 && y == 1596) Debugger.Break();
             if (peak_found[x,y]) return;
 
             if (!threshold_found[x,y])
@@ -64,6 +66,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                     if (max_values[x, y] > min_values[x, y] + threshold)
                     {
                         threshold_found[x, y] = true;
+                        //ищем новый максимум
                         max_values[x, y] = Double.MinValue;
 
                     }
@@ -80,6 +83,8 @@ namespace ImgAnalyzer._2D.GroupOperations
                 {
                     min_values[x, y] = data;
                     n_min_values[x, y] = n;
+                    //если нашли, максимум надо искать заново, т.к. он должен быть справа от минимума
+                    max_values[x, y] = Double.MinValue;
                 }
                 // мы "понимаем" что обнаружили пик только после того, как второй раз прошли порог
                 // поэтому в счетчик пиков передаем значение ранее найденного минимального значения
@@ -95,11 +100,14 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             if (!threshold_found[x, y])
             {
+                // До того как найдено превышение порогового значения 
+                // идет поиск максимума
                 if (data < min_values[x, y])
                 {
                     min_values[x, y] = data;
                 }
-
+                // Чтобы исключить срабатывание поиска порога на экстремум-минимум
+                // превышение порога регистрируется только при нахождении нового максимум
                 if (data > max_values[x, y])
                 {
                     max_values[x, y] = data;
@@ -109,10 +117,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                         threshold_found[x, y] = true;
                         min_values[x, y] = Double.MaxValue;
                     }
-
                 }
-
-
             }
             else
             {
@@ -120,17 +125,18 @@ namespace ImgAnalyzer._2D.GroupOperations
                 {
                     min_values[x, y] = data;
                 }
-
+                //все равно обновляем максимум - вдруг найдется значение получше
                 if (data > max_values[x, y])
                 {
                     max_values[x, y] = data;
                     n_max_values[x, y] = n;
+                    //если нашли, минимум надо искать заново, т.к. он должен быть справа от максимума
+                    min_values[x, y] = Double.MaxValue;
                 }
-
+                // мы "понимаем" что обнаружили пик только после того, как второй раз прошли порог
+                // поэтому в счетчик пиков передаем значение ранее найденного максимального значения
                 if (max_values[x, y] > min_values[x, y] + threshold) CountPeak(data,x, y, n_max_values[x,y]);
-
             }
-
         }
 
 

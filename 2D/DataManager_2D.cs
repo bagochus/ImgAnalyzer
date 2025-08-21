@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace ImgAnalyzer._2D
 {
@@ -16,7 +17,7 @@ namespace ImgAnalyzer._2D
         public static int workToBeDone = 0;
         public static int workDone = 0;
         public static IProgress<int> progress = new Progress<int>();
-
+        public static List<Task> tasks = new List<Task>();
         public static void ShowMainForm()
         {
             Form form_2D = Application.OpenForms["Form_2D"];
@@ -72,7 +73,10 @@ namespace ImgAnalyzer._2D
                 MessageBox.Show(calculation.ErrorMessage);
                 return;
             }
-            if (calculation.PixByPixCalculation)
+
+            if (calculation.NonReturning)
+            { }
+            else if (calculation.PixByPixCalculation)
             {
                 double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);
                 var dc = new Container_2D_double(datafloat);
@@ -81,7 +85,16 @@ namespace ImgAnalyzer._2D
                 DataManager_2D.containers.Add(dc);
 
             }
+            else 
+            {
+                double[,] datafloat = calculation.MeasureFull();
+                var dc = new Container_2D_double(datafloat);
+                dc.Name = calculation.ToString();
+                dc.ImageGroup = "X";
+                DataManager_2D.containers.Add(dc);
 
+
+            }
 
 
 

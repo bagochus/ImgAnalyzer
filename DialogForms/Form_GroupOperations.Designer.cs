@@ -31,6 +31,7 @@
             this.listBox_operations = new System.Windows.Forms.ListBox();
             this.button_exec = new System.Windows.Forms.Button();
             this.label_description = new System.Windows.Forms.Label();
+            this.checkBox_use_ct = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // listBox_operations
@@ -40,7 +41,7 @@
             this.listBox_operations.FormattingEnabled = true;
             this.listBox_operations.Location = new System.Drawing.Point(12, 12);
             this.listBox_operations.Name = "listBox_operations";
-            this.listBox_operations.Size = new System.Drawing.Size(198, 407);
+            this.listBox_operations.Size = new System.Drawing.Size(198, 381);
             this.listBox_operations.TabIndex = 0;
             this.listBox_operations.SelectedIndexChanged += new System.EventHandler(this.listBox_operations_SelectedIndexChanged);
             // 
@@ -64,11 +65,22 @@
             this.label_description.TabIndex = 3;
             this.label_description.Text = "----";
             // 
+            // checkBox_use_ct
+            // 
+            this.checkBox_use_ct.AutoSize = true;
+            this.checkBox_use_ct.Location = new System.Drawing.Point(12, 399);
+            this.checkBox_use_ct.Name = "checkBox_use_ct";
+            this.checkBox_use_ct.Size = new System.Drawing.Size(189, 30);
+            this.checkBox_use_ct.TabIndex = 4;
+            this.checkBox_use_ct.Text = "Использовать преобразование \r\nкоординат";
+            this.checkBox_use_ct.UseVisualStyleBackColor = true;
+            // 
             // Form_GroupOperations
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(792, 444);
+            this.Controls.Add(this.checkBox_use_ct);
             this.Controls.Add(this.label_description);
             this.Controls.Add(this.button_exec);
             this.Controls.Add(this.listBox_operations);
@@ -84,5 +96,6 @@
         private System.Windows.Forms.ListBox listBox_operations;
         private System.Windows.Forms.Button button_exec;
         private System.Windows.Forms.Label label_description;
+        private System.Windows.Forms.CheckBox checkBox_use_ct;
     }
 }

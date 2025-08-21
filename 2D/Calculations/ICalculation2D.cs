@@ -14,6 +14,7 @@ namespace ImgAnalyzer._2D
         int Width { get; }
         int Height { get; }
 
+        bool NonReturning { get;  }
         bool PixByPixCalculation {  get; }
         string Description { get; } 
         double[] SingleValueParameters { get; set; }
@@ -28,7 +29,9 @@ namespace ImgAnalyzer._2D
 
         double Measure(int x, int y);
         bool Check();
-        
+        double[,] MeasureFull();
+
+        void Process();
 
 
 

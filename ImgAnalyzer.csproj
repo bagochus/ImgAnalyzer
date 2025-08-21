@@ -187,6 +187,7 @@
   <ItemGroup>
     <Compile Include="1D\DataManager_1D.cs" />
     <Compile Include="2D\Calculations\Acos.cs" />
+    <Compile Include="2D\Calculations\PlotXY.cs" />
     <Compile Include="2D\Calculations\InverseX.cs" />
     <Compile Include="2D\Calculations\Asin.cs" />
     <Compile Include="2D\Calculations\Calculation2D.cs" />
@@ -218,11 +219,16 @@
     <Compile Include="2D\GroupOperations\ExtremumSearch.cs" />
     <Compile Include="2D\GroupOperations\IGroupOperation.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
+    <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup2.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\FitCoordinateSystem.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Index.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\Full_3P.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\Amplitude_3P.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\NPeakMaximumAbs.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\MiddleValue_3P.cs" />
+    <Compile Include="2D\GroupOperations\SinglePixelOperations\Three-Peak.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\PeakAbstract.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Z_min_StartPos.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Z_max_StartPos.cs" />
@@ -315,6 +321,7 @@
     </Compile>
     <Compile Include="FileManagement\ContainerBatch.cs" />
     <Compile Include="FileManagement\ContainerFileHandler.cs" />
+    <Compile Include="FileManagement\FileManagement.cs" />
     <Compile Include="FileManagement\I2DFileHandler.cs" />
     <Compile Include="FileManagement\ImageManager.cs" />
     <Compile Include="FileManagement\TiffImgFileHandler.cs" />
@@ -359,6 +366,12 @@
     <Compile Include="MeasurmentTypes\Measurment.cs" />
     <Compile Include="MeasurmentTypes\PointMeasurmentCT.cs" />
     <Compile Include="MeasurmentTypes\PolygonMeasurmentCT.cs" />
+    <Compile Include="PlotForm_scatter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlotForm_scatter.Designer.cs">
+      <DependentUpon>PlotForm_scatter.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlotForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -428,6 +441,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlotForm_scatter.resx">
+      <DependentUpon>PlotForm_scatter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PlotForm.resx">
       <DependentUpon>PlotForm.cs</DependentUpon>

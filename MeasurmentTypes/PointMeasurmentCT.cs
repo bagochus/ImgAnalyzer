@@ -32,7 +32,7 @@ namespace ImgAnalyzer.MeasurmentTypes
         {
             get { return new Point((int)pointPhoto.X, (int)pointPhoto.Y); }
         }
-        private PointF pointPhoto;
+        private PointF pointPhoto = new PointF(float.NaN, float.NaN);
         
 
 
@@ -47,8 +47,9 @@ namespace ImgAnalyzer.MeasurmentTypes
         {
             if (Batch == null) return;
             if (Batch.coordinateTransformation == null) return;
-            if (_weightMatrix == null) _weightMatrix = Batch.coordinateTransformation.GeneratePWM_point(pointPhoto);
             pointPhoto = Batch.coordinateTransformation.TransformPoint(pointFrame);
+            if (_weightMatrix == null) _weightMatrix = Batch.coordinateTransformation.GeneratePWM_point(pointPhoto);
+
         }
 
 
@@ -62,8 +63,8 @@ namespace ImgAnalyzer.MeasurmentTypes
             error |= (pointFrame == invalidPoint && pointPhoto == invalidPoint);
             if (error) throw new Exception("Неправильно определено измерение");
 
-            if (pointFrame == invalidPoint) FrameToPhoto();
-            else PhotoToFrame();
+            if (pointFrame == invalidPoint) PhotoToFrame();
+            else FrameToPhoto();
 
             _weightMatrix = Batch.coordinateTransformation.GeneratePWM_point(pointFrame);
         }
@@ -77,6 +78,7 @@ namespace ImgAnalyzer.MeasurmentTypes
         }
         public PointMeasurmentCT() 
         {
+            
         }
 
 
@@ -103,6 +105,7 @@ namespace ImgAnalyzer.MeasurmentTypes
             if (Batch?.coordinateTransformation == null) throw (new Exception("Невозможно копировать измерение, система координат не определена"));
             PointMeasurmentCT clone_pt = new PointMeasurmentCT();
             clone_pt.pointFrame = pointFrame;
+
             return clone_pt;
         }
 

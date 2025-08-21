@@ -19,7 +19,9 @@ namespace ImgAnalyzer._2D
 
         public override double Measure(int x, int y) 
         {
+            if (ContainerParameters[1].ddata(x,y) !=0)
             return ContainerParameters[0].ddata(x, y) / ContainerParameters[1].ddata(x, y);
+            else return 0;
         }
 
 

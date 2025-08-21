@@ -146,42 +146,47 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
 
             if (!threshold_found[x, y])
             {
-                if (value < min_values[x, y])
-                {
-                    min_values[x, y] = value;
-                }
-
+                // До того как найдено превышение порогового значения 
+                // идет поиск минимума
                 if (value > max_values[x, y])
                 {
                     max_values[x, y] = value;
-                    n_max_values[x, y] = n;
+                }
+                if (value < min_values[x, y])
+                {
+                    min_values[x, y] = value;
+                    n_min_values[x, y] = n;
+                    // Чтобы исключить срабатывание поиска порога на экстремум-максимум
+                    // превышение порога регистрируется только при нахождении нового минимума
                     if (max_values[x, y] > min_values[x, y] + threshold)
                     {
                         threshold_found[x, y] = true;
-                        min_values[x, y] = Double.MaxValue;
+                        //ищем новый максимум
+                        max_values[x, y] = Double.MinValue;
                     }
-
                 }
-
-
             }
             else
             {
-                if (value < min_values[x, y])
-                {
-                    min_values[x, y] = value;
-                }
-
                 if (value > max_values[x, y])
                 {
                     max_values[x, y] = value;
-                    n_max_values[x, y] = n;
+                }
+                //все равно обновляем минимум - вдруг найдется значение получше
+                if (value < min_values[x, y])
+                {
+                    min_values[x, y] = value;
+                    n_min_values[x, y] = n;
+                    //если нашли, максимум надо искать заново, т.к. он должен быть справа от минимума
+                    max_values[x, y] = Double.MinValue;
                 }
 
                 if (max_values[x, y] > min_values[x, y] + threshold)
                 {
                     peak_found[x, y] = true;
-                    npeak_values[x, y] = n;
+                    // мы "понимаем" что обнаружили пик только после того, как второй раз прошли порог
+                    // поэтому в счетчик пиков передаем значение ранее найденного минимального значения
+                    npeak_values[x, y] = n_min_values[x,y];
                     peak_values[x, y] = value;
                 }
                     

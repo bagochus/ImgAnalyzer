@@ -37,14 +37,25 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public async Task Execute()
         {
-            width = imageSources[0].Width;
-            height = imageSources[0].Height;
+            if (UseTransformation)
+            {
+                width = imageSources[0].coordinateTransformation.frame_width;
+                height = imageSources[0].coordinateTransformation.frame_height;
+            }
+            else
+            {
+                width = imageSources[0].Width;
+                height = imageSources[0].Height;
+            }
+
             result = new double[width, height];
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
             if (imageSources[0] is ImageBatch)
             {
-                 ProcessTiff();
+                if (UseTransformation) await ProcessTiffCT();
+                else ProcessTiff();
+
             }
             else
             {
@@ -61,6 +72,54 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         }
 
+
+        protected void AddIntermediateResult(string name)
+        {
+            IContainer_2D cont = new Container_2D_double(result);
+            cont.Name = imageSources[0].Name + name;
+            DataManager_2D.containers.Add(cont);
+
+        }
+
+
+        private async Task ProcessTiffCT()
+        {
+            Prepare();
+            for (int image_counter = 0; image_counter < imageSources[0].Count; image_counter++)
+            {
+                using (var hndl = imageSources[0].Get2DFileHandler(image_counter) as TiffImgFileHandler)
+                {
+#if Multithread
+
+                    double[,] data2D = await ImageProcessor_2D.FitImage(hndl, imageSources[0].coordinateTransformation);
+
+                    Parallel.For(0, height, (int y) =>
+                    {
+                        for (int x = 0; x < width; x++) ProcessPixel(x, y, image_counter, data2D[x, y]);
+
+                    });
+
+                    data2D = null;
+                    GC.Collect();
+#else
+                    for (int i=0;i<hndl.Width;i++)
+                        for (int j=0;j<hndl.Height;j++)
+                            ProcessPixel(x, y, image_counter, data2D[x, y]);
+                    
+#endif
+
+                }
+                DataManager_2D.progress.Report(1);
+
+            }
+
+            Finish();
+
+
+
+        }
+
+
         private  void ProcessTiff()
         {
             Prepare();
@@ -70,6 +129,9 @@ namespace ImgAnalyzer._2D.GroupOperations
                 using (var hndl = imageSources[0].Get2DFileHandler(image_counter) as TiffImgFileHandler)
                 {
 #if Multithread
+
+
+
                     Parallel.For(0, height, (int y) =>
                     {
                         ushort[] line;
