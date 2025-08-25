@@ -48,8 +48,9 @@
             this.срезПоXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.срезПоYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.гистограммаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.nСтолбцовToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.построитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nСтолбцовToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.замерВТочкеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -233,7 +234,8 @@
             this.измеренияToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.срезПоXToolStripMenuItem,
             this.срезПоYToolStripMenuItem,
-            this.гистограммаToolStripMenuItem});
+            this.гистограммаToolStripMenuItem,
+            this.замерВТочкеToolStripMenuItem});
             this.измеренияToolStripMenuItem.Name = "измеренияToolStripMenuItem";
             this.измеренияToolStripMenuItem.Size = new System.Drawing.Size(81, 20);
             this.измеренияToolStripMenuItem.Text = "Измерения";
@@ -263,6 +265,13 @@
             this.гистограммаToolStripMenuItem.Text = "Гистограмма";
             this.гистограммаToolStripMenuItem.Click += new System.EventHandler(this.гистограммаToolStripMenuItem_Click);
             // 
+            // построитьToolStripMenuItem
+            // 
+            this.построитьToolStripMenuItem.Name = "построитьToolStripMenuItem";
+            this.построитьToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.построитьToolStripMenuItem.Text = "Построить";
+            this.построитьToolStripMenuItem.Click += new System.EventHandler(this.построитьToolStripMenuItem_Click);
+            // 
             // nСтолбцовToolStripMenuItem
             // 
             this.nСтолбцовToolStripMenuItem.Name = "nСтолбцовToolStripMenuItem";
@@ -270,12 +279,12 @@
             this.nСтолбцовToolStripMenuItem.Text = "Выбрать параметры";
             this.nСтолбцовToolStripMenuItem.Click += new System.EventHandler(this.nСтолбцовToolStripMenuItem_Click);
             // 
-            // построитьToolStripMenuItem
+            // замерВТочкеToolStripMenuItem
             // 
-            this.построитьToolStripMenuItem.Name = "построитьToolStripMenuItem";
-            this.построитьToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-            this.построитьToolStripMenuItem.Text = "Построить";
-            this.построитьToolStripMenuItem.Click += new System.EventHandler(this.построитьToolStripMenuItem_Click);
+            this.замерВТочкеToolStripMenuItem.Name = "замерВТочкеToolStripMenuItem";
+            this.замерВТочкеToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.замерВТочкеToolStripMenuItem.Text = "Замер в точке";
+            this.замерВТочкеToolStripMenuItem.Click += new System.EventHandler(this.замерВТочкеToolStripMenuItem_Click);
             // 
             // ImageViewForm
             // 
@@ -335,5 +344,6 @@
         private System.Windows.Forms.ToolStripMenuItem гистограммаToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nСтолбцовToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem построитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem замерВТочкеToolStripMenuItem;
     }
 }

@@ -187,6 +187,7 @@
   <ItemGroup>
     <Compile Include="1D\DataManager_1D.cs" />
     <Compile Include="2D\Calculations\Acos.cs" />
+    <Compile Include="2D\Calculations\Substract.cs" />
     <Compile Include="2D\Calculations\PlotXY.cs" />
     <Compile Include="2D\Calculations\InverseX.cs" />
     <Compile Include="2D\Calculations\Asin.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="2D\Calculations\Scaling.cs" />
     <Compile Include="2D\Calculations\ICalculation2D.cs" />
     <Compile Include="2D\Calculations\Divide.cs" />
+    <Compile Include="2D\Calculations\StitchSpatialy.cs" />
     <Compile Include="2D\Calculations\Sum.cs" />
     <Compile Include="2D\Calculations\Threshold.cs" />
     <Compile Include="2D\Containers\Container_2D_double.cs" />
@@ -219,6 +221,7 @@
     <Compile Include="2D\GroupOperations\ExtremumSearch.cs" />
     <Compile Include="2D\GroupOperations\IGroupOperation.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
+    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup3.cs" />
     <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup2.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />

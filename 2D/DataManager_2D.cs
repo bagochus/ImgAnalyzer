@@ -75,7 +75,9 @@ namespace ImgAnalyzer._2D
             }
 
             if (calculation.NonReturning)
-            { }
+            {
+                calculation.Process();
+            }
             else if (calculation.PixByPixCalculation)
             {
                 double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);

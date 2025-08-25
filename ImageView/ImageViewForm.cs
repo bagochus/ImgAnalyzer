@@ -898,5 +898,25 @@ namespace ImgAnalyzer
         {
             PlotHystogramDouble();
         }
+
+        private void замерВТочкеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int x = 0;  
+            int y = 0;
+            ParameterRequestForm form = new ParameterRequestForm();
+            form.AddIntRequest("X");
+            form.AddIntRequest("Y");
+            form.ShowDialog();
+            if (form.DialogResult == DialogResult.OK)
+            {
+                x = form.RequestInt("X");
+                y = form.RequestInt("Y");
+
+            }
+            else return;
+            CoordinateLabel.Text = $"Coordinates: ({x}, {y}) Value = " + hndl.GetPixelValue(x, y).ToString();
+            if (slice_x) SliceX(y);
+            if (slice_y) SliceY(x);
+        }
     }
 }

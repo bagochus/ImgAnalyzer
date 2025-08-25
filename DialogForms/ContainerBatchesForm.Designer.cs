@@ -32,7 +32,7 @@
             this.button_show = new System.Windows.Forms.Button();
             this.button_delete = new System.Windows.Forms.Button();
             this.button_add = new System.Windows.Forms.Button();
-            this.button_load = new System.Windows.Forms.Button();
+            this.button_extract = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -76,21 +76,22 @@
             this.button_add.UseVisualStyleBackColor = true;
             this.button_add.Click += new System.EventHandler(this.button_add_Click);
             // 
-            // button_load
+            // button_extract
             // 
-            this.button_load.Location = new System.Drawing.Point(643, 99);
-            this.button_load.Name = "button_load";
-            this.button_load.Size = new System.Drawing.Size(145, 23);
-            this.button_load.TabIndex = 4;
-            this.button_load.Text = "Загрузить массив";
-            this.button_load.UseVisualStyleBackColor = true;
+            this.button_extract.Location = new System.Drawing.Point(643, 99);
+            this.button_extract.Name = "button_extract";
+            this.button_extract.Size = new System.Drawing.Size(145, 23);
+            this.button_extract.TabIndex = 4;
+            this.button_extract.Text = "Извлечь карту";
+            this.button_extract.UseVisualStyleBackColor = true;
+            this.button_extract.Click += new System.EventHandler(this.button_extract_Click);
             // 
             // ContainerBatchesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.button_load);
+            this.Controls.Add(this.button_extract);
             this.Controls.Add(this.button_add);
             this.Controls.Add(this.button_delete);
             this.Controls.Add(this.button_show);
@@ -108,6 +109,6 @@
         private System.Windows.Forms.Button button_show;
         private System.Windows.Forms.Button button_delete;
         private System.Windows.Forms.Button button_add;
-        private System.Windows.Forms.Button button_load;
+        private System.Windows.Forms.Button button_extract;
     }
 }

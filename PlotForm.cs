@@ -65,11 +65,24 @@ namespace ImgAnalyzer
 
         }
 
+
+        public void AddDataMarkers(string name, double[] xdata, double[] ydata)
+        {
+            names.Add(name);
+            xdatas.Add(xdata);
+            ydatas.Add(ydata);
+            var sp = FormsPlot1.Plot.Add.Markers(xdata, ydata);
+            sp.MarkerSize = 2;
+            sp.LegendText = name;
+            FormsPlot1.Refresh();
+            FormsPlot1.Plot.Grid.MajorLineWidth = 1;
+        }
+
         private void SendPlots()
         {
             OpenedPlotForm form = new OpenedPlotForm();
             form.ShowDialog();
-            if (form.selectedForm == null) return;
+            if (form.selectedForm == null || form.selectedForm == this) return;
             if (xdatas.Count != ydatas.Count || xdatas.Count != names.Count)
             {
                 MessageBox.Show("Data arrays is not consistent");

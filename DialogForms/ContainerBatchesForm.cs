@@ -87,6 +87,13 @@ namespace ImgAnalyzer.DialogForms
 
         }
 
+        private void ExtractContainer(ContainerBatch batch, int index)
+        {
+            IContainer_2D container = Container_2D.ReadFromFile(batch.Filenames[index]);
+            DataManager_2D.containers.Add(container);
+        }
+
+
 
         private void button_show_Click(object sender, EventArgs e)
         {
@@ -97,6 +104,30 @@ namespace ImgAnalyzer.DialogForms
         private void button_add_Click(object sender, EventArgs e)
         {
             CreateContainerBatch();
+        }
+
+        private void button_extract_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count <= 0) return;
+            int BatchIndex = dataGridView1.SelectedRows[0].Index;   
+            int n = -1;
+            string str = "Номер кадра";
+            ParameterRequestForm form = new ParameterRequestForm();
+            form.AddIntRequest(str);
+            form.ShowDialog();
+            if (form.DialogResult == DialogResult.OK)
+            {
+                n = form.RequestInt(str);
+
+            }
+            else return;
+            if (n >= ImageManager.containerBatches[BatchIndex].Count && n < 0)
+            {
+                MessageBox.Show("Index out of range");
+
+                return;
+            }
+            ExtractContainer(ImageManager.containerBatches[BatchIndex],n);
         }
     }
 }

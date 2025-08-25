@@ -24,7 +24,7 @@ namespace ImgAnalyzer._2D.GroupOperations
         
         public IImageSource[] imageSources { get; set; }
         public string[] imageSourceNames { get { return _imageSourceNames; } }
-        private string[] _imageSourceNames = {"Input data" };
+        protected string[] _imageSourceNames = {"Input data" };
         public bool UseTransformation { get; set; }
 
         

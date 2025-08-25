@@ -16,9 +16,9 @@ namespace ImgAnalyzer._2D
     public abstract class Calculation2D : ICalculation2D
     {
         public int Width { get { return width; } }
-        private int width = 0;
+        protected int width = 0;
         public int Height { get { return height; } }
-        private int height = 0;
+        protected int height = 0;
 
         public string Description { get { return description; } }
         protected string description = "";
@@ -44,12 +44,12 @@ namespace ImgAnalyzer._2D
 
         public abstract double Measure(int x, int y);
 
-        public double[,] MeasureFull()
+        public virtual double[,] MeasureFull()
         {
             return new double[0, 0]; 
         }
 
-        public void Process()
+        public virtual void Process()
         {
 
         }

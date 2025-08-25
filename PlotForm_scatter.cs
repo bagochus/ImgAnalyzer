@@ -60,6 +60,7 @@ namespace ImgAnalyzer
             xdatas.Add(xdata);
             ydatas.Add(ydata);
             var sp = FormsPlot1.Plot.Add.Scatter(xdata, ydata);
+            
             sp.LegendText = name;
             FormsPlot1.Refresh();
 
