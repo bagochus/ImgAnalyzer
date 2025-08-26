@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ImgAnalyzer;
@@ -21,7 +22,7 @@ namespace ImgAnalyzer._2D
         private double[,] result;
         private int[,] shifts;
         
-
+        private int PixelCountToFix = 5;
 
         public StitchSpatially()
         {
@@ -58,17 +59,23 @@ namespace ImgAnalyzer._2D
                 throw new ArgumentException("Ќачальна€ точка вне диапазона");
             }
 
+            Actions();
+
+            return result;
+        }
+
+        protected virtual void Actions()
+        {
             CalcCenterLine();
             CalculateSides();
             PinLowestZero();
             CalculateResult();
 
-            return result;
         }
 
 
 
-        private void CalcCenterLine()
+        protected void CalcCenterLine()
         {
             shifts[startx, starty] = 0;
             previousValue = getData(startx, starty);
@@ -88,7 +95,7 @@ namespace ImgAnalyzer._2D
         }
 
 
-        private void CalculateSides()
+        protected void CalculateSides()
         {
             for (int y = 0; y < height; y++)
             {
@@ -111,7 +118,7 @@ namespace ImgAnalyzer._2D
             }
         }
 
-        private void PinLowestZero()
+        protected void PinLowestZero()
         {
             int min_shift = int.MaxValue;
             foreach (int shift in shifts) if (shift<min_shift) min_shift = shift;
@@ -122,7 +129,7 @@ namespace ImgAnalyzer._2D
         }
 
 
-        private void CalculateResult()
+        protected void CalculateResult()
         {
             for (int i = 0; i < shifts.GetLength(0); i++)
                 for (int j = 0; j < shifts.GetLength(1); j++)
@@ -130,6 +137,64 @@ namespace ImgAnalyzer._2D
                     result[i,j] = getData(i, j) + full_phase * shifts[i,j];
                 }
         }
+
+        protected void EliminateLines()
+        {
+            for (int y = 0; y < height - 1 ; y++)
+            {
+                bool[] errors = new bool[width];
+                for (int x =0; x < width; x++)
+                {
+                    errors[x] = (FindAddition(getData(x, y), getData(x, y + 1)) != shifts[x, y] - shifts[x, y + 1]);
+                }
+
+                bool defectRegionFound = false;
+                bool correctionApplied = false;
+                int defectRegionLenght = 0;
+                int defectRegionFirstIndex = -1;
+                
+                for (int x=0; x< width;x++)
+                {
+                    if (errors[x])
+                    {
+                        //обозначаем что нашли дефектный участок
+                        defectRegionFound = true;
+                        defectRegionLenght++;
+                        if (defectRegionLenght == 1) defectRegionFirstIndex = x;
+                    }
+                    if (!errors[x] || x == width - 1) // если мы попали на бездефектный пиксель или дошли до конца
+                    {
+                        //если предыдущий пиксель был бездефектный то делать ничего не нужно
+                        if (!defectRegionFound) continue;
+                        //если мы соскочили с дефектной области, то надо проверить, кака€ у нее была длина
+                        //если больше порога, то проводим корректировку
+                        if (defectRegionLenght > PixelCountToFix)
+                        {
+                            correctionApplied = true;
+                            for (int xx = defectRegionFirstIndex; xx <= x; xx++)
+                            {
+                                shifts[xx, y + 1] = shifts[xx, y] + FindAddition(getData(xx, y), getData(xx, y + 1));
+                            }
+                        }
+                        defectRegionFound = false;
+                        defectRegionLenght = 0;
+                    }
+                    //if (correctionApplied) y++;
+
+
+                }
+
+
+
+
+
+            }
+
+
+
+        }
+
+
 
 
         public override double Measure(int x, int y)

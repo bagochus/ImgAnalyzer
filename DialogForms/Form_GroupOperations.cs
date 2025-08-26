@@ -46,12 +46,12 @@ namespace ImgAnalyzer.DialogForms
         private int y_start = 50;
         private int y_current = 50;
         private int y_step = 30;
-
+        private int default_height;
 
         public Form_GroupOperations()
         {
             InitializeComponent();
-
+            default_height = this.Height;
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -71,6 +71,12 @@ namespace ImgAnalyzer.DialogForms
 
             foreach (var c in ImageManager.imageSources) { avaiable_imgSources.Add(c.Name); }
 
+
+        }
+
+        private void UpdateFormHeight()
+        {
+            if (Height - y_current < 50) Height += 50;
 
         }
 
@@ -103,6 +109,7 @@ namespace ImgAnalyzer.DialogForms
                     values_single.Add(t);
                     y_current += y_step;
                 }
+
             }
 
             if (op.ContainerNames.Length > 0)
@@ -153,6 +160,7 @@ namespace ImgAnalyzer.DialogForms
                 }
             }
 
+            UpdateFormHeight();
 
 
         }
@@ -193,7 +201,7 @@ namespace ImgAnalyzer.DialogForms
 
 
             y_current = y_start;
-
+            Height = default_height;
         }
 
         private void RemoveControl(Control c)

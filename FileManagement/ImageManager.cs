@@ -86,5 +86,30 @@ namespace ImgAnalyzer
         public static bool IsCTDefined(IImageSource batch)
         { return batch.coordinateTransformation != null; }
 
+
+        public static string GetUniqueSourceName(string baseName)
+        {
+            List<string> existingNames = new List<string>();
+            foreach (var s in imageSources) existingNames.Add(s.Name);
+
+            if (!existingNames.Contains(baseName))
+            {
+                return baseName;
+            }
+
+            int counter = 0;
+            string newName;
+
+            do
+            {
+                newName = $"{baseName}_{counter}";
+                counter++;
+            }
+            while (existingNames.Contains(newName));
+
+            return newName;
+        }
+
+
     }
 }

@@ -48,7 +48,7 @@
             // button_exec
             // 
             this.button_exec.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_exec.Location = new System.Drawing.Point(705, 12);
+            this.button_exec.Location = new System.Drawing.Point(750, 12);
             this.button_exec.Name = "button_exec";
             this.button_exec.Size = new System.Drawing.Size(75, 23);
             this.button_exec.TabIndex = 2;
@@ -67,6 +67,7 @@
             // 
             // checkBox_use_ct
             // 
+            this.checkBox_use_ct.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_use_ct.AutoSize = true;
             this.checkBox_use_ct.Location = new System.Drawing.Point(12, 399);
             this.checkBox_use_ct.Name = "checkBox_use_ct";
@@ -79,7 +80,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(792, 444);
+            this.ClientSize = new System.Drawing.Size(837, 444);
             this.Controls.Add(this.checkBox_use_ct);
             this.Controls.Add(this.label_description);
             this.Controls.Add(this.button_exec);
