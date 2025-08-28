@@ -316,12 +316,48 @@ namespace ImgAnalyzer._2D.GroupOperations
                 if (lut[i,j,k] != -1)
                 {
                     patched_array[k] = lut[i,j,k];
-                    if (k == 0 || good_index1 == -1) good_index1 = k;
+                    if (good_index1 == -1)
+                    {
+                        //это значит что мы залатали все ранее встреченные дыры
+                        good_index1 = k;
+                        good_value1 = lut[i, j, k];
+                    }
                     else
                     {
-                        
+                        //это значит мы соскочили с дефектного участка, необходимо восстанавливать
+                        //пройденную дыру
+                        good_index2 = k;
+                        good_value2 = lut[i, j, k];
+
+                        double step = (double)(good_value2 - good_value1) / (good_index2 - good_index1);
+
+                        for (int k_temp = good_index1 + 1; k_temp < good_index2; k_temp++)
+                        {
+                            double patch_value = good_value1 + (k_temp - good_index1) * step;
+                            patched_array[k_temp] = 
+
+
+
+                        }    
+
+
+
                     }
+
+
+
+
                 }
+                else
+                {
+                    if (k == 0)
+                    {
+                        need_head_patch = true;
+                        continue;
+                    }
+                    if (need_head_patch && good_index1 == -1) continue;
+                    
+
 
 
             }
