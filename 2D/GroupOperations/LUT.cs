@@ -1,6 +1,7 @@
 ﻿using ScottPlot.Colormaps;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -13,15 +14,14 @@ namespace ImgAnalyzer._2D.GroupOperations
     public class LU_Table : IGroupOperation
     {
         //-------------interface properties-----------------------------
-        public string Description
+        public virtual string Description
         {
             get
             {
-                return 
+                return
                     "Создает LUТ таблицу 64*64*256 на основе пакета данных\n" +
                     "OUT0-256 целевые выходные значения\n" +
-                    "Vstart, Vstep - начальные значения и шаг АЦП соотв. кадрам\n" +
-                    "Mask - битовое поле с дефектными пикселями";
+                    "Vstart, Vstep - начальные значения и шаг АЦП соотв. кадрам\n";
             }
         }
 
@@ -69,6 +69,14 @@ namespace ImgAnalyzer._2D.GroupOperations
         int block_height;
 
         protected bool useMask = false;
+        protected bool useGradientTails = false;
+
+        //--------------------report data----------------
+
+        protected int patched_cells = 0;
+        protected int patched_pilars = 0;
+        protected int trimmed_values = 0;
+
 
         public async Task Execute()
         {
@@ -122,6 +130,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             await Task.Run(() =>
             {
                 SweepInputData();
+                PatchTable();
                 double[,] lut_data = new double[lut_width, lut_height];
                 for (int lut_layer = 0; lut_layer < lut_depth;lut_layer++)
                 {
@@ -137,10 +146,14 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.Filenames.Add(filename);
                 }
 
-
+                WriteLUTFile(Path.Combine(foldername, "LUT.txt"));
 
             });
 
+            MessageBox.Show("LUT таблица сгенерирована\n" +
+                $"{patched_pilars} битых секторов скопировано\n" +
+                $"{patched_cells} ячеек интерполировано\n" +
+                $"{trimmed_values} значений было вне допустимого диапазона");
 
             
 
@@ -269,6 +282,7 @@ namespace ImgAnalyzer._2D.GroupOperations
         private void PatchTable()
         {
             int[,] correctValues = new int[lut_width,lut_height];
+            bool[,] goodPilars = new bool[lut_width,lut_height];
 
             for (int i = 0; i < lut_width; i++) 
                 for (int j = 0; j < lut_height; j++)
@@ -278,8 +292,25 @@ namespace ImgAnalyzer._2D.GroupOperations
                         if (lut[i, j, k] != -1) correctValues[i, j]++;
                 }
 
+            for (int i = 0; i < lut_width; i++)
+                for (int j = 0; j < lut_height; j++)
+                {
+                    goodPilars[i, j] = (correctValues[i, j] > 1 );
+                }
 
-
+            for (int i = 0; i < lut_width; i++)
+                for (int j = 0; j < lut_height; j++)
+                {
+                    if (correctValues[i, j] == lut_depth) continue;
+                    if (correctValues[i, j] == 1) PatchOneValuePilar(i, j);
+                    if (correctValues[i, j] > 1 ) PatchFewValuesPilar(i, j);
+                    if (correctValues[i,j] == 0) 
+                    {
+                        Point nearestPilar = FindNearestGoodPilar(goodPilars, i, j);
+                        ClonePilar(nearestPilar.X, i,nearestPilar.Y,j);
+                    
+                    }
+                }
 
 
 
@@ -313,10 +344,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             for (int k = 0; k < lut_depth; k++)
             {
-                if (lut[i,j,k] != -1)
+                if (lut[i, j, k] != -1)
                 {
-                    patched_array[k] = lut[i,j,k];
-                    if (good_index1 == -1)
+                    patched_array[k] = lut[i, j, k];
+                    if (good_index1 == k - 1)
                     {
                         //это значит что мы залатали все ранее встреченные дыры
                         good_index1 = k;
@@ -334,40 +365,237 @@ namespace ImgAnalyzer._2D.GroupOperations
                         for (int k_temp = good_index1 + 1; k_temp < good_index2; k_temp++)
                         {
                             double patch_value = good_value1 + (k_temp - good_index1) * step;
-                            patched_array[k_temp] = 
-
-
-
-                        }    
-
-
-
+                            if (patch_value < 0)
+                            {
+                                patch_value = 0;
+                                trimmed_values++;
+                            }
+                            if (patch_value > max_code)
+                            {
+                                patch_value = max_code;
+                                trimmed_values++;
+                            }
+                            patched_array[k_temp] = (int)Math.Round(patch_value);
+                            patched_cells++;
+                        }
+                        good_index1 = k;
+                        good_value1 = lut[i, j, k];
                     }
-
-
-
-
                 }
                 else
                 {
                     if (k == 0)
                     {
+                        //если дыра в начале массива, сейчас мы ничего не сделаем
+                        //отметим и вернемся к ней потом
                         need_head_patch = true;
                         continue;
                     }
+                    //если дыра в начале масиива продолжается, тоже самое
                     if (need_head_patch && good_index1 == -1) continue;
-                    
+
+                    if (k == lut_depth -1) need_tail_patch = true;
+                }
+            }
 
 
+            if (need_head_patch && useGradientTails)
+            {
+                //если нужно заделать дыру в начала массива 
+                //ищем две первые два хороших значение и от них интерполируем
+                good_index1 = -1;
+                good_index2 = -1;
 
+                for (int k = 0; k < lut_depth; k++)
+                {
+                    if (lut[i, j, k] != -1) 
+                    {
+                        if (good_index1 == -1)
+                        {
+                            good_index1 = k;
+                            good_value1 = lut[i,j, k];
+                            continue;
+                        }
+                        else if (good_index2 == -1) 
+                        {
+                            good_index2 = k;
+                            good_value2 = lut[i, j, k];
+                            break;
+                        }
+                    }
+                }
+
+                double step = (double)(good_value2 - good_value1) / (good_index2 - good_index1);
+
+                for (int k_temp = good_index1 - 1; k_temp >= 0; k_temp--)
+                {
+                    double patch_value = good_value1 + (k_temp - good_index1) * step;
+                    if (patch_value < 0)
+                    {
+                        patch_value = 0;
+                        trimmed_values++;
+                    }
+                    if (patch_value > max_code)
+                    {
+                        patch_value = max_code;
+                        trimmed_values++;
+                    }
+                    patched_array[k_temp] = (int)Math.Round(patch_value);
+                    patched_cells++;
+                }
+            }
+
+
+            if (need_head_patch && !useGradientTails)
+            {
+                //если нужно заделать дыру в начала массива 
+                //ищем две первое хорошее значение и заполняем им все дыры
+                good_index1 = -1;
+
+                for (int k = 0; k < lut_depth; k++)
+                {
+                    if (lut[i, j, k] != -1)
+                    {
+                        good_index1 = k;
+                        good_value1 = lut[i, j, k];
+                        break;
+                    }
+                }
+
+                for (int k_temp = good_index1 - 1; k_temp >= 0; k_temp--)
+                {
+                    patched_array[k_temp] = good_value1;
+                }
             }
 
 
 
 
+            if (need_tail_patch && useGradientTails)
+            {
+                //если нужно заделать дыру в конце массива 
+                //ищем два последних хороших значения и от них интерполируем
+                good_index1 = -1;
+                good_index2 = -1;
+
+                for (int k = 0; k < lut_depth; k++)
+                {
+                    if (lut[i, j, k] != -1)
+                    {
+                        if (good_index1 == -1)
+                        {
+                            good_index1 = k;
+                            good_value1 = lut[i, j, k];
+                            continue;
+                        }
+                        if (good_index2 == -1)
+                        {
+                            good_index2 = k;
+                            good_value2 = lut[i, j, k];
+                            continue;
+                        }
+                        good_index1 = good_index2;
+                        good_value1 = good_value2;
+                        good_index2 = k;
+                        good_value2 = lut[i, j, k];
+                    }
+                }
+
+                double step = (double)(good_value2 - good_value1) / (good_index2 - good_index1);
+
+                for (int k_temp = good_index2 + 1; k_temp < lut_depth; k_temp++)
+                {
+                    double patch_value = good_value1 + (k_temp - good_index1) * step;
+                    if (patch_value < 0)
+                    {
+                        patch_value = 0;
+                        trimmed_values++;
+                    }
+                    if (patch_value > max_code)
+                    {
+                        patch_value = max_code;
+                        trimmed_values++;
+                    }
+                    patched_array[k_temp] = (int)Math.Round(patch_value);
+                    patched_cells++;
+                }
+            }
+
+            if (need_tail_patch && !useGradientTails)
+            {
+                //если нужно заделать дыру в конце массива 
+                //ищем последнее хорошее значение и заполняем им оставшуюся часть
+                good_index1 = -1;
+                good_index2 = -1;
+
+                for (int k = 0; k < lut_depth; k++)
+                {
+                    if (lut[i, j, k] != -1)
+                    {
+                        good_index2 = k;
+                        good_value2 = lut[i,j,k];
+                    }
+                }
+
+                for (int k_temp = good_index2 + 1; k_temp < lut_depth; k_temp++)
+                {
+                    patched_array[k_temp] = good_value2;
+                }
+            }
+
+            for (int k = 0; k < lut_depth; k++)
+                lut[i, j, k] = patched_array[k];
 
         }
 
+        private void ClonePilar(int i_from, int i_to, int j_from, int j_to)
+        {
+            for (int k = 0; k<lut_depth; k++)
+                lut[i_to,j_to,k] = lut[i_from,j_from,k];
+            patched_pilars++;
+        }
+
+        private Point FindNearestGoodPilar(bool[,] field, int i,int j)
+        {
+            Point result = new Point(-1, -1);
+            double min_distance = Double.MaxValue;
+
+            for (int ii =  0; ii < field.GetLength(0); ii++) 
+                for (int jj = 0; jj < field.GetLength(1); jj++)
+                {
+                    if (!field[ii, jj]) continue;
+                    double distance = Math.Sqrt(Math.Pow(i-ii,2)+Math.Pow(j-jj,2));
+                    if (distance < min_distance)
+                    {
+                        min_distance = distance;
+                        result.X = ii;
+                        result.Y = jj;
+                    }
+                }
+            return result;
+        }
+
+        private void WriteLUTFile(string filename)
+        {
+            using (StreamWriter writer = new StreamWriter(filename))
+            {
+                for (int i = 0; i < lut_width*lut_height; i++)
+                {
+                    int x = i % lut_width;
+                    int y = i / lut_height;
+
+                    string s = "";
+                    for (int j = 0; j < lut_depth; j++)
+                    {
+                        int value = lut[x,y,j];
+                        s += value.ToString();
+                        if (j != lut_depth-1) s += ";";
+
+                    }
+                    writer.WriteLine(s);
+                }
+            }
+        }
 
 
 
