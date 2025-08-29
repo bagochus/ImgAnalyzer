@@ -44,12 +44,14 @@
             // 
             // ParameterRequestForm
             // 
+            this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(509, 57);
             this.Controls.Add(this.btnOk);
             this.Name = "ParameterRequestForm";
             this.Text = "ParameterRequestForm";
+            this.Shown += new System.EventHandler(this.ParameterRequestForm_Shown);
             this.ResumeLayout(false);
 
         }

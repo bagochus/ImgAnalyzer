@@ -18,6 +18,8 @@ namespace ImgAnalyzer.DialogForms
         private Dictionary<string, TextBox> parameterControls = new Dictionary<string, TextBox>();
         private Dictionary<string, Type> parameterTypes = new Dictionary<string, Type>();
 
+        private TextBox firstBox;
+
         public ParameterRequestForm()
         {
             InitializeComponent();
@@ -57,6 +59,7 @@ namespace ImgAnalyzer.DialogForms
             textBox.Top = label.Top;
             textBox.Left = 150;
             textBox.Width = 150;
+            if (parameterControls.Count == 0) firstBox = textBox;
 
             // Добавляем элементы на форму
             this.Controls.Add(label);
@@ -121,7 +124,7 @@ namespace ImgAnalyzer.DialogForms
             }
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
+        private void btnOK_Click()
         {
             // Проверяем все параметры
             foreach (var param in parameterControls)
@@ -146,7 +149,12 @@ namespace ImgAnalyzer.DialogForms
 
         private void btnOk_Click_1(object sender, EventArgs e)
         {
-            btnOK_Click(sender, e);
+            btnOK_Click();
+        }
+
+        private void ParameterRequestForm_Shown(object sender, EventArgs e)
+        {
+            firstBox?.Focus();
         }
     }
 }

@@ -51,6 +51,8 @@
             this.построитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nСтолбцовToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.замерВТочкеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.следующийКадрToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.кадрToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -215,7 +217,9 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.настройкиОтображенияToolStripMenuItem,
-            this.измеренияToolStripMenuItem});
+            this.измеренияToolStripMenuItem,
+            this.следующийКадрToolStripMenuItem,
+            this.кадрToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1028, 24);
@@ -286,6 +290,20 @@
             this.замерВТочкеToolStripMenuItem.Text = "Замер в точке";
             this.замерВТочкеToolStripMenuItem.Click += new System.EventHandler(this.замерВТочкеToolStripMenuItem_Click);
             // 
+            // следующийКадрToolStripMenuItem
+            // 
+            this.следующийКадрToolStripMenuItem.Enabled = false;
+            this.следующийКадрToolStripMenuItem.Name = "следующийКадрToolStripMenuItem";
+            this.следующийКадрToolStripMenuItem.Size = new System.Drawing.Size(121, 20);
+            this.следующийКадрToolStripMenuItem.Text = "Предыдущий кадр";
+            // 
+            // кадрToolStripMenuItem
+            // 
+            this.кадрToolStripMenuItem.Enabled = false;
+            this.кадрToolStripMenuItem.Name = "кадрToolStripMenuItem";
+            this.кадрToolStripMenuItem.Size = new System.Drawing.Size(115, 20);
+            this.кадрToolStripMenuItem.Text = "Следующий кадр";
+            // 
             // ImageViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -345,5 +363,7 @@
         private System.Windows.Forms.ToolStripMenuItem nСтолбцовToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem построитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem замерВТочкеToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem следующийКадрToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem кадрToolStripMenuItem;
     }
 }

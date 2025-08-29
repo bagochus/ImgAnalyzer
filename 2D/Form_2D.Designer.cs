@@ -61,14 +61,14 @@
             this.button_measure.Name = "button_measure";
             this.button_measure.Size = new System.Drawing.Size(153, 23);
             this.button_measure.TabIndex = 1;
-            this.button_measure.Text = "Групповые операции";
+            this.button_measure.Text = "Битовые операции";
             this.button_measure.UseVisualStyleBackColor = true;
             this.button_measure.Click += new System.EventHandler(this.button_measure_Click);
             // 
             // button_rename
             // 
             this.button_rename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_rename.Location = new System.Drawing.Point(498, 99);
+            this.button_rename.Location = new System.Drawing.Point(498, 128);
             this.button_rename.Name = "button_rename";
             this.button_rename.Size = new System.Drawing.Size(153, 23);
             this.button_rename.TabIndex = 2;
@@ -79,7 +79,7 @@
             // button_delete
             // 
             this.button_delete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_delete.Location = new System.Drawing.Point(498, 128);
+            this.button_delete.Location = new System.Drawing.Point(498, 157);
             this.button_delete.Name = "button_delete";
             this.button_delete.Size = new System.Drawing.Size(153, 23);
             this.button_delete.TabIndex = 3;
@@ -90,7 +90,7 @@
             // button_math
             // 
             this.button_math.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_math.Location = new System.Drawing.Point(498, 41);
+            this.button_math.Location = new System.Drawing.Point(498, 70);
             this.button_math.Name = "button_math";
             this.button_math.Size = new System.Drawing.Size(153, 23);
             this.button_math.TabIndex = 4;
@@ -101,11 +101,12 @@
             // button_plot
             // 
             this.button_plot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_plot.Location = new System.Drawing.Point(498, 70);
+            this.button_plot.Enabled = false;
+            this.button_plot.Location = new System.Drawing.Point(498, 273);
             this.button_plot.Name = "button_plot";
             this.button_plot.Size = new System.Drawing.Size(153, 23);
             this.button_plot.TabIndex = 5;
-            this.button_plot.Text = "Отобразить";
+            this.button_plot.Text = "Отобразить (old)";
             this.button_plot.UseVisualStyleBackColor = true;
             this.button_plot.Click += new System.EventHandler(this.button_plot_Click);
             // 
@@ -120,7 +121,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(498, 157);
+            this.button1.Location = new System.Drawing.Point(498, 186);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(153, 23);
             this.button1.TabIndex = 7;
@@ -131,7 +132,7 @@
             // button_save
             // 
             this.button_save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_save.Location = new System.Drawing.Point(498, 186);
+            this.button_save.Location = new System.Drawing.Point(498, 215);
             this.button_save.Name = "button_save";
             this.button_save.Size = new System.Drawing.Size(153, 23);
             this.button_save.TabIndex = 8;
@@ -142,7 +143,7 @@
             // button_load
             // 
             this.button_load.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_load.Location = new System.Drawing.Point(498, 215);
+            this.button_load.Location = new System.Drawing.Point(498, 244);
             this.button_load.Name = "button_load";
             this.button_load.Size = new System.Drawing.Size(153, 23);
             this.button_load.TabIndex = 9;
@@ -153,22 +154,22 @@
             // button_group_new
             // 
             this.button_group_new.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_group_new.Location = new System.Drawing.Point(498, 244);
+            this.button_group_new.Location = new System.Drawing.Point(498, 41);
             this.button_group_new.Name = "button_group_new";
             this.button_group_new.Size = new System.Drawing.Size(153, 23);
             this.button_group_new.TabIndex = 10;
-            this.button_group_new.Text = "New GroupOP";
+            this.button_group_new.Text = "Групповые операции";
             this.button_group_new.UseVisualStyleBackColor = true;
             this.button_group_new.Click += new System.EventHandler(this.button_group_new_Click);
             // 
             // button_newview
             // 
             this.button_newview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_newview.Location = new System.Drawing.Point(498, 273);
+            this.button_newview.Location = new System.Drawing.Point(498, 99);
             this.button_newview.Name = "button_newview";
             this.button_newview.Size = new System.Drawing.Size(153, 23);
             this.button_newview.TabIndex = 11;
-            this.button_newview.Text = "Отобразить new";
+            this.button_newview.Text = "Отобразить";
             this.button_newview.UseVisualStyleBackColor = true;
             this.button_newview.Click += new System.EventHandler(this.button_newview_Click);
             // 

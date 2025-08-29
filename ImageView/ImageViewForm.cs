@@ -26,7 +26,7 @@ namespace ImgAnalyzer
     {
         //--------------Pointers to global objects------
         public MainPresenter _presenter;
-        private IImageSource imageSource;
+
 
 
 
@@ -36,9 +36,6 @@ namespace ImgAnalyzer
 
         //----------Image management--------------------
 
-
-
-
         private Bitmap originalImage;
         private Bitmap displayImage;
         private PointF imagePosition = new PointF(0, 0);
@@ -47,13 +44,10 @@ namespace ImgAnalyzer
         private bool isPanning;
 
 
-
-
         //-------------Local settings--------------------
-        private bool addForAllBatches = false;
+        
         private ClickModeV2 clickMode = ClickModeV2.None;
         private int PointCounter = 0;
-        private List<IImageSource> sources = new List<IImageSource>();
         private ImgViewSettings settings = new ImgViewSettings();
         private I2DFileHandler hndl;
         private ColorScheme colorScheme;
@@ -61,9 +55,21 @@ namespace ImgAnalyzer
         private bool slice_y = false;
 
 
+        //-------------Image Source Management-----------
+
+        // источник данных, из которого открыта картинка
+        private IImageSource imageSource;
+
+        //источник данных, на основе которого рисуются метки
+        private IImageSource ovarlaySource;
+
+        //источники данных, в которые будут добавляться измерения
+        private List<IImageSource> sources = new List<IImageSource>();
+
+        private bool addForAllBatches = false;
 
         //----------Overlays from 1D DataManager---------
-        
+
         //simple points - in photo coordinate system
         private List<Point> ovelay_points = new List<Point>();
         private Color ptColor = Color.Yellow;
