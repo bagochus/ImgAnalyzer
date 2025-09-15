@@ -672,9 +672,11 @@ namespace ImgAnalyzer
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
             if (displayImage == null) return;
+            var interpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            if (zoomFactor < 1) interpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
 
             // Отрисовка с учетом позиции и масштаба
-            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            e.Graphics.InterpolationMode = interpolationMode;
             e.Graphics.DrawImage(displayImage, imagePosition.X, imagePosition.Y,
                                displayImage.Width * zoomFactor,
                                displayImage.Height * zoomFactor);

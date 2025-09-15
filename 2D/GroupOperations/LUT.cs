@@ -119,6 +119,8 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             ContainerBatch batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("LUT");
+            //batch.Width = width;
+            //block_height = height;
             ImageManager.containerBatches.Add(batch);
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
@@ -139,6 +141,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                             lut_data[i,j] = lut[i,j,lut_layer];
 
                     Container_2D_double c = new Container_2D_double(lut_data);
+                    
                     DataManager_2D.progress.Report(1);
 
                     string filename = Path.Combine(foldername, lut_layer.ToString() + ".bin");

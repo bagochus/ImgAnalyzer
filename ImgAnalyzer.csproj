@@ -226,10 +226,8 @@
     <Compile Include="2D\GroupOperations\LUT.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
     <Compile Include="2D\GroupOperations\Phase3_single.cs" />
-    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup3.cs" />
-    <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
-    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup2.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
+    <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\FitCoordinateSystem.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Index.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Full_3P.cs" />

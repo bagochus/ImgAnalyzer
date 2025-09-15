@@ -125,6 +125,8 @@ namespace ImgAnalyzer
                 }
                 filenames.Add(container.Filename);
                 containerType = container.GetType();
+                width = container.Width;
+                height = container.Height;
 
             }
             else
