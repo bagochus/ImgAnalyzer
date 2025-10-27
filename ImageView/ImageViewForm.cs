@@ -215,24 +215,17 @@ namespace ImgAnalyzer
             if(originalImage != null) originalImage.Dispose();
             if(displayImage !=null)  displayImage.Dispose();
 
-
             originalImage = new Bitmap(hndl.Width, hndl.Height);
-            for (int y = 0; y < hndl.Height; y++) {
-                {
-                    for (int x = 0; x < hndl.Width; x++)
-                    {
-                        if (settings.colorMode == ColorMode.Color)
-                        originalImage.SetPixel(x, y, colorScheme.CalculateColor(hndl.GetPixelValue(x, y)));
-                        if (settings.colorMode == ColorMode.BW)
-                        originalImage.SetPixel(x, y, ColorScheme.CalculateBW(settings.min, settings.max,hndl.GetPixelValue(x, y)));
+            Func<int, int, Color> getColor = (x,y) => Color.Magenta;
+            if (settings.colorMode == ColorMode.Color)
+                getColor = (x,y) => colorScheme.CalculateColor(hndl.GetPixelValue(x, y));
+            if (settings.colorMode == ColorMode.BW)
+                getColor = (x, y) => colorScheme.CalculateColor(hndl.GetPixelValue(x, y));
 
-                    }
-                       
-                    int a = 0;
-                }
-                
-            }
-
+            for (int y = 0; y < hndl.Height; y++)
+                for (int x = 0; x < hndl.Width; x++)
+                    originalImage.SetPixel(x, y, getColor(x, y));
+            
             displayImage = new Bitmap(originalImage);
         }
 

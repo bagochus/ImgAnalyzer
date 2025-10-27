@@ -1,6 +1,7 @@
 ﻿using ImgAnalyzer._2D.GroupOperations.SinglePixelOperations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Security.AccessControl;
@@ -76,10 +77,14 @@ namespace ImgAnalyzer.ImageView
 
         public Color CalculateColorDouble(double Min, double Max, int value)
         {
-            if (value > Max) return colorList.Last().Key;
-            if (value < Min) return colorList.First().Key;
+
+
+            if (value >= Max) return colorList.Last().Key;
+            if (value <= Min) return colorList.First().Key;
 
             double value_cor = min + ((value - Min) * (max - min) / (Max - Min));
+
+            
 
             return CalculateColor(value_cor);
 
@@ -97,8 +102,8 @@ namespace ImgAnalyzer.ImageView
 
         public Color CalculateColor(double value)
         {
-            if (value > max) return colorList.Last().Key;
-            if (value < min) return colorList.First().Key;
+            if (value >= max) return colorList.Last().Key;
+            if (value <= min) return colorList.First().Key;
 
             Color colorA = Color.Black;
             Color colorB = Color.Black;
