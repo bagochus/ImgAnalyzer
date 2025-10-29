@@ -2,12 +2,14 @@
 
 using BitMiracle.LibTiff.Classic;
 using ImgAnalyzer._2D;
+using ImgAnalyzer._2D.GroupOperations.SinglePixelOperations;
 using NetTopologySuite.Algorithm;
 using ScottPlot;
 using ScottPlot.PlotStyles;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
@@ -170,17 +172,17 @@ namespace ImgAnalyzer
              if (ct == null) return result;
 
 
-             for (int i = 0; i < ct.frame_width; i++)
-                 for (int j = 0; j < ct.frame_height; j++)
+             for (int j = 0; j < ct.frame_width; j++)
+                 for (int i = 0; i < ct.frame_height; i++)
                  {
-                     var pw = ct.GeneratePWM_point(new PointF(i, j));
+                     var pw = ct.GeneratePWM_point(new PointF(j, i));
                      double tempvalue = 0;
                      for (int k = 0; k < pw.Count; k++)
                      {
                          tempvalue += pw.weights[k].weight * data[pw.weights[k].x, pw.weights[k].y];
                      }
                      tempvalue *= ct.k_area;
-                     result[i, j] = tempvalue;
+                     result[j, i] = tempvalue;
 
                  }*/
 
@@ -360,9 +362,17 @@ namespace ImgAnalyzer
         {
 
             ImageProcessor_2D proc_instance = new ImageProcessor_2D();
-            await proc_instance.FitImageAsync(hndl, ct);
-            while (!proc_instance.dataReady) { }
-            return proc_instance.dataF;
+            //await proc_instance.FitImageAsync(hndl, ct);
+            //while (!proc_instance.dataReady) { }
+            //return proc_instance.dataF;
+            //Task.Run(() => return FitImage2(hndl,ct))
+
+
+            Task<double[,]> task = new Task<double[,]>(() => FitImage2(hndl, ct));
+            return await task;
+            
+
+
 
         }
 
@@ -419,7 +429,7 @@ namespace ImgAnalyzer
             });
         }
 
-        protected async Task<double[,]> FitImageAsync2(TiffImgFileHandler hndl, CoordinateTransformation ct)
+        public static double[,] FitImage2(TiffImgFileHandler hndl, CoordinateTransformation ct)
         {
             double[,] result = new double[ct.frame_width, ct.frame_height];
 
@@ -443,79 +453,113 @@ namespace ImgAnalyzer
 
             ushort[,] pixelData = new ushort[hndl.Width,hndl.Height];
             for (int i =0; i<hndl.Height;i++)
-                Buffer.BlockCopy(hndl.GetLine(i), 0, pixelData, i * hndl.Width, hndl.Height);
-
-            float[,] shiftedData = new float[x_steps, y_steps];
-
-            
-            
-            for (int i = 0; i < xt_length; i++) //Parallel this
             {
-                double x = ct.point_TL.X + i * yt_x;
-                double y = ct.point_TL.Y + i * yt_y;
-                for (int j = 0; j < yt_length; j++)
-                {
-                    shiftedData[i, j] = BilinearInterpolation(pixelData, x, y);
-                    x += xt_x;
-                    y += xt_y;
-                }
+                ushort[] buffer = hndl.GetLine(i); 
+                for (int j = 0; j < buffer.Length; j++)
+                    pixelData[j,i] = buffer[j];
             }
+                
+            float[,] interpolatedData = new float[x_steps, y_steps];
 
-            double x_array = 0;
-            double y_array = 0;
-            double x_array_step = ct.frame_width / x_steps;
-            double y_array_step = ct.frame_height / y_steps;
 
-            for (int i = 0; i < pixelData.GetLength(0); i++)
-                for (int j = 0; j < pixelData.GetLength(1); j++)
+
+            
+            
+            Parallel.For(0, x_steps, (i) => 
+            {
+            double x = ct.point_TL.X + i * xt_x;
+            double y = ct.point_TL.Y + i * xt_y;
+                for (int j = 0; j < y_steps; j++)
                 {
-                    double x_array_next = x_array + 1;
-                    double y_array_next = y_array + 1;
-                    int x_index = (int)x_array/x_steps;
-                    int x_index_next = (int)x_array_next/x_steps;
-                    int y_index = (int)y_array / y_steps;
-                    int y_index_next = (int)y_array_next / y_steps;
-                    bool splited_x = x_index == x_index_next;
-                    bool splited_y = y_index == y_index_next;   
-
-                    if (!splited_x && !splited_y)
-                    {
-                        result[x_index,y_index] += pixelData[i,j];
-                    }
-                    else if (splited_x && !splited_y)
-                    {
-                        double nearest_border = x_array_step * x_array;
-                        double weight_x = nearest_border - Math.Floor(nearest_border);
-                        result[x_index, y_index] += pixelData[i, j] * weight_x;
-                        result[x_index_next, y_index] += pixelData[i, j] * (1-weight_x);
-                    }
-                    else if (!splited_x && splited_y)
-                    {
-                        double nearest_border = y_array_step * y_array;
-                        double weight_y = nearest_border - Math.Floor(nearest_border);
-                        result[x_index, y_index] += pixelData[i, j] * weight_y;
-                        result[x_index, y_index_next] += pixelData[i, j] * (1 - weight_y);
-                    }
-
-
-
-
-
-
+                    interpolatedData[i, j] = BilinearInterpolation(pixelData, x, y);
+                    x += yt_x;
+                    y += yt_y;
                 }
+            });
+            /*
+            double[,] test = new double[interpolatedData.GetLength(0), interpolatedData.GetLength(1)];
+            for (int i = 0; i < test.GetLength(0); i++)
+                for (int j = 0; j < test.GetLength(1); j++)
+                    test[i, j] = interpolatedData[i, j];
+            return test;
+            */
+            StretchAray(interpolatedData, result);
 
-
-
-
-
-
-
-
-
-
-
+            pixelData = null;
+            interpolatedData = null;
+            GC.Collect();
+            
+            return result;
+            
         }
 
+        private static void StretchAray(float[,] src, double[,] dest)
+        {
+ 
+            // k_dest < 1 typically
+            double x_k_dest = (double)dest.GetLength(0) / src.GetLength(0);
+            double y_k_dest = (double)dest.GetLength(1) / src.GetLength(1);
+
+            // x_k_src > 1 typically
+            double x_k_src = (double)src.GetLength(0) / dest.GetLength(0);
+            double y_k_src = (double)src.GetLength(1) / dest.GetLength(1);
+
+            for (int j = 0; j < src.GetLength(1); j++)
+            {
+                Action<double, int> placeValue = (value, x_to) => { };
+                int dest_y_index_start = (int)(j * y_k_dest );
+                int dest_y_index_end = (int)((j + 1) * y_k_dest);
+                if (dest_y_index_end > dest.GetLength(1) - 1) dest_y_index_end = dest.GetLength(0) - 1;
+                if (dest_y_index_start == dest_y_index_end)
+                {
+                    // start and end point of source array belongs to same line in destination array, no need to split values
+                    placeValue = (value, x_to) => { dest[x_to, dest_y_index_start] += value; };
+                }
+                else
+                {
+                    // start and end point of source array belongs to different j in destination array
+                    // need to split values
+                    double nearest_border = y_k_src * dest_y_index_end;
+                    //double weight_y = nearest_border - Math.Floor(nearest_border);
+                    double weight_y = nearest_border - j;
+                    placeValue = (value, x_to) => {
+                        dest[x_to, dest_y_index_start] += value * weight_y;
+                        dest[x_to, dest_y_index_end] += value * (1-weight_y);
+                    };
+                }
+                
+                for (int i = 0; i < src.GetLength(0); i++)
+                {
+                    
+                    int dest_x_index_start = (int)(i * x_k_dest);
+                    int dest_x_index_end = (int)((i+1) * x_k_dest );
+                    //if (dest_x_index_start == 253) Debugger.Break();
+
+                    if (dest_x_index_end > dest.GetLength(0) - 1) dest_x_index_end = dest.GetLength(0) - 1;
+                    if (dest_x_index_start == dest_x_index_end)
+                    {
+                        placeValue(src[i,j], dest_x_index_start);
+
+                    }
+                    else 
+                    {
+                        double nearest_border = x_k_src * dest_x_index_end;
+                        //double weight_x = nearest_border - Math.Floor(nearest_border);
+                        double weight_x = nearest_border - i;
+                        placeValue(src[i, j] * weight_x, dest_x_index_start);
+                        placeValue(src[i, j] * (1-weight_x), dest_x_index_end);
+
+                    }
+                }
+            }
+            double ks = (x_k_dest * y_k_dest);
+            for (int i = 0; i < dest.GetLength(0); i++)
+            {
+                for (int j = 0; j < dest.GetLength(1); j++)
+                    dest[i,j] *= ks;
+            }
+        }
+            
         private static float BilinearInterpolation(ushort[,] source, double x, double y)
         { 
             int x1 = (int)Math.Floor(x);

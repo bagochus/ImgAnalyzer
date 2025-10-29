@@ -505,7 +505,7 @@ namespace ImgAnalyzer
         {
             Func<PointF, bool> contains = (p) =>
             {
-                return p.X >= 0 & p.X <= width & p.Y >= 0 & p.Y <= height;
+                return p.X >= 0 & p.X <= fileHandler.Width & p.Y >= 0 & p.Y <= fileHandler.Height;
             };
 
             bool result = true;

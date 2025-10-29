@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class PhaseMeasurmentGroup : IGroupOperation
+    public class PhaseMeasurmentGroupOld : IGroupOperation
     {
 
         //-------------interface properties-----------------------------
@@ -94,17 +94,17 @@ namespace ImgAnalyzer._2D.GroupOperations
         private void GeneratePhaseImage(int n)
         {
 
-            //int[,] dataA = ImageProcessor_2D.Index(imageSources[0] as ImageBatch, n);
-            //int[,] dataB = ImageProcessor_2D.Index(imageSources[1] as ImageBatch, n);
-            //int[,] dataC = ImageProcessor_2D.Index(imageSources[2] as ImageBatch, n);
-            //var ct1 = (imageSources[0] as ImageBatch).coordinateTransformation;
-            //var ct2 = (imageSources[1] as ImageBatch).coordinateTransformation;
-            //var ct3 = (imageSources[2] as ImageBatch).coordinateTransformation;
-            //double[,] ddataA = ImageProcessor_2D.FitData(dataA, ct1);
-            //double[,] ddataB = ImageProcessor_2D.FitData(dataB, ct2);
-            //double[,] ddataC = ImageProcessor_2D.FitData(dataC, ct3);
+            int[,] dataA = ImageProcessor_2D.Index(imageSources[0] as ImageBatch, n);
+            int[,] dataB = ImageProcessor_2D.Index(imageSources[1] as ImageBatch, n);
+            int[,] dataC = ImageProcessor_2D.Index(imageSources[2] as ImageBatch, n);
+            var ct1 = (imageSources[0] as ImageBatch).coordinateTransformation;
+            var ct2 = (imageSources[1] as ImageBatch).coordinateTransformation;
+            var ct3 = (imageSources[2] as ImageBatch).coordinateTransformation;
+            double[,] ddataA = ImageProcessor_2D.FitData(dataA, ct1);
+            double[,] ddataB = ImageProcessor_2D.FitData(dataB, ct2);
+            double[,] ddataC = ImageProcessor_2D.FitData(dataC, ct3);
 
-
+            /*
             var ib0 = (imageSources[0] as ImageBatch);
             var ib1 = (imageSources[1] as ImageBatch);
             var ib2 = (imageSources[2] as ImageBatch);
@@ -116,6 +116,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             double[,] ddataA =  ImageProcessor_2D.FitImage2(hndl0, ib0.coordinateTransformation);
             double[,] ddataB =  ImageProcessor_2D.FitImage2(hndl1, ib1.coordinateTransformation);
             double[,] ddataC =  ImageProcessor_2D.FitImage2(hndl2, ib2.coordinateTransformation);
+            */
 
             for (int i = 0; i < ddataA.GetLength(0); i++)
             //Parallel.For(0, ddataA.GetLength(0), (i) =>
