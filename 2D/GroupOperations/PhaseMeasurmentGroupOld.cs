@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class PhaseMeasurmentGroupOld : IGroupOperation
+    public class PhaseMeasurmentGroupOld //: IGroupOperation
     {
 
         //-------------interface properties-----------------------------
@@ -58,7 +58,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
             ContainerBatch batch = new ContainerBatch();
-            batch.Name = "PhaseNormless";
+            batch.Name = "Phase";
             ImageManager.containerBatches.Add(batch);
             
             DataManager_2D.workToBeDone += min_count;

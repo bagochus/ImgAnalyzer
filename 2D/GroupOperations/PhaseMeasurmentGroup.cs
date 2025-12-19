@@ -14,7 +14,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         //-------------interface properties-----------------------------
         public string Description { get { return "Вычисляет фазу на основе данных с 3 камер, без использования\n" +
-                " нормировочных карт по формуле atan(k1I1+k2I2+k3I3/m1I1+m2I2+m3I3)\n"; } }
+                " нормировочных карт и матриц преобразования по формуле atan(k1I1+k2I2+k3I3/m1I1+m2I2+m3I3)\n"; } }
 
         public double[] SingleValueParameters {  get; set; }
 

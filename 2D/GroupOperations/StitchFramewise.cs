@@ -51,6 +51,8 @@ namespace ImgAnalyzer._2D.GroupOperations
         Func<int, int, double> getDataPrev;
         Func<int, int, double> getDataNext;
 
+        private int lowerPeriod = 0;
+
         public async Task Execute()
         {
             if (!Check())
@@ -64,12 +66,12 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             ContainerBatch batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
+ 
             ImageManager.containerBatches.Add(batch);
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
             string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
-
 
             string filename = Path.Combine(foldername, "0.bin");
             ContainerParameters[0].SaveToFile(filename);
@@ -107,6 +109,8 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             }
 
+            CorrectPhaseShift(batch);
+
         }
 
         private int FindAddition(double x1, double x2)
@@ -127,28 +131,40 @@ namespace ImgAnalyzer._2D.GroupOperations
                 {
                     double phaseCalculatedPrev = getDataPrev(i,j);
                     double phaseMeasuredPrev = phaseCalculatedPrev % top;
-                    int periodsPrev = (int)(phaseCalculatedPrev / top);
+                    if (phaseMeasuredPrev < 0) phaseMeasuredPrev = top - phaseMeasuredPrev;
+                    int periodPrev = (int)Math.Floor(phaseCalculatedPrev / top);
+                    if (periodPrev < lowerPeriod) lowerPeriod = periodPrev;
 
                     double phaseMeasuredNext = getDataNext(i, j);
 
                     int addition = FindAddition(phaseMeasuredPrev, phaseMeasuredNext);
 
-                    phase_prev[i, j] = phase[i, j] = phaseMeasuredNext + top * (addition + periodsPrev);
+                    phase_prev[i, j] = phase[i, j] = phaseMeasuredNext + top * (addition + periodPrev);
                     
                 }
+        }
+
+
+        private void CorrectPhaseShift(ContainerBatch batch)
+        {
+            for (int n = 0; n<batch.Count;n++)
+            {
+                ContainerFileHandler hndl = batch.Get2DFileHandler(n) as  ContainerFileHandler;
+                for (int i = 0; i< hndl.Width; i++) 
+                    for (int j = 0;j< hndl.Height; j++)
+                    {
+                        hndl.SetPixel(i,j, hndl.GetPixelValue(i,j) - top * lowerPeriod);
+                    }
+                hndl.Save();
+                hndl.Dispose();
+            }
         }
 
 
 
         private bool Check()
         {
-           
 
-           
-
-            
-
-            
             width = imageSources[0].Width;
             height = imageSources[0].Height;
 

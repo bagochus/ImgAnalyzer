@@ -1,10 +1,12 @@
 ﻿using ImgAnalyzer._2D;
+using Microsoft.Data.Sqlite;
 using Microsoft.VisualBasic.ApplicationServices;
 using NetTopologySuite.Noding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
@@ -22,9 +24,16 @@ namespace ImgAnalyzer
 {
     internal class DB_Manager
     {
+
         private static string databaseFile = "Sessions.db";
         private static string connectionString = $"Data Source={databaseFile};Version=3;";
 
+
+
+
+        
+
+       
 
         public static void InitializeDatabase()
         {

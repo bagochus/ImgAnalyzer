@@ -28,9 +28,11 @@ namespace ImgAnalyzer
             Directory.CreateDirectory(folderPath); // Создаст папку, только если её нет
             string folderPath2 = Path.Combine(AppContext.BaseDirectory, "containers");
             Directory.CreateDirectory(folderPath2); // Создаст папку, только если её нет
+            //Directory.CreateDirectory(Path.GetDirectoryName(SettingsDB.databaseFile));
+
 
             DB_Manager.InitializeDatabase();
-
+            SettingsDB.InitializeSettingsDB();
 
             Application.Run(new MainForm());
         }

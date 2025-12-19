@@ -20,6 +20,8 @@ namespace ImgAnalyzer._2D
         double ddata(int x, int y);
         double[,] DoubleData { get;  }
 
+        double GetInterpolatedValue(double x, double y);
+
         double Max();
         double Min();
         int GetCount(double v1, double v2);

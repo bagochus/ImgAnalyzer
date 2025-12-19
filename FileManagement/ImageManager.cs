@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 
 
 namespace ImgAnalyzer
@@ -109,6 +111,52 @@ namespace ImgAnalyzer
 
             return newName;
         }
+
+        public static void ScanFolders(string[] folderNames)
+        {
+            if (folderNames?.Length != 3) return;
+
+            List<string>[] fileLists = new List<string>[3];
+            List<string>[] shortFileLists = new List<string>[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                fileLists[i] = new List<string>();
+                fileLists[i].AddRange(Directory.GetFiles(folderNames[0], "*.tiff"));
+                fileLists[i].AddRange(Directory.GetFiles(folderNames[0], "*.tif"));
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                shortFileLists[i] = new List<string>();
+                for (int j = 0; j < fileLists[i].Count; j++)
+                {
+                    shortFileLists[i].Add(Path.GetFileName(fileLists[i][j]));
+                }
+            }
+
+
+
+
+            foreach (var file in shortFileLists[0]) 
+            {
+                if (!shortFileLists[1].Contains(file)) continue;
+                if (!shortFileLists[2].Contains(file)) continue;
+
+
+
+            }
+
+
+
+
+
+
+
+
+        }
+
+
 
 
     }

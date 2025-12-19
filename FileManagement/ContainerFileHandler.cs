@@ -1,6 +1,7 @@
 ﻿using ImgAnalyzer._2D;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace ImgAnalyzer
         public double Max() { return container_2D.Max(); }
         public double Min() { return container_2D.Min(); }
         public int GetCount(double v1, double v2) {return container_2D.GetCount(v1, v2);}
+
+
 
         int line = 0;
 
@@ -113,5 +116,26 @@ namespace ImgAnalyzer
                 return result;
             }
         }
+
+        public void SetPixel(int x, int y, double value)
+        {
+            if (x < 0 || x > Width || y < 0 || y > Height) throw new ArgumentOutOfRangeException();
+            if (container_2D is Container_2D_double) (container_2D as Container_2D_double).data[x,y] = value;
+            if (container_2D is Container_2D_int) (container_2D as Container_2D_int).data[x, y] = (int)value;
+        }
+
+        public void Save()
+        {
+            if (container_2D.Filename == "")
+            {
+                string filename = "containers/container_" + DateTime.Now.Ticks + ".bin";
+                container_2D.SaveToFile(filename);
+            }
+
+
+        }
+
+
+
     }
 }
