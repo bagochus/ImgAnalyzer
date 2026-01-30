@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,9 @@ namespace ImgAnalyzer._2D
         private Func<int, int, double> getData;
         private double[,] result;
         private int[,] shifts;
-        
+        private int[,] tempData;
+
+
         private int PixelCountToFix = 5;
         private BorderState[,] h_borders;
         private BorderState[,] v_borders;
@@ -68,17 +71,20 @@ namespace ImgAnalyzer._2D
             else return BorderState.None;
         }
 
+
+
         public override double[,] MeasureFull()
         {
             result = new double[width, height];
             shifts = new int[width, height];
+            tempData = new int[width, height];
             thr = SingleValueParameters[0];
-            startx = (int)SingleValueParameters[1];
-            starty = (int)SingleValueParameters[2];
+            //startx = (int)SingleValueParameters[1];
+            //starty = (int)SingleValueParameters[2];
             getData = (int x,int y) => ContainerParameters[0].ddata(x,y);
 
-            h_borders = new BorderState[width - 1, height - 1];
-            v_borders = new BorderState[width - 1, height - 1];
+            h_borders = new BorderState[width, height];
+            v_borders = new BorderState[width, height];
             cellStates = new CellState[width, height];
             cellIndicies = new int[width, height];  
 
@@ -88,7 +94,24 @@ namespace ImgAnalyzer._2D
                 throw new ArgumentException("Начальная точка вне диапазона");
             }
 
-            Actions();
+            Actions2();
+
+
+            for (int i = 0; i<width;i++)
+                for (int j = 0; j<height;j++)
+                    result[i,j] = cellIndicies[i,j];
+
+            double[,] res2 = new double[width, height];
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    res2[i, j] = (int)h_borders[i, j];
+            DataManager_2D.containers.Add(new Container_2D_double(res2) {Name = "hb" });
+
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    res2[i, j] = (int)v_borders[i, j];
+            DataManager_2D.containers.Add(new Container_2D_double(res2) { Name = "vb" });
+
 
             return result;
         }
@@ -96,18 +119,47 @@ namespace ImgAnalyzer._2D
 
         private void CalcBorders()
         {
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
+
+
+            for (int i = 0; i < width ; i++)
+                for (int j = 0; j < height ; j++)
                 {
-                    h_borders[i, j] = FindAdditionBS(getData(i, j), getData(i, j + 1));
-                    v_borders[i, j] = FindAdditionBS(getData(i, j), getData(i + 1, j));
+                    if (j < height - 1) 
+                    {
+                        h_borders[i, j] = FindAdditionBS(getData(i, j), getData(i, j + 1));
+                        if (h_borders[i, j] == BorderState.In)
+                        {
+                            tempData[i, j] = 1;
+                            tempData[i, j + 1] = -1;
+                        }
+                        if (h_borders[i, j] == BorderState.Out)
+                        {
+                            tempData[i, j] = -1;
+                            tempData[i, j + 1] = 1;
+                        }
+
+                    }
+                    if (i < width - 1) 
+                    {
+                        v_borders[i, j] = FindAdditionBS(getData(i, j), getData(i + 1, j));
+                        if (v_borders[i, j] == BorderState.In) 
+                        {
+                            tempData[i, j] = 1;
+                            tempData[i+1, j] = -1;
+                        }
+                        if (v_borders[i, j] == BorderState.Out)
+                        {
+                            tempData[i+1, j] = 1;
+                            tempData[i, j] = -1;
+                        }
+                    } 
                 }
         }
 
         private BorderState BorderUp(int x, int y)
         {
             if (x < 0 || x > width - 1 || y < 0 || y > height - 1) throw new ArgumentException();
-            if (y == 1) return BorderState.Wall;
+            if (y == 0) return BorderState.Wall;
             return h_borders[x, y - 1];
         }
 
@@ -115,25 +167,22 @@ namespace ImgAnalyzer._2D
         {
             if (x < 0 || x > width - 1 || y < 0 || y > height - 1) throw new ArgumentException();
             if (y == height - 1) return BorderState.Wall;
-            return h_borders[x, y + 1];
+            return h_borders[x, y];
         }
 
         private BorderState BorderLeft(int x, int y)
         {
             if (x < 0 || x > width - 1 || y < 0 || y > height - 1) throw new ArgumentException();
-            if (x == 1) return BorderState.Wall;
-            return h_borders[x - 1, y];
+            if (x == 0) return BorderState.Wall;
+            return v_borders[x - 1, y];
         }
 
         private BorderState BorderRight(int x, int y)
         {
             if (x < 0 || x > width - 1 || y < 0 || y > height - 1) throw new ArgumentException();
             if (x == width - 1) return BorderState.Wall;
-            return h_borders[x + 1,y];
+            return v_borders[x,y];
         }
-
-        
-
 
         private void MarkArea(Point startPoint)
         {
@@ -143,21 +192,24 @@ namespace ImgAnalyzer._2D
             while (stack.Count > 0)
             {
                 Point point = stack.Pop();
+
                 int x = point.X;
                 int y = point.Y;
+                //cellStates[x, y] = CellState.CurrentPass;
 
                 // Находим левую границу линии
-                while (x > 0 && BorderLeft(x,y)==BorderState.None )
+                while (x > 0 && BorderLeft(x,y)==BorderState.None && cellStates[x-1,y]==CellState.Unmarked )
                 {
                     x--;
                 }
+
                 //x++;
 
                 bool spanAbove = false;
                 bool spanBelow = false;
 
                 // Сканируем линию
-                while (x < width && BorderLeft(x, y) == BorderState.None && cellStates[x, y] == CellState.Unmarked)
+                while (x < width  && cellStates[x, y] == CellState.Unmarked)
                 {
                     // Заменяем цвет
                     cellStates[x, y] = CellState.CurrentPass;
@@ -184,12 +236,13 @@ namespace ImgAnalyzer._2D
                             stack.Push(new Point(x, y + 1));
                             spanBelow = true;
                         }
-                        else if (spanBelow && (BorderDown(x, y) != BorderState.None || cellStates[x, y - 1] != CellState.Unmarked))
+                        else if (spanBelow && (BorderDown(x, y) != BorderState.None || cellStates[x, y + 1] != CellState.Unmarked))
                         {
                             spanBelow = false;
                         }
                     }
 
+                    if (BorderRight(x, y) != BorderState.None) break;
                     x++;
                 }
 
@@ -239,19 +292,28 @@ namespace ImgAnalyzer._2D
         }
 
 
-        
 
-
-
-
-        protected virtual void Actions()
+        protected virtual void Actions2()
         {
-            CalcCenterLine();
-            CalculateSides();
-            PinLowestZero();
-            CalculateResult();
+            CalcBorders();
+            Point point = new Point(0, 0);
+
+            while (FindNewStartPoint(out point))
+            { 
+                MarkArea(point);
+                ProcessRegion();
+            
+            
+            
+            }
+
+
 
         }
+
+
+
+
 
 
 
