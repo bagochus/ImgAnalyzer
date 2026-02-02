@@ -280,6 +280,12 @@
     <Compile Include="DialogForms\ContainerBatchesForm.Designer.cs">
       <DependentUpon>ContainerBatchesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DialogForms\SettigRequestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\SettigRequestForm.Designer.cs">
+      <DependentUpon>SettigRequestForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DialogForms\FormSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -409,6 +415,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsDB.cs" />
+    <Compile Include="Settings\SettingDefinition.cs" />
+    <Compile Include="Settings\SettingsManager.cs" />
     <Compile Include="StaticFunctions.cs" />
     <EmbeddedResource Include="2D\Form_2D.resx">
       <DependentUpon>Form_2D.cs</DependentUpon>
@@ -448,6 +456,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\ProfilesForm.resx">
       <DependentUpon>ProfilesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\SettigRequestForm.resx">
+      <DependentUpon>SettigRequestForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\SourceSelectForm.resx">
       <DependentUpon>SourceSelectForm.cs</DependentUpon>
