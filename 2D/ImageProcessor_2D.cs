@@ -113,7 +113,7 @@ namespace ImgAnalyzer
             return max_values;
         }
 
-        public static int[,] Amplitude(ImageBatch batch)
+        public static int[,] Amplitude(ImageBatch batch, int step = 1)
         {
             int width = batch.Width;
             int height = batch.Height;
@@ -123,14 +123,11 @@ namespace ImgAnalyzer
             int[,] amplitude_values = new int[width, height];
 
             DataManager_2D.workToBeDone += batch.Count;
-            for (int image_counter = 0; image_counter < batch.Count; image_counter++)
+            for (int image_counter = 0; image_counter < batch.Count; image_counter+= step)
             {
                 var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
                 for (int line = 0; line < height; line++)
                 {
-
-
-
                     byte[] buffer = new byte[tiff_img.ScanlineSize()];
                     tiff_img.ReadScanline(buffer, line);
                     ushort[] pixelData = new ushort[width * samplesPerPixel];

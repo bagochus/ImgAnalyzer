@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImgAnalyzer.DialogForms;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -27,6 +28,7 @@ namespace ImgAnalyzer
 
         private static  IDbConnection _dbConnection;
         private static  string _tableName;
+        private static bool formRequest = true;
 
 
         /// <summary>
@@ -63,6 +65,22 @@ namespace ImgAnalyzer
         }
 
 
+        public static void RequestSettingList(List<SettingDefinition> settings, bool forceSilent = false, bool forceRequest = false)
+        {
+            if (forceSilent && forceRequest) throw new InvalidOperationException();
+            GetSettingsFromDatabase(settings);
+            if (forceRequest || (formRequest && !forceSilent))
+            {
+                SettigRequestForm form = new SettigRequestForm(settings);
+                form.ShowDialog();
+                if (form.saveAfterUse) SaveSettingsToDatabase(settings);
+            }
+
+
+
+
+        }
+
 
         /// <summary>
         /// Синхронизация зарегистрированных настроек с базой данных
@@ -90,7 +108,7 @@ namespace ImgAnalyzer
                     foreach (var setting in settings)
                     {
                         // Проверяем, существует ли настройка в базе
-                        var checkQuery = $"SELECT COUNT(*) FROM {_tableName} WHERE Name = @Name Owner = @sender";
+                        var checkQuery = $"SELECT COUNT(*) FROM {_tableName} WHERE Name = @Name AND Owner = @sender";
                         using (var checkCommand = _dbConnection.CreateCommand())
                         {
                             checkCommand.Transaction = transaction;
@@ -105,7 +123,7 @@ namespace ImgAnalyzer
                                 // Добавляем настройку с значением по умолчанию
                                 var insertQuery = $@"
                                 INSERT INTO {_tableName} (Name, Owner, Value, ValueType, Comment) 
-                                VALUES (@Name, {setting.Owner}, @Value, @ValueType, @Comment)";
+                                VALUES (@Name, @Owner, @Value, @ValueType, @Comment)";
 
                                 using (var insertCommand = _dbConnection.CreateCommand())
                                 {
@@ -113,6 +131,7 @@ namespace ImgAnalyzer
                                     insertCommand.CommandText = insertQuery;
 
                                     AddParameter(insertCommand, "@Name", setting.Name);
+                                    AddParameter(insertCommand, "@Owner", setting.Owner);
                                     AddParameter(insertCommand, "@Value", ConvertToString(setting.DefaultValue));
                                     AddParameter(insertCommand, "@ValueType", setting.ValueType.FullName);
                                     AddParameter(insertCommand, "@Comment", setting.Comment);
@@ -122,7 +141,6 @@ namespace ImgAnalyzer
                             }
                             else
                             {
-                                // Обновляем тип и комментарий, если они изменились
                                 var updateQuery = $@"
                                 UPDATE {_tableName} 
                                 SET ValueType = @ValueType, Comment = @Comment 
@@ -191,7 +209,7 @@ namespace ImgAnalyzer
                     foreach (var setting in settings)
                     {
                         // Проверяем, существует ли настройка в базе
-                        var checkQuery = $"SELECT COUNT(*) FROM {_tableName} WHERE Name = @Name Owner = @sender";
+                        var checkQuery = $"SELECT COUNT(*) FROM {_tableName} WHERE Name = @Name AND Owner = @sender";
                         using (var checkCommand = _dbConnection.CreateCommand())
                         {
                             checkCommand.Transaction = transaction;
@@ -206,7 +224,7 @@ namespace ImgAnalyzer
                                 // Добавляем настройку с значением по умолчанию
                                 var insertQuery = $@"
                                 INSERT INTO {_tableName} (Name, Owner, Value, ValueType, Comment) 
-                                VALUES (@Name, {setting.Owner}, @Value, @ValueType, @Comment)";
+                                VALUES (@Name, @Owner, @Value, @ValueType, @Comment)";
 
                                 using (var insertCommand = _dbConnection.CreateCommand())
                                 {
@@ -214,6 +232,7 @@ namespace ImgAnalyzer
                                     insertCommand.CommandText = insertQuery;
 
                                     AddParameter(insertCommand, "@Name", setting.Name);
+                                    AddParameter(insertCommand, "@Owner", setting.Owner);
                                     AddParameter(insertCommand, "@Value", ConvertToString(setting.DefaultValue));
                                     AddParameter(insertCommand, "@ValueType", setting.ValueType.FullName);
                                     AddParameter(insertCommand, "@Comment", setting.Comment);
@@ -226,15 +245,18 @@ namespace ImgAnalyzer
                                 // Обновляем тип и комментарий, если они изменились
                                 var updateQuery = $@"
                                 UPDATE {_tableName} 
-                                SET ValueType = @ValueType, Value = {ConvertToString(setting.Value)} ,ValueComment = @Comment, 
-                                WHERE Name = @Name, Owner = {setting.Owner}";
+                                SET ValueType = @ValueType, Value = @Value ,Comment = @Comment 
+                                WHERE Name = @Name AND Owner = @Owner";
 
                                 using (var updateCommand = _dbConnection.CreateCommand())
                                 {
                                     updateCommand.Transaction = transaction;
                                     updateCommand.CommandText = updateQuery;
 
+                                    AddParameter(updateCommand, "@Value", ConvertToString(setting.Value));
+
                                     AddParameter(updateCommand, "@Name", setting.Name);
+                                    AddParameter(updateCommand, "@Owner", setting.Owner);
                                     AddParameter(updateCommand, "@ValueType", setting.ValueType.FullName);
                                     AddParameter(updateCommand, "@Comment", setting.Comment);
 

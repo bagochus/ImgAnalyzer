@@ -361,7 +361,7 @@ namespace ImgAnalyzer._2D
         private void FindShiftInSurroundingRegions(int index)
         {
             //проходит по регону с индексом index, ищет соседние с ним регионы,
-            //если там еще не выставлена фазаб выставляет
+            //если там еще не выставлена фаза, выставляет
 
             Action<int, int, int, int> check_cells = (x1, y1, x2, y2) =>
             {
@@ -396,7 +396,7 @@ namespace ImgAnalyzer._2D
             int count_plus =0;
             //количество границ, на которых index1 на нижнем пороге, index2 - на верхнем
             int count_minus=0;
-            if (index1 == 4 || index2 == 4) Debugger.Break();
+            //if (index1 == 4 || index2 == 4) Debugger.Break();
 
             Action<int, int, int, int> check_cells = (x1, y1, x2, y2) => 
             {

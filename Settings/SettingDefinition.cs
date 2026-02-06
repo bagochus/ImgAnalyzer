@@ -1,5 +1,6 @@
 ﻿using ImgAnalyzer.Properties;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -137,6 +138,14 @@ namespace ImgAnalyzer
         { 
             SettingDefinition sd = new SettingDefinition(name, defaultValue, owner ,comment);
             return sd;
+        }
+
+        public T GetValue<T>()
+        {
+            return (T)Value;
+        
+        
+        
         }
 
 

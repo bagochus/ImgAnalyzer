@@ -4,6 +4,7 @@ using NetTopologySuite.Triangulate.QuadEdge;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
@@ -75,7 +76,6 @@ namespace ImgAnalyzer
             try
             { _samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt(); }
             catch { _samplesPerPixel = 1; }
-            
             int _bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
             return (width == _width) &&
@@ -87,8 +87,6 @@ namespace ImgAnalyzer
 
         private void CheckAllFiles()
         {
-
-
             for (int i = 0; i < filenames.Count; i++)
             {
                 if (!CheckParamenters(i))
@@ -101,13 +99,30 @@ namespace ImgAnalyzer
                         filenames.Remove(filenames[i]);
                     }
                 }
+            }
+        }
 
+        public void SweepDirectory(string dir, bool ignore8bit)
+        {
+            
+            string[] tiffFiles = Directory.GetFiles(dir, "*.tiff");
+            string[] allTiffFiles = Directory.GetFiles(dir, "*.tif");
+            string[] combinedFiles = Directory.GetFiles(dir, "*.tif*");
 
+            this.filenames = new List<string>(combinedFiles);
+            GetParameters(0);
 
+            if (bitsPerSample == 8 && ignore8bit)
+            { 
+                filenames = new List<string>();
+                return;
             }
 
+            for (int i = 0; i < filenames.Count; i++)
+                if (!CheckParamenters(i)) filenames.Remove(filenames[i]);
 
         }
+
 
         public I2DFileHandler Get2DFileHandler(int index)
         {

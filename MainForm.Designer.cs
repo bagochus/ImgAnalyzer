@@ -34,14 +34,15 @@
             this.button_2d = new System.Windows.Forms.Button();
             this.button_1d = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.автодобавлениеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.профильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьТолькоАктивныеОбластиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.button_showContainers = new System.Windows.Forms.Button();
-            this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.автодобавлениеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.button_auto_phase = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -103,6 +104,20 @@
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
+            // файлToolStripMenuItem
+            // 
+            this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.автодобавлениеToolStripMenuItem});
+            this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
+            this.файлToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.файлToolStripMenuItem.Text = "Файл";
+            // 
+            // автодобавлениеToolStripMenuItem
+            // 
+            this.автодобавлениеToolStripMenuItem.Name = "автодобавлениеToolStripMenuItem";
+            this.автодобавлениеToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.автодобавлениеToolStripMenuItem.Text = "Автодобавление";
+            // 
             // профильToolStripMenuItem
             // 
             this.профильToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -151,25 +166,22 @@
             this.button_showContainers.UseVisualStyleBackColor = true;
             this.button_showContainers.Click += new System.EventHandler(this.button_showContainers_Click);
             // 
-            // файлToolStripMenuItem
+            // button_auto_phase
             // 
-            this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.автодобавлениеToolStripMenuItem});
-            this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
-            this.файлToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
-            this.файлToolStripMenuItem.Text = "Файл";
-            // 
-            // автодобавлениеToolStripMenuItem
-            // 
-            this.автодобавлениеToolStripMenuItem.Name = "автодобавлениеToolStripMenuItem";
-            this.автодобавлениеToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.автодобавлениеToolStripMenuItem.Text = "Автодобавление";
+            this.button_auto_phase.Location = new System.Drawing.Point(12, 177);
+            this.button_auto_phase.Name = "button_auto_phase";
+            this.button_auto_phase.Size = new System.Drawing.Size(145, 43);
+            this.button_auto_phase.TabIndex = 6;
+            this.button_auto_phase.Text = "Авто - обработка";
+            this.button_auto_phase.UseVisualStyleBackColor = true;
+            this.button_auto_phase.Click += new System.EventHandler(this.button_auto_phase_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button_auto_phase);
             this.Controls.Add(this.button_showContainers);
             this.Controls.Add(this.button_1d);
             this.Controls.Add(this.button_2d);
@@ -202,5 +214,6 @@
         private System.Windows.Forms.Button button_showContainers;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem автодобавлениеToolStripMenuItem;
+        private System.Windows.Forms.Button button_auto_phase;
     }
 }

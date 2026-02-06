@@ -1,5 +1,6 @@
 ﻿using ImgAnalyzer._2D;
 using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.Macros;
 using Microsoft.VisualBasic;
 using ScottPlot.PlotStyles;
 using System;
@@ -205,6 +206,11 @@ namespace ImgAnalyzer
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void button_auto_phase_Click(object sender, EventArgs e)
+        {
+            AutoPhase.Run();
         }
     }
 }

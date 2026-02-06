@@ -31,15 +31,17 @@ namespace ImgAnalyzer._2D
         private IContainer_2D container;
         private double x_angle_start, x_angle_stop, y_angle_start, y_angle_stop;
         private double inial_step, final_step;
-        private double thrContrast = 0.5;
-        private double profileContrast = 45;
-        private double widthMismath = 0.02;
-        private int gridStep = 50;
+        public double thrContrast = 0.5;
+        public double profileContrast = 45;
+        public double widthMismath = 0.02;
+        public int gridStep = 50;
+
+        public int aa_size = 512;
 
         public SqareFitter(IContainer_2D container)
         {
             this.container = container;
-            SettingsDB.GetDouble("AutoAA_thr_Contrast",out thrContrast);
+            //SettingsDB.GetDouble("AutoAA_thr_Contrast",out thrContrast);
             
         }
 
@@ -207,7 +209,7 @@ namespace ImgAnalyzer._2D
 
 
 
-        public void FindRange()
+        public CoordinateTransformation FindRange()
         {
             List<ProfileScanResult> scansX = new List<ProfileScanResult>();
             List<ProfileScanResult> scansY = new List<ProfileScanResult>();
@@ -256,8 +258,11 @@ namespace ImgAnalyzer._2D
 
             PointF[] points = new PointF[] { bl, tl, tr, br };
 
-            ImageManager.Batch_A().coordinateTransformation = new CoordinateTransformation(points);
-
+            //ImageManager.Batch_A().coordinateTransformation = new CoordinateTransformation(points);
+            var ct = new CoordinateTransformation(points);
+            ct.frame_height = aa_size;
+            ct.frame_width = aa_size;
+            return ct;
         }
 
 

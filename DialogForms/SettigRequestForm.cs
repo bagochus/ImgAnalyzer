@@ -15,6 +15,8 @@ namespace ImgAnalyzer.DialogForms
     public partial class SettigRequestForm : Form
     {
         List<SettingDefinition> settings;
+        public bool saveAfterUse { get { return checkBox_save.Checked; } }
+
         public SettigRequestForm(List<SettingDefinition> settings)
         {
             InitializeComponent();
@@ -22,7 +24,7 @@ namespace ImgAnalyzer.DialogForms
             foreach (SettingDefinition setting in settings)
             {
                 dataGridView1.Rows.Add(setting.Name, setting.Value,
-                    setting.Global? "global":"local", setting.ValueType.ToString());
+                    setting.Global? "global":"local", setting.ValueType.ToString(),setting.Comment);
             }
         }
 
@@ -46,6 +48,9 @@ namespace ImgAnalyzer.DialogForms
             if (dataGridView1.SelectedRows[0].Index < settings.Count) EditParameter(index);
         }
 
-
+        private void button_Ok_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }
