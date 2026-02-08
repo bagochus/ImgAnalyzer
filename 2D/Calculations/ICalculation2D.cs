@@ -32,7 +32,7 @@ namespace ImgAnalyzer._2D
         double[,] MeasureFull();
 
         void Process();
-
+        void Init();
 
 
     }

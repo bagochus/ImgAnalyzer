@@ -54,6 +54,8 @@ namespace ImgAnalyzer._2D
 
         }
 
+        public virtual void Init() { }
+
         public bool Check()
         {
             bool data_valid = true;

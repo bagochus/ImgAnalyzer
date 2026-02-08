@@ -40,6 +40,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         double k1, k2, k3, m1, m2, m3;
 
+        //---------------output variables for internal call---------------
+
+        public ContainerBatch batch;
 
         public async Task Execute()
         {
@@ -57,7 +60,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             m3 = SingleValueParameters[5];
 
 
-            ContainerBatch batch = new ContainerBatch();
+            batch = new ContainerBatch();
             batch.Name = "PhaseNormless";
             ImageManager.containerBatches.Add(batch);
             

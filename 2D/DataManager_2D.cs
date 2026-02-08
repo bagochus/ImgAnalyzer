@@ -80,6 +80,7 @@ namespace ImgAnalyzer._2D
             }
             else if (calculation.PixByPixCalculation)
             {
+                calculation.Init();
                 double[,] datafloat = ImageProcessor_2D.PerformCalculation(calculation);
                 var dc = new Container_2D_double(datafloat);
                 dc.Name = calculation.ToString();
@@ -89,6 +90,7 @@ namespace ImgAnalyzer._2D
             }
             else 
             {
+                calculation.Init();
                 double[,] datafloat = calculation.MeasureFull();
                 var dc = new Container_2D_double(datafloat);
                 dc.Name = calculation.ToString();

@@ -53,6 +53,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         private int lowerPeriod = 0;
 
+        //---------------output variables for internal call---------------
+
+        public ContainerBatch batch;
+
         public async Task Execute()
         {
             if (!Check())
@@ -64,7 +68,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             I2DFileHandler hndlPrev = null, hndlNext = null;
 
 
-            ContainerBatch batch = new ContainerBatch();
+            batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
  
             ImageManager.containerBatches.Add(batch);

@@ -575,8 +575,21 @@ namespace ImgAnalyzer
             return (float)(source[x1,y1]*w1 + source[x2,y1]*w2 + source[x2,y1]*w3+source[x2,y2]*w4);
         }
 
-         
 
+        public static double CalculateAverage(IContainer_2D container, int grid_step = 1)
+        {
+            double sum = 0;
+            long count = 0;
+
+            for (int i = 0; i < container.Width; i += grid_step)
+                for (int j = 0; j < container.Height; j += grid_step)
+                {
+                    sum += container.ddata(i,j);
+                    count++;
+                }
+
+            return count == 0 ? 0 : sum / count;
+        }
 
 
 
