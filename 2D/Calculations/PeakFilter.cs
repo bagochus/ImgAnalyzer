@@ -72,7 +72,7 @@ namespace ImgAnalyzer._2D.Calculations
             for (int i = x_start; i <= x_end; i++)
                 for (int j = y_start; j <= y_end; j++)
                     sum += ContainerParameters[0].ddata(i, j);
-            sum /= (r + 1) * (r + 1);
+            sum /= (2*r + 1) * (2*r + 1);
             return sum;
 
         }

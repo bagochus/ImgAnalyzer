@@ -75,8 +75,8 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 
 
-                await Task.Run( () =>
-                {
+               // await Task.Run( () =>
+               // {
                     
                     GeneratePhaseImage(i);
                     Container_2D_double c = new Container_2D_double(phase);
@@ -88,7 +88,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.AddContainer(c);
                     //batch.Filenames.Add(filename);
 
-                });
+                //});
             }
            
         }

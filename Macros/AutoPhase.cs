@@ -27,8 +27,8 @@ namespace ImgAnalyzer.Macros
         private int img_step = 1;
 
         private int active_area_res = 512;
-        private double thrContrast = 0.5;
-        private double profileContrast = 45;
+        private double thrContrast = 0.3;
+        private double profileContrast = 20;
         private double widthMismath = 0.02;
         private int gridStep = 50;
 
@@ -37,6 +37,47 @@ namespace ImgAnalyzer.Macros
         double stitch_thr = 70;
 
         double range_percentile = 99.5;
+
+        private void RequestParams()
+        {
+            List<SettingDefinition> settings = new List<SettingDefinition>();
+            settings.Add(SD.CreateGlobal("k1", 2.0, "Коэффициент для измерения фазы"));
+            settings.Add(SD.CreateGlobal("k2", -1.0, "Коэффициент для измерения фазы"));
+            settings.Add(SD.CreateGlobal("k3", -1.0, "Коэффициент для измерения фазы"));
+            settings.Add(SD.CreateGlobal("m1", 0.0, "Коэффициент для измерения фазы"));
+            settings.Add(SD.CreateGlobal("m2", 1.0, "Коэффициент для измерения фазы"));
+            settings.Add(SD.CreateGlobal("m3", -1.0, "Коэффициент для измерения фазы"));
+
+            settings.Add(SD.CreateLocal("FolderA", "C:\\Camera\\13", this,
+                "Папка с изображениями с sin камеры"));
+            settings.Add(SD.CreateLocal("FolderB", "C:\\Camera\\14", this,
+    "Папка с изображениями с cos камеры"));
+            settings.Add(SD.CreateLocal("FolderC", "C:\\Camera\\15", this,
+    "Папка с изображениями с -cos камеры"));
+
+            settings.Add(SD.CreateLocal("img_step", 5, this, "Шаг по изображениям при расчете амплитуды"));
+            settings.Add(SD.CreateLocal("active_area_size", 512, this, "Разрешение получаемых фазовых карт"));
+            settings.Add(SD.CreateLocal("profile_contrast", 20.0, this, "Контраст профиля для алгоритма поиска акт.области"));
+
+            SettingsManager.RequestSettingList(settings);
+
+
+            folder1 = settings.Single(x => x.Name == "FolderA").GetValue<string>();
+            folder2 = settings.Single(x => x.Name == "FolderB").GetValue<string>();
+            folder3 = settings.Single(x => x.Name == "FolderC").GetValue<string>();
+            img_step = settings.Single(x => x.Name == "img_step").GetValue<int>();
+            active_area_res = settings.Single(x => x.Name == "active_area_size").GetValue<int>();
+            profileContrast = settings.Single(x => x.Name == "profile_contrast").GetValue<double>();
+            k1 = settings.Single(x => x.Name == "k1").GetValue<double>();
+            k2 = settings.Single(x => x.Name == "k2").GetValue<double>();
+            k3 = settings.Single(x => x.Name == "k3").GetValue<double>();
+            m1 = settings.Single(x => x.Name == "m1").GetValue<double>();
+            m2 = settings.Single(x => x.Name == "m2").GetValue<double>();
+            m3 = settings.Single(x => x.Name == "m3").GetValue<double>();
+
+
+        }
+
 
         public static void Run()
         {
@@ -75,7 +116,7 @@ namespace ImgAnalyzer.Macros
             }
             catch (Exception ex)
             {
-                form.textColor = Color.Red;
+                this.form.textColor = Color.Red;
                 writeLog("Не удалось выполнить поиск: "+ex.Message);
                 return;
 
@@ -83,13 +124,13 @@ namespace ImgAnalyzer.Macros
 
             if (count_a != count_b || count_a != count_c)
             {
-                form.textColor = Color.Red;
+                this.form.textColor = Color.Red;
                 writeLog("Не совпадает количество файлов!");
                 return;
             }
             if (count_a == 0 )
             {
-                form.textColor = Color.Red;
+                this.form.textColor = Color.Red;
                 writeLog("Не найдено ни одного файла изображения!");
                 return;
             }
@@ -103,6 +144,7 @@ namespace ImgAnalyzer.Macros
                 var sf1 = new SqareFitter(ampl_a);
                 FillFitterField(sf1);
                 ct1 = sf1.FindRange();
+                
 
                 writeLog("Расчет амплитуды для группы изображений B...");
                 Container_2D_int ampl_b = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_B(), img_step));
@@ -117,15 +159,24 @@ namespace ImgAnalyzer.Macros
                 var sf3 = new SqareFitter(ampl_c);
                 FillFitterField(sf3);
                 ct3 = sf3.FindRange();
+
+                ImageManager.Batch_A().coordinateTransformation = ct1;
+                ImageManager.Batch_B().coordinateTransformation = ct2;
+                ImageManager.Batch_C().coordinateTransformation = ct3;
+
+                DataManager_2D.containers.Add(ampl_a);
+                DataManager_2D.containers.Add(ampl_b);
+                DataManager_2D.containers.Add(ampl_c);
+
             }
+
             catch (Exception ex) 
             {
-                form.textColor = Color.Red;
+                this.form.textColor = Color.Red;
                 writeLog("Не удалось выполнить поиск активных областей");
                 writeLog(ex.Message);
                 return;
             }
-
             writeLog("Рачет фазовых профилей...");
             PhaseMeasurmentGroup pmg = new PhaseMeasurmentGroup();
             pmg.SingleValueParameters = new double[] { k1, k2, k3, m1, m2, m3 };
@@ -143,8 +194,14 @@ namespace ImgAnalyzer.Macros
             StitchSpatially3 stitch_calc = new StitchSpatially3();
 
             stitch_calc.SingleValueParameters = new double[] { stitch_thr };
-
             stitch_calc.ContainerParameters = new IContainer_2D[] { phase0 };
+            if (!stitch_calc.Check())
+            {
+                this.form.textColor = Color.Red;
+                writeLog("Ошибка при сшивке фазы");
+                return;
+            }
+
 
             Container_2D phase_stitched = new Container_2D_double(stitch_calc.MeasureFull());
 
@@ -171,6 +228,13 @@ namespace ImgAnalyzer.Macros
                 pr_calc.ContainerParameters = new IContainer_2D[] { phase_start, phase_end };
             else
                 pr_calc.ContainerParameters = new IContainer_2D[] { phase_end, phase_start };
+
+            if (!pr_calc.Check())
+            {
+                this.form.textColor = Color.Red;
+                writeLog("Ошибка при расчете фазового диапазона ");
+                return;
+            }
             var container_range = new Container_2D_double(pr_calc.MeasureFull());
 
             DialogResult result = MessageBox.Show("Рассчитать LU таблицу?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -181,18 +245,18 @@ namespace ImgAnalyzer.Macros
 
             LU_Table lut_calc = new LU_Table();
 
-            ParameterRequestForm form = new ParameterRequestForm();
-            form.AddDoubleRequest("PHASE_0");
-            form.AddDoubleRequest("PHASE_255");
-            form.AddDoubleRequest("DAC_0");
-            form.AddDoubleRequest("DAC_STEP");
+            ParameterRequestForm pr_form = new ParameterRequestForm();
+            pr_form.AddDoubleRequest("PHASE_0");
+            pr_form.AddDoubleRequest("PHASE_255");
+            pr_form.AddDoubleRequest("DAC_0");
+            pr_form.AddDoubleRequest("DAC_STEP");
 
-            form.ShowDialog();
+            pr_form.ShowDialog();
 
-            double ph0 = form.RequestDouble("PHASE_0");
-            double ph255 = form.RequestDouble("PHASE_255");
-            double dac_0 = form.RequestDouble("DAC_0");
-            double dac_step = form.RequestDouble("DAC_STEP");
+            double ph0 = pr_form.RequestDouble("PHASE_0");
+            double ph255 = pr_form.RequestDouble("PHASE_255");
+            double dac_0 = pr_form.RequestDouble("DAC_0");
+            double dac_step = pr_form.RequestDouble("DAC_STEP");
 
             lut_calc.SingleValueParameters = new double[] { ph0, ph255, dac_0, dac_step };
             lut_calc.imageSources = new IImageSource[] { sfw.batch };
@@ -223,47 +287,15 @@ namespace ImgAnalyzer.Macros
         }
 
 
-        private void RequestParams()
-        { 
-            List<SettingDefinition> settings = new List<SettingDefinition>();
-            settings.Add(SD.CreateGlobal("k1", 2.0, "Коэффициент для измерения фазы"));
-            settings.Add(SD.CreateGlobal("k2", -1.0, "Коэффициент для измерения фазы"));
-            settings.Add(SD.CreateGlobal("k3", -1.0, "Коэффициент для измерения фазы"));
-            settings.Add(SD.CreateGlobal("m1", 0.0, "Коэффициент для измерения фазы"));
-            settings.Add(SD.CreateGlobal("m2", 1.0, "Коэффициент для измерения фазы"));
-            settings.Add(SD.CreateGlobal("m3", -1.0, "Коэффициент для измерения фазы"));
-
-            settings.Add(SD.CreateLocal("FolderA", "C:\\Camera\\13", this,
-                "Папка с изображениями с sin камеры"));
-            settings.Add(SD.CreateLocal("FolderB", "C:\\Camera\\14", this,
-    "Папка с изображениями с cos камеры"));
-            settings.Add(SD.CreateLocal("FolderC", "C:\\Camera\\15", this,
-    "Папка с изображениями с -cos камеры"));
-
-            settings.Add(SD.CreateLocal("img_step", 5,this, "Шаг по изображениям при расчете амплитуды"));
-            settings.Add(SD.CreateLocal("active_area_size", 512, this, "Высота и ширина активной области в псевдопикселях"));
-
-
-            SettingsManager.RequestSettingList(settings);
-
-
-            folder1 =   settings.Single(x => x.Name == "FolderA").GetValue<string>();
-            folder2 =   settings.Single(x => x.Name == "FolderB").GetValue<string>();
-            folder3 =   settings.Single(x => x.Name == "FolderC").GetValue<string>();
-            img_step =  settings.Single(x => x.Name == "img_step").GetValue<int>();
-            active_area_res = settings.Single(x => x.Name == "active_area_size").GetValue<int>();
-
-
-        }
-
+        
 
 
 
         private AutoPhase() 
         {
             form = new AutoPhaseForm();
-            form.Show();
-            writeLog = form.AppendLog;
+            this.form.Show();
+            writeLog = this.form.AppendLog;
         
         
         }

@@ -1,6 +1,7 @@
 ﻿using ScottPlot.Colormaps;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -120,7 +121,11 @@ namespace ImgAnalyzer._2D.GroupOperations
         private int FindAddition(double x1, double x2)
         {
             if (x1 < 0 || x1 > top || x2 < 0 || x2 > top)
+            {
+                Debugger.Break();
                 throw new ArgumentException("Phase out of range");
+            }    
+
 
             if (x1 < thr && x2 > (top - thr)) return -1;
             else if (x2 < thr && (x1 > (top - thr))) return 1;
@@ -134,8 +139,16 @@ namespace ImgAnalyzer._2D.GroupOperations
                 for (int j = 0; j < height; j++)
                 {
                     double phaseCalculatedPrev = getDataPrev(i,j);
-                    double phaseMeasuredPrev = phaseCalculatedPrev % top;
-                    if (phaseMeasuredPrev < 0) phaseMeasuredPrev = top - phaseMeasuredPrev;
+                    double phaseMeasuredPrev = 0;
+
+                    if (phaseCalculatedPrev < 0)
+                    {
+                        phaseMeasuredPrev += (int)Math.Ceiling(-phaseCalculatedPrev / top) * top;
+                    }
+                    else 
+                    {
+                        phaseMeasuredPrev = phaseCalculatedPrev % top;
+                    }
                     int periodPrev = (int)Math.Floor(phaseCalculatedPrev / top);
                     if (periodPrev < lowerPeriod) lowerPeriod = periodPrev;
 
@@ -144,6 +157,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                     int addition = FindAddition(phaseMeasuredPrev, phaseMeasuredNext);
 
                     phase_prev[i, j] = phase[i, j] = phaseMeasuredNext + top * (addition + periodPrev);
+
                     
                 }
         }

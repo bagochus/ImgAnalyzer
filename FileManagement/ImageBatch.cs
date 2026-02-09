@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -109,7 +110,8 @@ namespace ImgAnalyzer
             string[] allTiffFiles = Directory.GetFiles(dir, "*.tif");
             string[] combinedFiles = Directory.GetFiles(dir, "*.tif*");
 
-            this.filenames = new List<string>(combinedFiles);
+
+            this.filenames = new List<string>(SortFilePaths(combinedFiles));
             GetParameters(0);
 
             if (bitsPerSample == 8 && ignore8bit)
@@ -123,6 +125,24 @@ namespace ImgAnalyzer
 
         }
 
+        public static string[] SortFilePaths(string[] paths)
+        {
+            return paths
+                .OrderBy(p => Path.GetDirectoryName(p))  // группируем по папке
+                .ThenBy(p =>
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(p);
+                    var match = Regex.Match(fileName, @"^(.*?)(\d+)$");
+
+                    if (match.Success)
+                    {
+                        // Сначала текстовая часть, потом числовая
+                        return $"{match.Groups[1].Value}_{int.Parse(match.Groups[2].Value):D10}";
+                    }
+                    return fileName;
+                }, StringComparer.Ordinal)
+                .ToArray();
+        }
 
         public I2DFileHandler Get2DFileHandler(int index)
         {
