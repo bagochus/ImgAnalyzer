@@ -12,17 +12,17 @@ using ImgAnalyzer._2D.GroupOperations.SinglePixelOperations;
 using System.ComponentModel;
 using System.Windows.Forms;
 using ImgAnalyzer.DialogForms;
+using System.Threading;
 
 namespace ImgAnalyzer.Macros
 {
     public class AutoPhase
     {
         private string folder1, folder2, folder3;
-        private static AutoPhase instance = null;
         private Action<string> writeLog = null;
         private AutoPhaseForm form = null;
-        
 
+        public CancellationTokenSource cts;
 
         private int img_step = 1;
 
@@ -79,37 +79,47 @@ namespace ImgAnalyzer.Macros
         }
 
 
-        public static void Run()
+        public static async Task Run()
         {
-            if (instance == null)
-            {
-                instance = new AutoPhase();
 
-                try
-                {
-                    instance._run();
-                }
-                finally { instance = null; }
+
+            AutoPhase instance = new AutoPhase();
+            instance.cts = new CancellationTokenSource();
+            instance.cts.Token.ThrowIfCancellationRequested();
+            try
+            {
+                await Task.Run(instance._run);
             }
+            finally { instance = null; }
+
 
 
         }
 
-        private void _run()
+        private async Task _run()
         {
+
+            
+            form.stopButtonClick += () => { cts.Cancel(); };
             writeLog("Запрос параметров от пользователя...");
             RequestParams();
             int count_a=0, count_b=0, count_c=0;
+
+
+
             try
             {
+                cts.Token.ThrowIfCancellationRequested();   
                 ImageManager.Batch_A().SweepDirectory(folder1, true);
                  count_a = ImageManager.Batch_A().Count;
                 writeLog($"Проверка папки А, найдено {count_a} файлов");
 
+                cts.Token.ThrowIfCancellationRequested();
                 ImageManager.Batch_B().SweepDirectory(folder2, true);
                  count_b = ImageManager.Batch_B().Count;
                 writeLog($"Проверка папки B, найдено {count_b} файлов");
 
+                cts.Token.ThrowIfCancellationRequested();
                 ImageManager.Batch_C().SweepDirectory(folder3, true);
                  count_c = ImageManager.Batch_B().Count;
                 writeLog($"Проверка папки C, найдено {count_c} файлов");
@@ -138,14 +148,15 @@ namespace ImgAnalyzer.Macros
             CoordinateTransformation ct1 = null, ct2 = null, ct3 = null;
             try 
             {
+                cts.Token.ThrowIfCancellationRequested();
                 writeLog("Расчет амплитуды для группы изображений А...");
                 Container_2D_int ampl_a = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_A(), img_step));
                 writeLog("Поиск активной области для группы изображений А");
                 var sf1 = new SqareFitter(ampl_a);
                 FillFitterField(sf1);
                 ct1 = sf1.FindRange();
-                
 
+                cts.Token.ThrowIfCancellationRequested();
                 writeLog("Расчет амплитуды для группы изображений B...");
                 Container_2D_int ampl_b = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_B(), img_step));
                 writeLog("Поиск активной области для группы изображений B");
@@ -153,6 +164,7 @@ namespace ImgAnalyzer.Macros
                 FillFitterField(sf2);
                 ct2 = sf2.FindRange();
 
+                cts.Token.ThrowIfCancellationRequested();
                 writeLog("Расчет амплитуды для группы изображений C...");
                 Container_2D_int ampl_c = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_C(), img_step));
                 writeLog("Поиск активной области для группы изображений C");
@@ -164,6 +176,10 @@ namespace ImgAnalyzer.Macros
                 ImageManager.Batch_B().coordinateTransformation = ct2;
                 ImageManager.Batch_C().coordinateTransformation = ct3;
 
+
+                ampl_a.Name = "A_Amplitude";
+                ampl_b.Name = "B_Amplitude";
+                ampl_c.Name = "C_Amplitude";
                 DataManager_2D.containers.Add(ampl_a);
                 DataManager_2D.containers.Add(ampl_b);
                 DataManager_2D.containers.Add(ampl_c);
@@ -185,9 +201,27 @@ namespace ImgAnalyzer.Macros
                 ImageManager.Batch_B(),
                 ImageManager.Batch_C() };
             pmg.UseTransformation = true;
+            pmg._cancellationToken = cts.Token;
+            form.AppendLog("Расчет фазовых профилей...");
+            pmg.containerPorcessed += () => 
+            {
+                form.ReplaceLastLine($"Расчет фазовых профилей...{pmg.processed_containers}/{pmg.total_containers}"); 
+            };
+            try 
+            {
+                await pmg.Execute();
+            }
+            catch (Exception ex) 
+            {
+                this.form.textColor = Color.Red;
+                writeLog("Не удалось выполнить поиск активных областей");
+                writeLog(ex.Message);
+                return;
+            }
 
-            pmg.Execute();
 
+
+            
             var phase0 = Container_2D.ReadFromFile(pmg.batch.Filenames[0]);
 
             writeLog("Сшивка первого фазового профиля...");
@@ -198,20 +232,43 @@ namespace ImgAnalyzer.Macros
             if (!stitch_calc.Check())
             {
                 this.form.textColor = Color.Red;
-                writeLog("Ошибка при сшивке фазы");
+                writeLog("Ошибка при сшивке фазы - ошибка входных данных");
                 return;
             }
-
-
             Container_2D phase_stitched = new Container_2D_double(stitch_calc.MeasureFull());
+            writeLog($"Сшивка произведена, {stitch_calc.err_count} битых пикселей");
+
 
             writeLog("Сшивка группы фазовых профилей...");
+
+
+
+
             StitchFramewise sfw = new StitchFramewise();
 
             sfw.SingleValueParameters = new double[] { stitch_thr };
             sfw.ContainerParameters = new IContainer_2D[] { phase_stitched };
             sfw.imageSources = new IImageSource[] { pmg.batch };
-            sfw.Execute();
+            sfw._cancellationToken = cts.Token;
+
+            sfw.containerPorcessed += () =>
+            {
+                form.ReplaceLastLine($"Сшивка группы фазовых профилей...{sfw.processed_containers}/{sfw.total_containers}");
+            };
+
+            try
+            {
+                await sfw.Execute();
+            }
+            catch (Exception ex) 
+            {
+                this.form.textColor = Color.Red;
+                writeLog("Ошибка при сшивке фазы: " +ex.Message);
+                return;
+            }
+
+
+
 
             var phase_start = Container_2D.ReadFromFile(sfw.batch.Filenames[0]);
             var phase_end = Container_2D.ReadFromFile(sfw.batch.Filenames[sfw.batch.Count-1]);
@@ -219,7 +276,8 @@ namespace ImgAnalyzer.Macros
             double avg_start = ImageProcessor_2D.CalculateAverage(phase_start, 8);
             double avg_end = ImageProcessor_2D.CalculateAverage(phase_end, 8);
             
-
+            
+            
 
             writeLog("Расчет диапазона...");
             PhaseRange pr_calc = new PhaseRange();
@@ -237,6 +295,10 @@ namespace ImgAnalyzer.Macros
             }
             var container_range = new Container_2D_double(pr_calc.MeasureFull());
 
+            double phase_lo = pr_calc.bottom;
+            double phase_hi = pr_calc.top;
+
+
             DialogResult result = MessageBox.Show("Рассчитать LU таблицу?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.No)
             {
@@ -246,6 +308,13 @@ namespace ImgAnalyzer.Macros
             LU_Table lut_calc = new LU_Table();
 
             ParameterRequestForm pr_form = new ParameterRequestForm();
+            pr_form.AddHeader("Введите параметры для LU таблицы. PHASE_0 - значение фазы," +
+                " которе выводится при подаче 0 по HDMI (черный цвет), PHASE_255 - значение фазы," +
+                " которе выводится при подаче 255 по HDMI (белый цвет)." +
+                $" Работа гарантируется в диапазоне {phase_lo:f2}-{phase_hi:f2}" +
+                ". DAC_0/DAC_STEP начальное значение и шаг по коду ЦАП, которое указывалось" +
+                " при настройке калибровки в управляющей программе ПФМС" +
+                ""); 
             pr_form.AddDoubleRequest("PHASE_0");
             pr_form.AddDoubleRequest("PHASE_255");
             pr_form.AddDoubleRequest("DAC_0");
@@ -260,19 +329,24 @@ namespace ImgAnalyzer.Macros
 
             lut_calc.SingleValueParameters = new double[] { ph0, ph255, dac_0, dac_step };
             lut_calc.imageSources = new IImageSource[] { sfw.batch };
-            lut_calc.Execute();
 
+            form.AppendLog("Построение LU таблицы...");
+            lut_calc.containerPorcessed += () =>
+            {
+                form.ReplaceLastLine($"Построение LU таблицы...{lut_calc.processed_steps}/{lut_calc.total_steps}");
+            };
 
-
-
-
-
-
-
-
-
-
-
+            try
+            {
+                await lut_calc.Execute();
+            }
+            catch (Exception ex)
+            {
+                this.form.textColor = Color.Red;
+                writeLog("Ошибка при построении LUT: " + ex.Message);
+                return;
+            }
+            form.AppendLog("Обработка завершениа");
         }
 
 
@@ -296,6 +370,8 @@ namespace ImgAnalyzer.Macros
             form = new AutoPhaseForm();
             this.form.Show();
             writeLog = this.form.AppendLog;
+
+            
         
         
         }

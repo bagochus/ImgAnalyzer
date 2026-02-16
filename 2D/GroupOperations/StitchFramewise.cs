@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -56,6 +57,11 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         //---------------output variables for internal call---------------
 
+        public int total_containers = 0;
+        public int processed_containers = 0;
+        public event Action containerPorcessed = () => { };
+        public CancellationToken _cancellationToken;
+
         public ContainerBatch batch;
 
         public async Task Execute()
@@ -78,12 +84,23 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
 
-            string filename = Path.Combine(foldername, "0.bin");
-            ContainerParameters[0].SaveToFile(filename);
-            batch.Filenames.Add(filename);
+            //string filename = Path.Combine(foldername, "0.bin");
+            //ContainerParameters[0].SaveToFile(filename);
+            batch.AddContainer(ContainerParameters[0], true);
+            //batch.Filenames.Add(filename);
+
+
+            total_containers = imageSources[0].Count;
+
 
             for (int i = 1; i < imageSources[0].Count; i++)
             {
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
 
                 if (i == 1)
                 {
@@ -91,7 +108,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 }
                 else
                 {
-                    getDataPrev = (int x, int y) => phase_prev[x,y];
+                    getDataPrev = (int x, int y) => phase_prev[x, y];
                 }
                 hndlNext = imageSources[0].Get2DFileHandler(i);
                 getDataNext = hndlNext.GetPixelValue;
@@ -102,15 +119,16 @@ namespace ImgAnalyzer._2D.GroupOperations
                     Container_2D_double c = new Container_2D_double(phase);
                     DataManager_2D.progress.Report(1);
 
-                    filename = Path.Combine(foldername, i.ToString() + ".bin");
-                    c.SaveToFile(filename);
-                    batch.Filenames.Add(filename);
+                    //filename = Path.Combine(foldername, i.ToString() + ".bin");
+                    //c.SaveToFile(filename);
+                    batch.AddContainer(c);
 
                 //});
 
                 //hndlPrev = hndlNext;
                 hndlNext.Dispose();
-
+                processed_containers++;
+                containerPorcessed();
 
             }
 
@@ -165,8 +183,16 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         private void CorrectPhaseShift(ContainerBatch batch)
         {
+            processed_containers = 0;
             for (int n = 0; n<batch.Count;n++)
             {
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
+
                 ContainerFileHandler hndl = batch.Get2DFileHandler(n) as  ContainerFileHandler;
                 for (int i = 0; i< hndl.Width; i++) 
                     for (int j = 0;j< hndl.Height; j++)
@@ -175,6 +201,8 @@ namespace ImgAnalyzer._2D.GroupOperations
                     }
                 hndl.Save();
                 hndl.Dispose();
+                processed_containers++;
+                containerPorcessed();
             }
         }
 

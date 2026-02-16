@@ -208,9 +208,10 @@ namespace ImgAnalyzer
             }
         }
 
-        private void button_auto_phase_Click(object sender, EventArgs e)
+        private async void button_auto_phase_Click(object sender, EventArgs e)
         {
-            AutoPhase.Run();
+            await AutoPhase.Run();
         }
+
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -42,6 +43,11 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         //---------------output variables for internal call---------------
 
+        public int total_containers = 0;
+        public int processed_containers = 0;
+        public event Action containerPorcessed = () => { };
+        public CancellationToken _cancellationToken;
+
         public ContainerBatch batch;
 
         public async Task Execute()
@@ -70,27 +76,36 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
 
-
+            total_containers = min_count;
             for (int i = 0; i < min_count; i++)
             {
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
                 
+                }
+                // await Task.Run( () =>
+                // {
+                
+                GeneratePhaseImage(i);
+                Container_2D_double c = new Container_2D_double(phase);
+                c.Name = batch.Name + "_" + i.ToString();
+                DataManager_2D.progress.Report(1);
 
-               // await Task.Run( () =>
-               // {
-                    
-                    GeneratePhaseImage(i);
-                    Container_2D_double c = new Container_2D_double(phase);
-                    c.Name = batch.Name+"_"+i.ToString();
-                    DataManager_2D.progress.Report(1);
+                //string filename = Path.Combine(foldername, i.ToString() + ".bin");
+                //c.SaveToFile(filename);
+                batch.AddContainer(c);
 
-                    string filename = Path.Combine(foldername, i.ToString() + ".bin");
-                    c.SaveToFile(filename);
-                    batch.AddContainer(c);
-                    //batch.Filenames.Add(filename);
+                processed_containers++;
+                containerPorcessed();
+
+                //batch.Filenames.Add(filename);
 
                 //});
             }
-           
+
         }
 
 

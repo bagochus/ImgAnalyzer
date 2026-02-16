@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -78,12 +79,25 @@ namespace ImgAnalyzer._2D.GroupOperations
         protected int trimmed_values = 0;
 
 
+
+        //---------------output variables for internal call---------------
+
+        public int total_steps = 0;
+        public int processed_steps = 0;
+
+        public event Action containerPorcessed = () => { };
+
+
+        public CancellationToken _cancellationToken;
+
+
         public async Task Execute()
         {
             if (!Check())
             {
                 MessageBox.Show(error_message); return;
             }
+
 
 
             out0 = SingleValueParameters[0];
@@ -149,6 +163,12 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.Filenames.Add(filename);
                 }
 
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
+
                 WriteLUTFile(Path.Combine(foldername, "LUT.txt"));
 
             });
@@ -191,14 +211,23 @@ namespace ImgAnalyzer._2D.GroupOperations
             avgFieldPrev = avgField;
             hndl_first.Dispose();
 
+            total_steps = imageSources[0].Count;
             for (int i = 1; i < imageSources[0].Count; i++)
             {
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
+
                 I2DFileHandler hndl = imageSources[0].Get2DFileHandler(i);
                 GetData = hndl.GetPixelValue;
                 GenerateAverageField();
                 AnalyzeFields(i - 1);
                 avgFieldPrev = avgField;
                 hndl.Dispose();
+                processed_steps++;
+                containerPorcessed();
             }
         }
 

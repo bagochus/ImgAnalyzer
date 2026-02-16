@@ -122,45 +122,58 @@ namespace ImgAnalyzer
             int[,] max_values = new int[width, height];
             int[,] amplitude_values = new int[width, height];
 
-            DataManager_2D.workToBeDone += batch.Count;
-            for (int image_counter = 0; image_counter < batch.Count; image_counter+= step)
+            try
             {
-                var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
-                for (int line = 0; line < height; line++)
+                DataManager_2D.workToBeDone += batch.Count;
+                for (int image_counter = 0; image_counter < batch.Count; image_counter += step)
                 {
-                    byte[] buffer = new byte[tiff_img.ScanlineSize()];
-                    tiff_img.ReadScanline(buffer, line);
-                    ushort[] pixelData = new ushort[width * samplesPerPixel];
-                    if (batch.BitsPerSample == 16)
-                        System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
-                    else
+                    var tiff_img = Tiff.Open(batch.filenames[image_counter], "r");
+                    for (int line = 0; line < height; line++)
                     {
-                        for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
-                    }
-                    for (int pixel = 0; pixel < width; pixel++)
-                    {
-                        ushort pixel_value = pixelData[pixel];
-                        if (image_counter == 0)
-                        {
-                            min_values[pixel, line] = pixel_value;
-                            max_values[pixel, line] = pixel_value;
-                        }
+                        byte[] buffer = new byte[tiff_img.ScanlineSize()];
+                        tiff_img.ReadScanline(buffer, line);
+                        ushort[] pixelData = new ushort[width * samplesPerPixel];
+                        if (batch.BitsPerSample == 16)
+                            System.Buffer.BlockCopy(buffer, 0, pixelData, 0, buffer.Length);
                         else
                         {
-                            if (pixel_value < min_values[pixel, line]) min_values[pixel, line] = pixel_value;
-                            if (pixel_value > max_values[pixel, line]) max_values[pixel, line] = pixel_value;
+                            for (int i = 0; i < buffer.Length; i++) pixelData[i] = buffer[i];
+                        }
+                        for (int pixel = 0; pixel < width; pixel++)
+                        {
+                            ushort pixel_value = pixelData[pixel];
+                            if (image_counter == 0)
+                            {
+                                min_values[pixel, line] = pixel_value;
+                                max_values[pixel, line] = pixel_value;
+                            }
+                            else
+                            {
+                                if (pixel_value < min_values[pixel, line]) min_values[pixel, line] = pixel_value;
+                                if (pixel_value > max_values[pixel, line]) max_values[pixel, line] = pixel_value;
+                            }
                         }
                     }
+                    DataManager_2D.progress.Report(1);
                 }
-                DataManager_2D.progress.Report(1);
+
+                for (int i = 0; i < min_values.GetLength(0); i++)
+                    for (int j = 0; j < min_values.GetLength(1); j++)
+                    {
+                        amplitude_values[i, j] = (ushort)(max_values[i, j] - min_values[i, j]);
+                    }
+                return amplitude_values;
+            }
+            finally
+            {
+                Array.Clear(min_values, 0, min_values.Length);
+                min_values = null;
+                Array.Clear(max_values, 0, max_values.Length);
+                max_values = null;
             }
 
-            for (int i = 0; i < min_values.GetLength(0); i++)
-                for (int j = 0; j < min_values.GetLength(1); j++)
-                {
-                    amplitude_values[i, j] = (ushort)(max_values[i, j] - min_values[i, j]);
-                }
-            return amplitude_values;
+
+            
         }
 
         public static double[,] FitData(int[,] data, CoordinateTransformation ct)

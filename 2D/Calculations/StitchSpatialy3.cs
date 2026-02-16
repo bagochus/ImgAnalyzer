@@ -36,7 +36,7 @@ namespace ImgAnalyzer._2D
         private Func<int, int, double> getData;
         private double[,] result;
         private int[,] shifts;
-        private int[,] tempData;
+        private int[,] errData;
         private int[] region_shifts;
         private int biggest_region_index = -1;
         private int biggest_region_count = 0;
@@ -47,13 +47,16 @@ namespace ImgAnalyzer._2D
         
 
 
-        private int PixelCountToFix = 5;
+
         private CellMark[,] cellMarks;
         private CellState[,] cellStates;
         private CellState[,] cs_phase;
         private int[,] cellIndicies;
         private int currentRegion = 0;
 
+
+        public int err_count = 0;
+        public bool save_debug_data = false;
 
         public StitchSpatially3()
         {
@@ -81,7 +84,7 @@ namespace ImgAnalyzer._2D
         {
             result = new double[width, height];
             shifts = new int[width, height];
-            tempData = new int[width, height];
+            errData = new int[width, height];
             thr = SingleValueParameters[0];
             //startx = (int)SingleValueParameters[1];
             //starty = (int)SingleValueParameters[2];
@@ -97,9 +100,10 @@ namespace ImgAnalyzer._2D
                 throw new ArgumentException("Начальная точка вне диапазона");
             }
 
-            Actions2();
+            Actions();
 
 
+            if (!save_debug_data) { return result; }
 
             double[,] res2 = new double[width, height];
             for (int i = 0; i < width; i++)
@@ -110,7 +114,7 @@ namespace ImgAnalyzer._2D
             double[,] res3 = new double[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    res3[i, j] = (int)tempData[i, j];
+                    res3[i, j] = (int)errData[i, j];
             DataManager_2D.containers.Add(new Container_2D_double(res3) { Name = "errors" });
 
             int[,] res4 = new int[width, height];
@@ -124,7 +128,7 @@ namespace ImgAnalyzer._2D
         }
 
 
-        protected virtual void Actions2()
+        protected virtual void Actions()
         {
             CalcBorders();
             Point point = new Point(0, 0);
@@ -133,10 +137,10 @@ namespace ImgAnalyzer._2D
             {
                 MarkArea(point);
                 ProcessRegion();
-
             }
             ArrangeShifths();
             ApplyShifts();
+            CalculateErrors();
         }
 
 
@@ -260,8 +264,8 @@ namespace ImgAnalyzer._2D
 
                 if (cellMarks[x1, y1] != cellMarks[x2, y2])
                 {
-                    tempData[x1, y1] = (int)cellMarks[x1,y1];
-                    tempData[x2, y2] = (int)cellMarks[x2, y2];
+                    errData[x1, y1] = (int)cellMarks[x1,y1];
+                    errData[x2, y2] = (int)cellMarks[x2, y2];
                 }
             };
 
@@ -311,8 +315,6 @@ namespace ImgAnalyzer._2D
         }
 
         //эти функции необходимы для определения фазовых смещений
-
-
 
         private void ArrangeShifths()
         {
@@ -389,7 +391,8 @@ namespace ImgAnalyzer._2D
             // определяет характер границы между областями с индексами index1 и index2
             // возвращает 1 если область index1 имеет на границе фазу, близую к 360
             // возвращает -1 если область index1 имеет на границе фазу, близую к 0
-
+            // возвуращает 0 если между областями нет переходов 0-360 
+            // такое возникает ели одна область разделена бутылочным горлышком
 
 
             //количество границ, на которых index1 на верхнем пороге, index2 - на нижнем
@@ -451,6 +454,10 @@ namespace ImgAnalyzer._2D
 
         }
 
+        private void CalculateErrors()
+        {
+            foreach (var d in errData) if (d != 0) err_count++;
+        }
 
 
 

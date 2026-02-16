@@ -112,15 +112,16 @@ namespace ImgAnalyzer
 
         }
 
-        public void AddContainer(IContainer_2D container)
+        public void AddContainer(IContainer_2D container, bool copy_container = false)
         {
-            if (workFolder == "") workFolder = CreateFolder(Name);
+            
 
 
             if (filenames.Count == 0)
             {
-                if (container.Filename == "")
+                if (container.Filename == "" || copy_container)
                 {
+                    if (workFolder == "") workFolder = CreateFolder(Name);
                     container.SaveToFile(Path.Combine(workFolder, "cont_"+ filenames.Count.ToString() +".bin"));
                 }
                 filenames.Add(container.Filename);
@@ -132,7 +133,7 @@ namespace ImgAnalyzer
             else
             {
                 if(!CheckConsistency(container)) return;
-                if (container.Filename == "")
+                if (container.Filename == "" || copy_container)
                 {
                     container.SaveToFile(Path.Combine(workFolder, "cont_" + filenames.Count.ToString() + ".bin"));
                 }

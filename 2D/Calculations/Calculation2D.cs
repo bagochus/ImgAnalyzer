@@ -58,6 +58,7 @@ namespace ImgAnalyzer._2D
 
         public bool Check()
         {
+
             bool data_valid = true;
             errorMessage = "Недостаточно входных данных";
 
