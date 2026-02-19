@@ -38,20 +38,12 @@ namespace ImgAnalyzer
             if (filenames.Length == 0) return;
             if (this.filenames.Count == 0) GetParameters(filenames[0]);
 
-
-
             foreach (string filename in filenames) 
             {
                 if (CheckParamenters(filename)) this.filenames.Add(filename);
-            
             }
-
-
             DataChanged?.Invoke(this, new EventArgs());
-
         }
-
-
 
         private void GetParameters(string filename) 
         {
@@ -140,10 +132,6 @@ namespace ImgAnalyzer
                 filenames.Add(container.Filename);
 
             }
-
-
-
-
         }
 
         private bool CheckConsistency(IContainer_2D container)
@@ -154,7 +142,6 @@ namespace ImgAnalyzer
             if (container.Height != height) return false;
 
             return true;
-
         }
 
 

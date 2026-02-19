@@ -348,6 +348,7 @@
     <Compile Include="DialogForms\SourceSelectForm.Designer.cs">
       <DependentUpon>SourceSelectForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileManagement\BatchMetadata.cs" />
     <Compile Include="FileManagement\ContainerBatch.cs" />
     <Compile Include="FileManagement\ContainerFileHandler.cs" />
     <Compile Include="FileManagement\FileManagement.cs" />
@@ -402,6 +403,12 @@
     <Compile Include="MeasurmentTypes\Measurment.cs" />
     <Compile Include="MeasurmentTypes\PointMeasurmentCT.cs" />
     <Compile Include="MeasurmentTypes\PolygonMeasurmentCT.cs" />
+    <Compile Include="NewMainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewMainForm.Designer.cs">
+      <DependentUpon>NewMainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlotForm_scatter.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -421,7 +428,7 @@
     <Compile Include="MeasurmentTypes\PolygonMeasurment.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsDB.cs" />
+    <Compile Include="SamplesDB.cs" />
     <Compile Include="Settings\SettingDefinition.cs" />
     <Compile Include="Settings\SettingsManager.cs" />
     <Compile Include="StaticFunctions.cs" />
@@ -487,6 +494,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewMainForm.resx">
+      <DependentUpon>NewMainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PlotForm_scatter.resx">
       <DependentUpon>PlotForm_scatter.cs</DependentUpon>

@@ -182,35 +182,26 @@ namespace ImgAnalyzer
             presenter.OpenContainerBatchesForm();
         }
 
-        private void button_test_Click_1(object sender, EventArgs e)
-        {
-            var form = new ParameterRequestForm();
-            form.Text = "Введите параметры";
-            form.AddDoubleRequest("Температура");
-            form.AddIntRequest("Количество");
-            form.AddDoubleRequest("Коэффициент");
-
-            // Показываем форму как диалоговое окно
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    double temperature = form.RequestDouble("Температура");
-                    int count = form.RequestInt("Количество");
-                    double coefficient = form.RequestDouble("Коэффициент");
-
-                    MessageBox.Show($"Получены значения: Температура={temperature}, Количество={count}, Коэффициент={coefficient}");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
+  
 
         private async void button_auto_phase_Click(object sender, EventArgs e)
         {
-            await AutoPhase.Run();
+            //await AutoPhase.Run();
+
+            Form form_new_main = Application.OpenForms["NewMainForm"];
+
+            if (form_new_main == null)
+            {
+                form_new_main = new NewMainForm();
+                form_new_main.Show();
+            }
+            else
+            {
+                form_new_main.BringToFront();
+                if (form_new_main.WindowState == FormWindowState.Minimized)
+                    form_new_main.WindowState = FormWindowState.Normal;
+                form_new_main.Focus();
+            }
         }
 
     }
