@@ -39,11 +39,13 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button6 = new System.Windows.Forms.Button();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.richTextBox_sample = new System.Windows.Forms.RichTextBox();
             this.richTextBox_batch = new System.Windows.Forms.RichTextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button7 = new System.Windows.Forms.Button();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
@@ -51,8 +53,6 @@
             this.radioButton7 = new System.Windows.Forms.RadioButton();
             this.radioButton6 = new System.Windows.Forms.RadioButton();
             this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.button7 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -65,6 +65,7 @@
             this.comboBox_sample.Name = "comboBox_sample";
             this.comboBox_sample.Size = new System.Drawing.Size(291, 21);
             this.comboBox_sample.TabIndex = 0;
+            this.comboBox_sample.SelectedIndexChanged += new System.EventHandler(this.comboBox_sample_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -148,6 +149,16 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Расчет фазы";
             // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(227, 45);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(69, 23);
+            this.button6.TabIndex = 16;
+            this.button6.Text = "Выбрать";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Visible = false;
+            // 
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
@@ -200,6 +211,16 @@
             this.groupBox2.TabIndex = 13;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Сшивка фазы";
+            // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(227, 60);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(69, 23);
+            this.button7.TabIndex = 17;
+            this.button7.Text = "Выбрать";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Visible = false;
             // 
             // radioButton5
             // 
@@ -276,26 +297,6 @@
             this.button5.TabIndex = 15;
             this.button5.Text = "Старт";
             this.button5.UseVisualStyleBackColor = true;
-            // 
-            // button6
-            // 
-            this.button6.Location = new System.Drawing.Point(227, 45);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(69, 23);
-            this.button6.TabIndex = 16;
-            this.button6.Text = "Выбрать";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Visible = false;
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(227, 60);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(69, 23);
-            this.button7.TabIndex = 17;
-            this.button7.Text = "Выбрать";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Visible = false;
             // 
             // NewMainForm
             // 

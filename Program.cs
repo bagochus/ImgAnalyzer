@@ -32,9 +32,8 @@ namespace ImgAnalyzer
 
 
             DB_Manager.InitializeDatabase();
-
-
             SettingsManager.Initalize();
+            SamplesDB.InitializeDatabase();
 
             Application.Run(new MainForm());
         }

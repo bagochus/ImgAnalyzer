@@ -35,6 +35,72 @@ namespace ImgAnalyzer
             richTextBox_batch.Text = placeholderText2;
             richTextBox_batch.ForeColor = Color.Gray;
             richTextBox_sample.Enter += richTextBox_sample_Enter;
+
+            /*richTextBox_sample.Leave += richTextBox_sample_L0.e
+                130000002
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+          .000000
+                .............................................................................                               
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+               ve;*/
             richTextBox_sample.Leave += richTextBox_sample_Leave;
             richTextBox_batch.Enter += richTextBox_batch_Enter;
             richTextBox_batch.Leave += richTextBox_batch_Leave;
@@ -42,17 +108,49 @@ namespace ImgAnalyzer
             richTextBox_batch.KeyDown += richTextBox_batch_KeyDown;
 
 
+            UpdateSamplesList();
+
+        }
+
+        private void SelectSample(string Name)
+        { 
+            selectedSampleId = SamplesDB.GetSampleId(Name);
+            string comment = SamplesDB.GetSampleComment(selectedSampleId);
+            if (comment.Length > 0)
+            {
+                richTextBox_sample.ForeColor = Color.Black;
+                richTextBox_sample.Text = comment;
+                isPlaceholderActive1 = false;
+            }
+            
+            else
+            {
+                richTextBox_sample.Clear(); 
+                richTextBox_sample_Leave(this,EventArgs.Empty);
+            }
+        
+        }
+
+        private void UpdateComment()
+        {
+            SamplesDB.UpdateSampleComment(selectedSampleId,richTextBox_sample.Text);
+        }
+
+        private void UpdateSamplesList()
+        {
             sampleList = SamplesDB.GetSamplesList();
+            comboBox_sample.Items.Clear();
             comboBox_sample.Items.AddRange(sampleList.ToArray());
 
         }
 
-
         private void AddSample()
         {
             string newSampleName = Interaction.InputBox("Введите ия образца");
-        
-        
+            if (newSampleName == "") return;
+            selectedSampleId = SamplesDB.AddSample(newSampleName);
+            UpdateSamplesList();
+            SelectSample(newSampleName);
         }
 
 
@@ -81,6 +179,8 @@ namespace ImgAnalyzer
                 //richTextBox_sample.Font = new Font(richTextBox_sample.Font, FontStyle.Italic);
                 isPlaceholderActive1 = true;
             }
+            else UpdateComment();
+            
         }
 
         private void richTextBox_sample_KeyDown(object sender, KeyEventArgs e)
@@ -174,7 +274,12 @@ namespace ImgAnalyzer
 
         private void button_newSample_Click(object sender, EventArgs e)
         {
+            AddSample();
+        }
 
+        private void comboBox_sample_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectSample(comboBox_sample.Text);
         }
     }
 }

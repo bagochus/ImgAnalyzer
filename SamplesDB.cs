@@ -110,7 +110,23 @@ namespace ImgAnalyzer
             }
         }
 
+        public static bool UpdateSampleComment(int id, string comment)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
 
+                string query = "UPDATE Samples SET Comment = @comment WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    command.Parameters.AddWithValue("@comment", comment ?? "");
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
         public static string GetSampleName(int id)
         {
             using (var connection = new SQLiteConnection(connectionString))
@@ -130,7 +146,28 @@ namespace ImgAnalyzer
 
         }
 
+        public static string GetSampleComment(int id)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
 
+                string query = "SELECT Comment FROM Samples WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+
+                    var result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return result.ToString();
+                    }
+
+                    return string.Empty;
+                }
+            }
+        }
         /// <summary>
         /// Возвращает список id элементов второй таблицы, у которых sample_id и batch_type совпадают с указанными
         /// </summary>
