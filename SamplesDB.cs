@@ -39,11 +39,12 @@ namespace ImgAnalyzer
                 string createBatchesTable = @"
                 CREATE TABLE IF NOT EXISTS ContainerBatches (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
                     SampleId INTEGER NOT NULL,
                     BatchType TEXT NOT NULL,
                     Comment TEXT,
                     Filenames TEXT NOT NULL,
-                    FOREIGN KEY (SampleId) REFERENCES Samples(Id) ON DELETE CASCADE
+                    FOREIGN KEY (SampleId) REFERENCES Samples(Id) ON DELETE SET NULL
                 )";
 
                 using (var command2 = new SQLiteCommand(createBatchesTable, connection))
@@ -268,9 +269,36 @@ namespace ImgAnalyzer
             }
         }
 
+        public static string GetBatchName(int batchId)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT Name FROM ContainerBatches WHERE Id = @batchId";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@batchId", batchId);
+
+                    var result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return result.ToString();
+                    }
+                    else { return ""; }
+
+                }
+            }
+
+        }
+
+
+
+
         /// <summary>
         /// Проверяет существует ли образец с указанным именем
         /// </summary>
+        /// 
         public static bool SampleExists(string name)
         {
             return GetSampleId(name) != -1;
@@ -310,5 +338,60 @@ namespace ImgAnalyzer
 
             return batches;
         }
+
+        /// <summary>
+        /// Проверяет, есть ли в таблице ContainerBatches элементы, у которых Filenames содержит хотя бы одно имя из входного массива
+        /// </summary>
+        /// <param name="filenames">Массив имен файлов для проверки</param>
+        /// <returns>id последней пачки в которой попался один из файлов</returns>
+        public static int CheckFilenamesExist(string[] filenames, out int total_count)
+        {
+            var results = new List<(int, List<string>)>();
+
+            total_count = 0;
+            int result = -1;
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT Id, Filenames FROM ContainerBatches";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int batchId = reader.GetInt32(0);
+                            string filenamesJson = reader.GetString(1);
+
+                            try
+                            {
+                                var batchFilenames = JsonSerializer.Deserialize<List<string>>(filenamesJson) ?? new List<string>();
+
+                                // Находим пересечение входного массива с файлами в текущей партии
+                                var foundFiles = batchFilenames.Intersect(filenames).ToList();
+
+                                if (foundFiles.Any())
+                                {
+                                    result = batchId;
+                                    total_count++;
+                                }
+                            }
+                            catch (JsonException)
+                            {
+                                // Пропускаем записи с некорректным JSON
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
     }
+
+
 }
