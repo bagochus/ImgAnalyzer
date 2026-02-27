@@ -1,18 +1,25 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Data.SQLite;
 using System.Xml.Linq;
 
 namespace ImgAnalyzer
 {
 
+
+    
+
     public class SamplesDB
     {
-        private static readonly string connectionString = $"Data Source=Samples.db;Version=3;";
+
+        private static readonly string filename = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+            "\\ImgAnalyzer\\SamplesDatabase_ver_A.db";
+        private static readonly string connectionString = $"Data Source={filename};Version=3;";
 
 
 
@@ -44,6 +51,8 @@ namespace ImgAnalyzer
                     BatchType TEXT NOT NULL,
                     Comment TEXT,
                     Filenames TEXT NOT NULL,
+                    Width INTEGER DEFAULT 0,
+                    Height INTEGER DEFAULT 0,
                     FOREIGN KEY (SampleId) REFERENCES Samples(Id) ON DELETE SET NULL
                 )";
 
@@ -222,7 +231,7 @@ namespace ImgAnalyzer
         /// <summary>
         /// Добавляет новую партию в таблицу ContainerBatches
         /// </summary>
-        public static int AddContainerBatch(int sampleId, string batchType, List<string> filenames, string comment = "")
+        public static int AddContainerBatch(int sampleId, string batchType, List<string> filenames, string comment = "", string Name = "")
         {
             string filenamesJson = JsonSerializer.Serialize(filenames);
 
@@ -230,18 +239,71 @@ namespace ImgAnalyzer
             {
                 connection.Open();
 
-                string query = "INSERT INTO ContainerBatches (SampleId, BatchType, Comment, Filenames) VALUES (@sampleId, @batchType, @comment, @filenames); SELECT last_insert_rowid();";
+                string _name = Name;    
+                if (Name == "")
+                {
+                    int prev_id = 0;
+                    string query_id = "SELECT last_insert_rowid();";
+                    using (var command = new SQLiteCommand(query_id, connection))
+                    {
+                        prev_id = Convert.ToInt32(command.ExecuteScalar());
+                    }
+                    _name = batchType + (prev_id+1).ToString();
+                }    
+
+                string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames)" +
+                    " VALUES (@sampleId, @Name, @batchType, @comment, @filenames); SELECT last_insert_rowid();";
                 using (var command = new SQLiteCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@sampleId", sampleId);
                     command.Parameters.AddWithValue("@batchType", batchType);
                     command.Parameters.AddWithValue("@comment", comment ?? "");
                     command.Parameters.AddWithValue("@filenames", filenamesJson);
+                    command.Parameters.AddWithValue("@Name", _name);
 
                     return Convert.ToInt32(command.ExecuteScalar());
                 }
             }
         }
+
+        public static int AddContainerBatch(ContainerBatch batch, string batchType, int sampleId, string comment = "")
+        {
+            string filenamesJson = JsonSerializer.Serialize(batch.Filenames);
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+
+                string _name = batch.Name;
+                if (_name == "")
+                {
+                    int prev_id = 0;
+                    string query_id = "SELECT last_insert_rowid();";
+                    using (var command = new SQLiteCommand(query_id, connection))
+                    {
+                        prev_id = Convert.ToInt32(command.ExecuteScalar());
+                    }
+                    _name = batchType + (prev_id + 1).ToString();
+                }
+
+                string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames, Width, Height)" +
+                    " VALUES (@sampleId, @Name, @batchType, @comment, @filenames, @width, @height); SELECT last_insert_rowid();";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@sampleId", sampleId);
+                    command.Parameters.AddWithValue("@Name", _name);
+                    command.Parameters.AddWithValue("@batchType", batchType);
+                    command.Parameters.AddWithValue("@comment", comment ?? "");
+                    command.Parameters.AddWithValue("@filenames", filenamesJson);
+                    command.Parameters.AddWithValue("@width", batch.Width);
+                    command.Parameters.AddWithValue("@height", batch.Height);
+
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+
 
         /// <summary>
         /// Получает имена файлов для указанной партии
@@ -291,8 +353,6 @@ namespace ImgAnalyzer
             }
 
         }
-
-
 
 
         /// <summary>
@@ -390,6 +450,64 @@ namespace ImgAnalyzer
 
             return result;
         }
+
+
+        /// <summary>
+        /// Проверяет, существует ли запись в таблице ContainerBatches с указанными Name и SampleId
+        /// </summary>
+        /// <param name="name">Название партии</param>
+        /// <param name="sampleId">ID образца</param>
+        /// <returns>true если запись существует, false если нет</returns>
+        public static bool ContainerBatchExists(string name, int sampleId)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT COUNT(*) FROM ContainerBatches WHERE Name = @name AND SampleId = @sampleId";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@sampleId", sampleId);
+
+                    long count = (long)command.ExecuteScalar();
+                    return count > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Добавляет текст в конец комментария для указанной партии с новой строки
+        /// </summary>
+        /// <param name="id">ID партии</param>
+        /// <param name="text">Текст для добавления</param>
+        /// <returns>true если обновление успешно, false если партия не найдена</returns>
+        public static bool AppendBatchCommentNewLine(int id, string text)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = @"
+            UPDATE ContainerBatches 
+            SET Comment = CASE 
+                WHEN Comment IS NULL OR Comment = '' THEN @text
+                ELSE Comment || char(13) || char(10) || @text
+            END
+            WHERE Id = @id";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    command.Parameters.AddWithValue("@text", text);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+
 
     }
 

@@ -269,6 +269,7 @@
     <Compile Include="DialogForms\AddMeasurment_2D.Designer.cs">
       <DependentUpon>AddMeasurment_2D.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileManagement\BatchDatatypes.cs" />
     <Compile Include="DialogForms\ChanellSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>

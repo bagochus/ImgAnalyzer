@@ -24,7 +24,6 @@ namespace ImgAnalyzer
 
         private int height;
         public int Height { get { return height; } }
-
         public int Count {  get { return Filenames.Count; } }
 
         public EventHandler DataChanged;
@@ -107,8 +106,6 @@ namespace ImgAnalyzer
         public void AddContainer(IContainer_2D container, bool copy_container = false)
         {
             
-
-
             if (filenames.Count == 0)
             {
                 if (container.Filename == "" || copy_container)

@@ -1,4 +1,5 @@
-﻿using ScottPlot.PlotStyles;
+﻿using NetTopologySuite.Index.Strtree;
+using ScottPlot.PlotStyles;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,8 @@ namespace ImgAnalyzer
 {
     public class BatchMetadata
     {
-     
+        public const string SampleInfoSeparator = "[Sample info]";
+
         public string batch_type;
         public string comment;
         public int sample_id;
@@ -23,7 +25,7 @@ namespace ImgAnalyzer
             {
                 writer.WriteLine($"type={batch_type}");
                 writer.WriteLine($"sampleId={sample_id}");
-                writer.WriteLine($"#sampleName={SamplesDB.GetSampleName(sample_id)}");
+                writer.WriteLine($"sampleName={SamplesDB.GetSampleName(sample_id)}");
                 writer.Write(comment);
             }
         }
