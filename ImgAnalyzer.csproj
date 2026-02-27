@@ -355,6 +355,7 @@
     <Compile Include="DialogForms\SourceSelectForm.Designer.cs">
       <DependentUpon>SourceSelectForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileManagement\BatchHeader.cs" />
     <Compile Include="FileManagement\BatchMetadata.cs" />
     <Compile Include="FileManagement\ContainerBatch.cs" />
     <Compile Include="FileManagement\ContainerFileHandler.cs" />

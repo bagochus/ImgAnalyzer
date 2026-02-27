@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.IO;
 
 namespace ImgAnalyzer
 {
@@ -17,58 +18,64 @@ namespace ImgAnalyzer
     public class SamplesDB
     {
 
-        private static readonly string filename = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+        public static readonly string filename = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
             "\\ImgAnalyzer\\SamplesDatabase_ver_A.db";
         private static readonly string connectionString = $"Data Source={filename};Version=3;";
 
 
-
         public static void InitializeDatabase()
         {
-            using (var connection = new SQLiteConnection(connectionString))
+            if (!File.Exists(filename))
             {
-                connection.Open();
+                SQLiteConnection.CreateFile(filename);
 
-                // Создание таблицы Samples
-                string createSamplesTable = @"
+
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // Создание таблицы Samples
+                    string createSamplesTable = @"
                 CREATE TABLE IF NOT EXISTS Samples (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL UNIQUE,
                     Comment TEXT
                 )";
 
-                using (var command1 = new SQLiteCommand(createSamplesTable, connection))
-                {
-                    command1.ExecuteNonQuery();
-                }
+                    using (var command1 = new SQLiteCommand(createSamplesTable, connection))
+                    {
+                        command1.ExecuteNonQuery();
+                    }
 
-                // Создание таблицы ContainerBatches
-                string createBatchesTable = @"
+                    // Создание таблицы ContainerBatches
+                    string createBatchesTable = @"
                 CREATE TABLE IF NOT EXISTS ContainerBatches (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL,
-                    SampleId INTEGER NOT NULL,
+                    SampleId INTEGER ,
                     BatchType TEXT NOT NULL,
                     Comment TEXT,
                     Filenames TEXT NOT NULL,
                     Width INTEGER DEFAULT 0,
                     Height INTEGER DEFAULT 0,
+                    Count INTEGER DEFAULT -1;
                     FOREIGN KEY (SampleId) REFERENCES Samples(Id) ON DELETE SET NULL
                 )";
 
-                using (var command2 = new SQLiteCommand(createBatchesTable, connection))
-                {
-                    command2.ExecuteNonQuery();
-                }
+                    using (var command2 = new SQLiteCommand(createBatchesTable, connection))
+                    {
+                        command2.ExecuteNonQuery();
+                    }
 
-                // Создание индекса для быстрого поиска
-                string createIndex = @"
+                    // Создание индекса для быстрого поиска
+                    string createIndex = @"
                 CREATE INDEX IF NOT EXISTS idx_batches_lookup 
                 ON ContainerBatches(SampleId, BatchType)";
 
-                using (var command3 = new SQLiteCommand(createIndex, connection))
-                {
-                    command3.ExecuteNonQuery();
+                    using (var command3 = new SQLiteCommand(createIndex, connection))
+                    {
+                        command3.ExecuteNonQuery();
+                    }
                 }
             }
         }

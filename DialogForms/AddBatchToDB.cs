@@ -27,7 +27,7 @@ namespace ImgAnalyzer.DialogForms
 
             comboBox_sample.Items.Clear();
             comboBox_sample.Items.AddRange(SamplesDB.GetSamplesList().ToArray());
-            comboBox_sample.SelectedIndex = 0;
+            if (comboBox_sample.Items.Count > 0) comboBox_sample.SelectedIndex = 0;
 
             comboBox_type.Items.Clear();    
             comboBox_type.Items.AddRange(BatchDatatypes.types.ToArray());
@@ -50,7 +50,7 @@ namespace ImgAnalyzer.DialogForms
 
             if (intersecting_batch_count > 0)
             { 
-                string batch_name = SamplesDB.GetSampleName(intersecting_batch_id);
+                string batch_name = SamplesDB.GetBatchName(intersecting_batch_id);
                 DialogResult dialogResult = MessageBox.Show($"Один из указанных файлов найден в группе {batch_name}. Все равно добавить?",
                     "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (dialogResult == DialogResult.No)
@@ -145,6 +145,7 @@ namespace ImgAnalyzer.DialogForms
 
             //TODO: write metadata to file
 
+            Close();
         }
 
 

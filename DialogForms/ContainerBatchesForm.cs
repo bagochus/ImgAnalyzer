@@ -49,6 +49,8 @@ namespace ImgAnalyzer.DialogForms
 
         private void CreateContainerBatch()
         {
+            AddBatchToDB.AddNewBatch();
+            return;
             ContainerBatch batch = new ContainerBatch();
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
