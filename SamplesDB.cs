@@ -13,8 +13,6 @@ namespace ImgAnalyzer
 {
 
 
-    
-
     public class SamplesDB
     {
 
@@ -58,7 +56,7 @@ namespace ImgAnalyzer
                     Filenames TEXT NOT NULL,
                     Width INTEGER DEFAULT 0,
                     Height INTEGER DEFAULT 0,
-                    Count INTEGER DEFAULT -1;
+                    Count INTEGER DEFAULT -1,
                     FOREIGN KEY (SampleId) REFERENCES Samples(Id) ON DELETE SET NULL
                 )";
 
@@ -294,8 +292,8 @@ namespace ImgAnalyzer
                     _name = batchType + (prev_id + 1).ToString();
                 }
 
-                string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames, Width, Height)" +
-                    " VALUES (@sampleId, @Name, @batchType, @comment, @filenames, @width, @height); SELECT last_insert_rowid();";
+                string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames, Width, Height, Count)" +
+                    " VALUES (@sampleId, @Name, @batchType, @comment, @filenames, @width, @height, @Count); SELECT last_insert_rowid();";
                 using (var command = new SQLiteCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@sampleId", sampleId);
@@ -305,6 +303,8 @@ namespace ImgAnalyzer
                     command.Parameters.AddWithValue("@filenames", filenamesJson);
                     command.Parameters.AddWithValue("@width", batch.Width);
                     command.Parameters.AddWithValue("@height", batch.Height);
+                    command.Parameters.AddWithValue("@Count", batch.Count);
+
 
                     return Convert.ToInt32(command.ExecuteScalar());
                 }
@@ -405,6 +405,54 @@ namespace ImgAnalyzer
 
             return batches;
         }
+
+        public static List<BatchHeader> GetBatchHeaders()
+        {
+            var batches = new List<BatchHeader>();
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                //string query = "SELECT Id, Comment, Filenames FROM ContainerBatches WHERE SampleId = @sampleId AND BatchType = @batchType ORDER BY Id";
+                string query = "SELECT Id, Name, SampleId, BatchType, Width, Height, Count " +
+                    "FROM ContainerBatches ORDER BY Id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            BatchHeader header = new BatchHeader();
+
+                            int id = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            int sample_id = reader.GetInt32(2);
+                            string batchType = reader.GetString(3); 
+
+
+                            int width = reader.GetInt32(4);
+                            int height = reader.GetInt32(5);
+                            int count = reader.GetInt32(6);
+
+                            string sample_name = GetSampleName(sample_id);
+
+                            header.Name = name;
+                            header.Type = batchType;
+                            header.Sample = sample_name;
+                            header.Width = width;
+                            header.Height = height;
+                            header.Count = count;
+
+                            batches.Add(header);
+                        }
+                    }
+                }
+            }
+
+            return batches;
+        }
+
 
         /// <summary>
         /// Проверяет, есть ли в таблице ContainerBatches элементы, у которых Filenames содержит хотя бы одно имя из входного массива

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImgAnalyzer.FileManagement
+namespace ImgAnalyzer
 {
     public class BatchHeader
     {
@@ -14,9 +14,5 @@ namespace ImgAnalyzer.FileManagement
         public int Width { get; set; }
         public int Height { get; set; }
         public int Count { get; set; }
-
-
-
-
     }
 }

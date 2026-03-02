@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SkiaSharp;
+
 
 namespace ImgAnalyzer
 {
@@ -171,6 +173,19 @@ namespace ImgAnalyzer
             return newPath;
         }
 
+
+        public BatchHeader GetHeader()
+        { 
+            BatchHeader result = new BatchHeader(); 
+            result.Name = Name;
+            result.Type = BatchDatatypes.Unknown;
+            result.Sample = "";
+            result.Width = Width;
+            result.Height = Height;
+            result.Count = Count;
+
+            return result;
+        }
 
     }
 

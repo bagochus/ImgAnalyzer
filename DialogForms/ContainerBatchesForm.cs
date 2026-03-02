@@ -15,15 +15,96 @@ namespace ImgAnalyzer.DialogForms
 {
     public partial class ContainerBatchesForm : Form
     {
+        int localBatchCount = 0;
+        int databaseBatchCount = 0;
+
+        
+
         public ContainerBatchesForm()
         {
             InitializeComponent();
 
            // dataGridView1.AutoGenerateColumns = false;
            dataGridView1.AllowUserToAddRows = false;
-            dataGridView1.DataSource = ImageManager.containerBatches;
+           // dataGridView1.DataSource = ImageManager.containerBatches;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            ConstructTable();
         }
+
+        private void AddBatchHeaderToGrid(BatchHeader header)
+        {
+            int rowIndex = dataGridView1.Rows.Add();
+            dataGridView1.Rows[rowIndex].Cells["Name"].Value = header.Name;
+            dataGridView1.Rows[rowIndex].Cells["Type"].Value = header.Type;
+            dataGridView1.Rows[rowIndex].Cells["Sample"].Value = header.Sample;
+            dataGridView1.Rows[rowIndex].Cells["Width"].Value = header.Width;
+            dataGridView1.Rows[rowIndex].Cells["Height"].Value = header.Height;
+            dataGridView1.Rows[rowIndex].Cells["Count"].Value = header.Count;
+
+
+
+        }
+
+        private void ConstructTable()
+        {
+            dataGridView1.Columns.Add("Name", "Название");
+            dataGridView1.Columns.Add("Type", "Тип");
+            dataGridView1.Columns.Add("Sample", "Образец");
+            dataGridView1.Columns.Add("Width", "Width");
+            dataGridView1.Columns.Add("Height", "Height");
+            dataGridView1.Columns.Add("Count", "Count");
+
+
+
+            localBatchCount = 0;
+            databaseBatchCount = 0;
+            foreach (var b in ImageManager.containerBatches) 
+            {
+                localBatchCount++;
+                AddBatchHeaderToGrid(b.GetHeader());
+            }
+            AddStyledSeparatorRow("----DB----");
+            foreach (var header in SamplesDB.GetBatchHeaders())
+            { 
+                databaseBatchCount++;
+                AddBatchHeaderToGrid(header);
+            }
+        }
+
+        private void AddStyledSeparatorRow(string separatorText)
+        {
+            int rowIndex = dataGridView1.Rows.Add();
+            DataGridViewRow row = dataGridView1.Rows[rowIndex];
+
+            // Заполняем все ячейки
+            //foreach (DataGridViewCell cell in row.Cells)
+            //{
+            row.Cells[0].Value = separatorText;
+            //}
+
+            // Настраиваем стиль строки
+            row.DefaultCellStyle.BackColor = Color.FromArgb(230, 240, 255); // Светло-голубой
+            row.DefaultCellStyle.ForeColor = Color.Black;
+            row.DefaultCellStyle.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+            row.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            row.DefaultCellStyle.SelectionBackColor = Color.FromArgb(200, 220, 255);
+            //row.DefaultCellStyle.A
+
+            // Устанавливаем высоту строки
+            row.Height = 25;
+
+            // Блокируем редактирование для строки-разделителя
+            row.ReadOnly = true;
+
+            // Добавляем небольшую границу сверху и снизу
+            row.DividerHeight = 1;
+            if (rowIndex > 0)
+            {
+                dataGridView1.Rows[rowIndex - 1].DividerHeight = 1;
+            }
+        }
+
+
 
         private void OpenImage(int BatchIndex)
         {
@@ -94,6 +175,8 @@ namespace ImgAnalyzer.DialogForms
             IContainer_2D container = Container_2D.ReadFromFile(batch.Filenames[index]);
             DataManager_2D.containers.Add(container);
         }
+
+
 
 
 
