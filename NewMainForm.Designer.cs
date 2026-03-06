@@ -46,6 +46,7 @@
             this.richTextBox_sample = new System.Windows.Forms.RichTextBox();
             this.richTextBox_batch = new System.Windows.Forms.RichTextBox();
             this.groupBox_stitch = new System.Windows.Forms.GroupBox();
+            this.label_selected_stitch = new System.Windows.Forms.Label();
             this.button_select_stitch = new System.Windows.Forms.Button();
             this.radioButton_batch_stitch = new System.Windows.Forms.RadioButton();
             this.radioButton_stitch = new System.Windows.Forms.RadioButton();
@@ -53,8 +54,7 @@
             this.groupBox_lut = new System.Windows.Forms.GroupBox();
             this.radioButton_lut = new System.Windows.Forms.RadioButton();
             this.radioButton_no_lut = new System.Windows.Forms.RadioButton();
-            this.button5 = new System.Windows.Forms.Button();
-            this.label_selected_stitch = new System.Windows.Forms.Label();
+            this.button_start = new System.Windows.Forms.Button();
             this.groupBox_phase.SuspendLayout();
             this.groupBox_stitch.SuspendLayout();
             this.groupBox_lut.SuspendLayout();
@@ -229,6 +229,18 @@
             this.groupBox_stitch.TabStop = false;
             this.groupBox_stitch.Text = "Сшивка фазы";
             // 
+            // label_selected_stitch
+            // 
+            this.label_selected_stitch.AutoSize = true;
+            this.label_selected_stitch.Location = new System.Drawing.Point(224, 95);
+            this.label_selected_stitch.Name = "label_selected_stitch";
+            this.label_selected_stitch.Size = new System.Drawing.Size(68, 13);
+            this.label_selected_stitch.TabIndex = 16;
+            this.label_selected_stitch.Text = "Не выбрано";
+            this.label_selected_stitch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_selected_stitch.Visible = false;
+            this.label_selected_stitch.Click += new System.EventHandler(this.label2_Click);
+            // 
             // button_select_stitch
             // 
             this.button_select_stitch.Location = new System.Drawing.Point(227, 60);
@@ -307,26 +319,15 @@
             this.radioButton_no_lut.Text = "Не генерировать";
             this.radioButton_no_lut.UseVisualStyleBackColor = true;
             // 
-            // button5
+            // button_start
             // 
-            this.button5.Location = new System.Drawing.Point(340, 430);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(418, 52);
-            this.button5.TabIndex = 15;
-            this.button5.Text = "Старт";
-            this.button5.UseVisualStyleBackColor = true;
-            // 
-            // label_selected_stitch
-            // 
-            this.label_selected_stitch.AutoSize = true;
-            this.label_selected_stitch.Location = new System.Drawing.Point(224, 95);
-            this.label_selected_stitch.Name = "label_selected_stitch";
-            this.label_selected_stitch.Size = new System.Drawing.Size(68, 13);
-            this.label_selected_stitch.TabIndex = 16;
-            this.label_selected_stitch.Text = "Не выбрано";
-            this.label_selected_stitch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label_selected_stitch.Visible = false;
-            this.label_selected_stitch.Click += new System.EventHandler(this.label2_Click);
+            this.button_start.Location = new System.Drawing.Point(340, 430);
+            this.button_start.Name = "button_start";
+            this.button_start.Size = new System.Drawing.Size(418, 52);
+            this.button_start.TabIndex = 15;
+            this.button_start.Text = "Старт";
+            this.button_start.UseVisualStyleBackColor = true;
+            this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
             // NewMainForm
             // 
@@ -336,7 +337,7 @@
             this.Controls.Add(this.richTextBox_batch);
             this.Controls.Add(this.checkBox_auto_sq);
             this.Controls.Add(this.button_infoAutoSquare);
-            this.Controls.Add(this.button5);
+            this.Controls.Add(this.button_start);
             this.Controls.Add(this.groupBox_lut);
             this.Controls.Add(this.groupBox_stitch);
             this.Controls.Add(this.richTextBox_sample);
@@ -380,7 +381,7 @@
         private System.Windows.Forms.RadioButton radioButton_lut;
         private System.Windows.Forms.RadioButton radioButton_no_lut;
         private System.Windows.Forms.Button button_hint_loot;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button_start;
         private System.Windows.Forms.Button button_select_phase;
         private System.Windows.Forms.Button button_select_stitch;
         private System.Windows.Forms.Label label_selected_phase;

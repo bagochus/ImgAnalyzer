@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.Macros;
 using Microsoft.VisualBasic;
+
 
 
 namespace ImgAnalyzer
@@ -24,10 +26,10 @@ namespace ImgAnalyzer
         private int selectedSampleId = -1;
         private List<string> sampleList = new List<string>();
 
-        private enum PhaseCalculationMode {None, UseImages, UseBatch }
+        //private enum PhaseCalculationMode {None, UseImages, UseBatch }
         private PhaseCalculationMode phaseCalculationMode;
 
-        private enum StitchMode { None, Calculate, UseBatch }
+        //private enum StitchMode { None, Calculate, UseBatch }
         private StitchMode stitchMode = StitchMode.Calculate;
 
         private bool useImages_prev_state = true;
@@ -347,10 +349,42 @@ namespace ImgAnalyzer
             }
         }
 
+        private void Start()
+        {
+            if (phaseCalculationMode == PhaseCalculationMode.UseBatch && phaseBatch == null)
+            {
+                MessageBox.Show("Не выбран пакет данных с фазовыми картами!");
+                return;
+            }
+            if (stitchMode == StitchMode.UseBatch && stitchBatch == null)
+            {
+                MessageBox.Show("Не выбран пакет данных с фазовыми картами!");
+                return;
+            }
+            bool combination_fail = false;
+            combination_fail |= (phaseCalculationMode == PhaseCalculationMode.UseBatch
+                && stitchMode == StitchMode.UseBatch);
+            combination_fail |= (generateLUT && stitchMode == StitchMode.None);
+            combination_fail |= (phaseCalculationMode == PhaseCalculationMode.None
+                && stitchMode == StitchMode.None);
 
-        
+            if (combination_fail)
+            {
+                MessageBox.Show("Недопустимая комбинация!");
+                return;
+            }
+
+            AutoPhase autoPhase = new AutoPhase();
+            autoPhase.stitchMode = stitchMode;
+            autoPhase.calculationMode = phaseCalculationMode;
+            autoPhase.useAutoSquare = useAutoSquare;
+            autoPhase.generateLUT = generateLUT;
+
+            if (phaseCalculationMode == PhaseCalculationMode.UseBatch) autoPhase.phaseBatch = phaseBatch;   
+            if(stitchMode == StitchMode.UseBatch) autoPhase.stitchedPhaseBatch = stitchBatch;
 
 
+        }
 
 
 
@@ -494,6 +528,11 @@ namespace ImgAnalyzer
         private void label2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button_start_Click(object sender, EventArgs e)
+        {
+            Start();
         }
 
         private void button6_Click(object sender, EventArgs e)

@@ -65,11 +65,11 @@ namespace ImgAnalyzer
         }
 
 
-        public static void RequestSettingList(List<SettingDefinition> settings, bool forceSilent = false, bool forceRequest = false)
+        public static void RequestSettingList(List<SettingDefinition> settings, bool forceRequest = false)
         {
-            if (forceSilent && forceRequest) throw new InvalidOperationException();
+
             GetSettingsFromDatabase(settings);
-            if (forceRequest || (formRequest && !forceSilent))
+            if (forceRequest && true)
             {
                 SettigRequestForm form = new SettigRequestForm(settings);
                 form.ShowDialog();

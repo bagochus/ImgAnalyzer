@@ -17,25 +17,31 @@ using NetTopologySuite.Triangulate;
 
 namespace ImgAnalyzer.Macros
 {
-
-
+    internal enum StitchMode { None, Calculate, UseBatch }
+    internal enum PhaseCalculationMode { None, UseImages, UseBatch }
 
     public class AutoPhase
     {
 
+        internal StitchMode stitchMode;
+        internal PhaseCalculationMode calculationMode;
+
+        public bool generateLUT = true;
+        public bool useAutoSquare = true;
+
+        /*
         public bool useImages = true;
         public bool useAutoSquare = true;
         public bool calculatePhase = true;
         public bool stitchPhase = true;
-        public bool generateLUT = true;
-
+        */
 
         List<SettingDefinition> settings = new List<SettingDefinition>();
 
         
 
-        ContainerBatch phaseBatch = null;
-        ContainerBatch stitchedPhaseBatch = null;
+        internal ContainerBatch phaseBatch = null;
+        internal ContainerBatch stitchedPhaseBatch = null;
 
 
         private string folder1, folder2, folder3;
@@ -118,30 +124,36 @@ namespace ImgAnalyzer.Macros
         private void RequestParams()
         {
 
-            if (useImages) AddImageSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages) AddImageSettings();
             if (useAutoSquare) AddAutoSquareSettings();
-            if (calculatePhase) AddPhaseSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages) AddPhaseSettings();
 
             SettingsManager.RequestSettingList(settings);
 
-            if (useImages) RetrieveImageSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages) RetrieveImageSettings();
             if (useAutoSquare) RetrieveAutoSqareSettings();
-            if (calculatePhase) RetrievePhaseSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages) RetrievePhaseSettings();
+
+            //add stitch and lut stuff
 
 
         }
 
 
-        public static async Task Run()
+        public async Task Run()
         {
-            AutoPhase instance = new AutoPhase();
-            instance.cts = new CancellationTokenSource();
-            instance.cts.Token.ThrowIfCancellationRequested();
+            form = new AutoPhaseForm();
+            this.form.Show();
+            writeLog = this.form.AppendLog;
+
+            //AutoPhase instance = new AutoPhase();
+            cts = new CancellationTokenSource();
+            cts.Token.ThrowIfCancellationRequested();
             try
             {
-                await Task.Run(instance._run);
+                await Task.Run(_run);
             }
-            finally { instance = null; }
+            catch (Exception ex) { writeLog(ex.Message); }
 
         }
 
@@ -377,7 +389,7 @@ namespace ImgAnalyzer.Macros
             RequestParams();
 
 
-            if (useImages)
+            if (calculationMode == PhaseCalculationMode.UseImages)
             {
                 try
                 {
@@ -389,18 +401,7 @@ namespace ImgAnalyzer.Macros
                     writeLog("Не удалось обработать исходные изображения: " + ex.Message);
                     return;
                 }
-            }
-            else
-            {
-                if (phaseBatch == null)
-                {
-                    writeLog("Не указан пакет фазовых профилей");
-                    return;
-                }
-            }
 
-            if (calculatePhase)
-            {
                 writeLog("Рачет фазовых профилей...");
                 try
                 {
@@ -415,7 +416,7 @@ namespace ImgAnalyzer.Macros
                 }
 
             }
-            else
+            else if (calculationMode == PhaseCalculationMode.UseBatch)
             {
                 if (phaseBatch == null)
                 {
@@ -425,7 +426,7 @@ namespace ImgAnalyzer.Macros
             }
 
 
-            if (stitchPhase)
+            if (stitchMode == StitchMode.Calculate)
             {
                 try { await StitchPhaseBatch(); }
                 catch (Exception ex)
@@ -437,7 +438,7 @@ namespace ImgAnalyzer.Macros
                 }
 
             }
-            else
+            else if (stitchMode == StitchMode.UseBatch)
             {
                 if (stitchedPhaseBatch == null)
                 {
@@ -445,7 +446,7 @@ namespace ImgAnalyzer.Macros
                     return;
                 }
 
-            }
+            } else return;
 
             if (generateLUT)
             {
@@ -486,33 +487,15 @@ namespace ImgAnalyzer.Macros
 
 
 
-        private AutoPhase() 
+        public AutoPhase() 
         {
-            form = new AutoPhaseForm();
-            this.form.Show();
-            writeLog = this.form.AppendLog;
+
 
             
         
         
         }
         
-        public void Init()
-        {
-
-
-
-
-
-
-        }
-
-
-
-
-
-
-
 
 
 
