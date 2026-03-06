@@ -18,11 +18,20 @@ namespace ImgAnalyzer.DialogForms
         int localBatchCount = 0;
         int databaseBatchCount = 0;
 
-        
+        ContainerBatch _selectedBatch = null;
 
-        public ContainerBatchesForm()
+        int separator1_index;
+        int separator2_index;
+
+
+        private string sample_name = "";
+        private string type = "";
+
+
+        public ContainerBatchesForm(bool selectMode = false)
         {
             InitializeComponent();
+            if(!selectMode) HideSelectModeControls();
 
            // dataGridView1.AutoGenerateColumns = false;
            dataGridView1.AllowUserToAddRows = false;
@@ -30,6 +39,18 @@ namespace ImgAnalyzer.DialogForms
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             ConstructTable();
         }
+
+
+
+        private void HideSelectModeControls()
+        {
+            groupBox_showmode.Visible = false;
+            button_select.Visible = false;
+        }
+
+
+
+
 
         private void AddBatchHeaderToGrid(BatchHeader header)
         {
@@ -214,5 +235,21 @@ namespace ImgAnalyzer.DialogForms
             }
             ExtractContainer(ImageManager.containerBatches[BatchIndex],n);
         }
+
+
+        public static ContainerBatch GetBatch(string sample, string type)
+        { 
+            ContainerBatchesForm form = new ContainerBatchesForm(true);
+
+            form.type = type;
+            form.sample_name = sample;
+            form.ShowDialog();
+
+            return form._selectedBatch;
+        
+        }
+
+
+
     }
 }

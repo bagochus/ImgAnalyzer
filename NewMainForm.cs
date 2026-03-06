@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ImgAnalyzer.DialogForms;
 using Microsoft.VisualBasic;
 
 
@@ -23,12 +24,39 @@ namespace ImgAnalyzer
         private int selectedSampleId = -1;
         private List<string> sampleList = new List<string>();
 
+        private enum PhaseCalculationMode {None, UseImages, UseBatch }
+        private PhaseCalculationMode phaseCalculationMode;
+
+        private enum StitchMode { None, Calculate, UseBatch }
+        private StitchMode stitchMode = StitchMode.Calculate;
+
+        private bool useImages_prev_state = true;
+        private bool useAutoSquare = true;
+        private bool generateLUT = true;
+        private bool generateLUT_prev_state = true;
+
+        private ContainerBatch phaseBatch, stitchBatch;
+
+
+
 
 
 
         public NewMainForm()
         {
             InitializeComponent();
+
+
+            radioButton_calc.Click += Phase_click;
+            radioButton_batch_phase.Click += Phase_click;
+
+            radioButton_nostitich.Click += StitchClick;
+            radioButton_stitch.Click += StitchClick;
+            radioButton_batch_stitch.Click += StitchClick;
+
+            radioButton_lut.Click += LutClick;
+            radioButton_no_lut.Click += LutClick;
+
 
             richTextBox_sample.Text = placeholderText1;
             richTextBox_sample.ForeColor = Color.Gray;
@@ -112,6 +140,148 @@ namespace ImgAnalyzer
 
         }
 
+        private void Phase_click(object sender, EventArgs e)
+        {
+            if (radioButton_calc.Checked)
+            {
+                phaseCalculationMode = PhaseCalculationMode.UseImages;
+                useImages_prev_state = true;
+            }
+            else
+            {
+                phaseCalculationMode = PhaseCalculationMode.UseBatch;
+                useImages_prev_state = false;
+            }
+            ChangeCalculationMode();
+        
+        }
+
+
+        private void StitchClick(object sender, EventArgs e)
+        { 
+            if (radioButton_nostitich.Checked) stitchMode = StitchMode.None;
+            if (radioButton_stitch.Checked) stitchMode = StitchMode.Calculate;
+            if (radioButton_batch_stitch.Checked) stitchMode = StitchMode.UseBatch;
+            ChangeStitchMode();
+        }
+
+        private void LutClick(object sender, EventArgs e)
+        { 
+            generateLUT = radioButton_lut.Checked;
+            ChangeLLUTMode();
+        }
+
+
+        private void ChangeCalculationMode()
+        {
+
+            switch (phaseCalculationMode)
+            {
+                case PhaseCalculationMode.None:
+                    button_hintphase.Visible = false;
+                    button_select_phase.Visible = false;
+                    radioButton_batch_phase.Checked = false;
+                    radioButton_calc.Checked = false;
+                    label_selected_phase.Visible = false;
+                    break;
+                case PhaseCalculationMode.UseImages:
+                    radioButton_calc.Checked = true;
+                    button_hintphase.Visible = true;
+                    button_select_phase.Visible = false;
+                    label_selected_phase.Visible = false;
+                    if (stitchMode == StitchMode.UseBatch)
+                    {
+                        stitchMode = StitchMode.Calculate;
+                        ChangeStitchMode();
+                    }
+                    break;
+                case PhaseCalculationMode.UseBatch:
+                    radioButton_batch_phase.Checked = true;
+                    button_select_phase.Visible = true;
+                    label_selected_phase.Visible = true;
+                    button_hintphase.Visible = false;
+                    
+                    if (stitchMode == StitchMode.UseBatch)
+                    {
+                        stitchMode = StitchMode.Calculate;
+                        ChangeStitchMode();
+                    }
+                    break;
+            }
+            
+        }
+
+        
+        private void ChangeStitchMode()
+        {
+            switch (stitchMode)
+            {
+                case StitchMode.None:
+                    radioButton_nostitich.Checked = true;
+                    radioButton_lut.Enabled = false; 
+                    radioButton_no_lut.Enabled = false;
+                    radioButton_lut.Checked = false;
+                    radioButton_no_lut.Checked = true;
+                    button_hint_loot.Visible = false;
+                    if (phaseCalculationMode == PhaseCalculationMode.None)
+                    { 
+                        if (useImages_prev_state) phaseCalculationMode = PhaseCalculationMode.UseImages;
+                        else phaseCalculationMode = PhaseCalculationMode.UseBatch;
+                        ChangeCalculationMode();
+                    }
+                    break;
+                    case StitchMode.Calculate:
+                    //
+                    radioButton_stitch.Checked = true;
+                    //lut ok
+                    radioButton_lut.Enabled = true;
+                    radioButton_no_lut.Enabled = true;
+                    radioButton_lut.Checked = true;
+                    radioButton_no_lut.Checked = false;
+                    button_hint_loot.Visible = false;
+                    //select off
+                    button_select_stitch.Visible = false;
+                    label_selected_stitch.Visible = false;
+                    //algo on
+                    button_hint_stitch.Visible = true;
+                    //phase calc restore
+                    if (phaseCalculationMode == PhaseCalculationMode.None)
+                    {
+                        if (useImages_prev_state) phaseCalculationMode = PhaseCalculationMode.UseImages;
+                        else phaseCalculationMode = PhaseCalculationMode.UseBatch;
+                        ChangeCalculationMode();
+                    }
+                    break;
+                    case StitchMode.UseBatch:
+                    //
+                    radioButton_batch_stitch.Checked = true;
+                    //lut possible
+                    radioButton_lut.Enabled = true;
+                    radioButton_no_lut.Enabled = true;
+                    radioButton_lut.Checked = true;
+                    radioButton_no_lut.Checked = false;
+                    button_hint_loot.Visible = false;
+                    //alg off
+                    button_hint_stitch.Visible = false;
+                    //select on
+                    button_select_stitch.Visible = true;
+                    label_selected_stitch.Visible = true;
+                    //phase calc off
+                    phaseCalculationMode = PhaseCalculationMode.None;
+                    ChangeCalculationMode();
+                    radioButton_calc.Checked = false;
+                    radioButton_batch_phase.Checked = false;
+                    button_hintphase.Visible = false;
+                    break;
+            }
+        }
+
+        private void ChangeLLUTMode()
+        {
+            button_hint_loot.Visible = generateLUT;
+        }
+
+
         private void SelectSample(string Name)
         { 
             selectedSampleId = SamplesDB.GetSampleId(Name);
@@ -152,6 +322,34 @@ namespace ImgAnalyzer
             UpdateSamplesList();
             SelectSample(newSampleName);
         }
+
+        private void SelectPhaseBatch()
+        {
+            
+            var batch = ContainerBatchesForm.GetBatch(SamplesDB.GetSampleName(selectedSampleId), BatchDatatypes.PhaseWrapped);
+            if (batch != null)
+            { 
+                phaseBatch = batch;
+                label_selected_phase.Text = "Выбрано: " + phaseBatch.Name;    
+            
+            }
+        
+        }
+
+        private void SelectStitchBatch()
+        {
+            var batch = ContainerBatchesForm.GetBatch(SamplesDB.GetSampleName(selectedSampleId), BatchDatatypes.PhaseUnwrapped);
+            if (batch != null)
+            {
+                stitchBatch = batch;
+                label_selected_stitch.Text = "Выбрано: " + phaseBatch.Name;
+
+            }
+        }
+
+
+        
+
 
 
 
@@ -280,6 +478,27 @@ namespace ImgAnalyzer
         private void comboBox_sample_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectSample(comboBox_sample.Text);
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            useAutoSquare = checkBox_auto_sq.Checked;
+            button_infoAutoSquare.Enabled = checkBox_auto_sq.Checked;
+        }
+
+        private void button_select_stitch_Click(object sender, EventArgs e)
+        {
+            SelectStitchBatch();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            SelectPhaseBatch();
         }
     }
 }

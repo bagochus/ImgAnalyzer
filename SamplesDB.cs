@@ -184,7 +184,7 @@ namespace ImgAnalyzer
             }
         }
         /// <summary>
-        /// Возвращает список id элементов второй таблицы, у которых sample_id и batch_type совпадают с указанными
+        /// Возвращает список id элементов второй таблицы, у которых sample_name и batch_type совпадают с указанными
         /// </summary>
         public static List<int> GetBatchesId(int sampleId, string batchType)
         {
