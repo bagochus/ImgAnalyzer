@@ -119,11 +119,6 @@ namespace ImgAnalyzer
 
         }
 
-        private void button_test2_Click(object sender, EventArgs e)
-        {
-            ImageManager.Stacks[0] = DB_Manager.LoadImageBatch(4);
-        }
-
         private void сохранитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string userInput = Interaction.InputBox("Введите имя профиля:",
@@ -155,12 +150,6 @@ namespace ImgAnalyzer
             form.ShowDialog();
         }
 
-        private void измеритьФазовыйПрофильToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Cursor = Cursors.WaitCursor;
-            presenter.MeasurePhase();
-            this.Cursor = Cursors.Default;
-        }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {

@@ -20,8 +20,11 @@ namespace ImgAnalyzer.DialogForms
 
         ContainerBatch _selectedBatch = null;
 
-        int separator1_index;
-        int separator2_index;
+        int separator1_index = -1; //    loaded 
+        int separator2_index = -1; //   library
+
+        private List<BatchHeader> localHeaders = new List<BatchHeader>();
+        private List<BatchHeader> databaseHeaders = new List<BatchHeader>();
 
 
         private string sample_name = "";
@@ -33,11 +36,9 @@ namespace ImgAnalyzer.DialogForms
             InitializeComponent();
             if(!selectMode) HideSelectModeControls();
 
-           // dataGridView1.AutoGenerateColumns = false;
-           dataGridView1.AllowUserToAddRows = false;
-           // dataGridView1.DataSource = ImageManager.containerBatches;
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            ConstructTable();
+            InitTable();
+
+            FillTable();
         }
 
 
@@ -52,43 +53,87 @@ namespace ImgAnalyzer.DialogForms
 
 
 
-        private void AddBatchHeaderToGrid(BatchHeader header)
+        private void AddBatchHeaderToGrid(IEnumerable<BatchHeader> headers)
         {
-            int rowIndex = dataGridView1.Rows.Add();
-            dataGridView1.Rows[rowIndex].Cells["Name"].Value = header.Name;
-            dataGridView1.Rows[rowIndex].Cells["Type"].Value = header.Type;
-            dataGridView1.Rows[rowIndex].Cells["Sample"].Value = header.Sample;
-            dataGridView1.Rows[rowIndex].Cells["Width"].Value = header.Width;
-            dataGridView1.Rows[rowIndex].Cells["Height"].Value = header.Height;
-            dataGridView1.Rows[rowIndex].Cells["Count"].Value = header.Count;
-
-
-
+            foreach (var h in headers)
+            {
+                int rowIndex = dataGridView1.Rows.Add();
+                dataGridView1.Rows[rowIndex].Cells["Name"].Value = h.Name;
+                dataGridView1.Rows[rowIndex].Cells["Type"].Value = h.Type;
+                dataGridView1.Rows[rowIndex].Cells["Sample"].Value = h.Sample;
+                dataGridView1.Rows[rowIndex].Cells["Width"].Value =  h.Width;
+                dataGridView1.Rows[rowIndex].Cells["Height"].Value = h.Height;
+                dataGridView1.Rows[rowIndex].Cells["Count"].Value = h.Count;
+            }
         }
 
-        private void ConstructTable()
+
+        private void UpdateLocalHeaders()
         {
+            localHeaders.Clear();
+            for (int i = 0; i < ImageManager.containerBatches.Count; i++)
+            {
+                localHeaders.Add(ImageManager.containerBatches[i].GetHeader());
+                localHeaders[i].id = i;
+            }
+        }
+
+        private void UpdatateDBHeaders()
+        {
+            databaseHeaders.Clear();
+            databaseHeaders.AddRange(SamplesDB.GetBatchHeaders().ToArray());
+        }
+
+        private void InitTable()
+        {
+
+            // dataGridView1.AutoGenerateColumns = false;
+            dataGridView1.AllowUserToAddRows = false;
+            // dataGridView1.DataSource = ImageManager.containerBatches;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.Columns.Add("Name", "Название");
             dataGridView1.Columns.Add("Type", "Тип");
             dataGridView1.Columns.Add("Sample", "Образец");
             dataGridView1.Columns.Add("Width", "Width");
             dataGridView1.Columns.Add("Height", "Height");
             dataGridView1.Columns.Add("Count", "Count");
+        }
 
 
 
-            localBatchCount = 0;
-            databaseBatchCount = 0;
-            foreach (var b in ImageManager.containerBatches) 
+        private void FillTable(bool showOnlyRelevant = false)
+        {
+           
+            UpdatateDBHeaders();
+            UpdateLocalHeaders();
+
+            dataGridView1.Rows.Clear();
+
+            IEnumerable<BatchHeader> local, db;
+
+            if (showOnlyRelevant)
             {
-                localBatchCount++;
-                AddBatchHeaderToGrid(b.GetHeader());
+                local = localHeaders.Where(x => x.Sample == sample_name && x.Type == type);
+                db = databaseHeaders.Where(x => x.Sample == sample_name && x.Type == type);
             }
-            AddStyledSeparatorRow("----DB----");
-            foreach (var header in SamplesDB.GetBatchHeaders())
-            { 
-                databaseBatchCount++;
-                AddBatchHeaderToGrid(header);
+            else
+            {
+                local = localHeaders;
+                db = databaseHeaders;   
+            }
+
+            if (local.Count() > 0)
+            {
+                AddStyledSeparatorRow("Загружено:");
+                separator1_index = 0;
+                AddBatchHeaderToGrid(local);
+            }
+
+            if (db.Count()> 0)
+            {
+                AddStyledSeparatorRow("Библиотека:");
+                separator2_index = local.Count() + 1;
+                AddBatchHeaderToGrid(db);
             }
         }
 
@@ -249,7 +294,9 @@ namespace ImgAnalyzer.DialogForms
         
         }
 
+        private void button_select_Click(object sender, EventArgs e)
+        {
 
-
+        }
     }
 }

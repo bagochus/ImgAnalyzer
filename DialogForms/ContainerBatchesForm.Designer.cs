@@ -35,8 +35,8 @@
             this.button_extract = new System.Windows.Forms.Button();
             this.button_select = new System.Windows.Forms.Button();
             this.groupBox_showmode = new System.Windows.Forms.GroupBox();
-            this.radioButton_shoall = new System.Windows.Forms.RadioButton();
             this.radioButton_showRelevant = new System.Windows.Forms.RadioButton();
+            this.radioButton_shoall = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox_showmode.SuspendLayout();
             this.SuspendLayout();
@@ -99,6 +99,7 @@
             this.button_select.TabIndex = 5;
             this.button_select.Text = "Выбрать";
             this.button_select.UseVisualStyleBackColor = true;
+            this.button_select.Click += new System.EventHandler(this.button_select_Click);
             // 
             // groupBox_showmode
             // 
@@ -112,17 +113,6 @@
             this.groupBox_showmode.TabStop = false;
             this.groupBox_showmode.Text = "Отображение";
             // 
-            // radioButton_shoall
-            // 
-            this.radioButton_shoall.AutoSize = true;
-            this.radioButton_shoall.Location = new System.Drawing.Point(6, 16);
-            this.radioButton_shoall.Name = "radioButton_shoall";
-            this.radioButton_shoall.Size = new System.Drawing.Size(95, 17);
-            this.radioButton_shoall.TabIndex = 0;
-            this.radioButton_shoall.TabStop = true;
-            this.radioButton_shoall.Text = "Показать все";
-            this.radioButton_shoall.UseVisualStyleBackColor = true;
-            // 
             // radioButton_showRelevant
             // 
             this.radioButton_showRelevant.AutoSize = true;
@@ -133,6 +123,17 @@
             this.radioButton_showRelevant.TabStop = true;
             this.radioButton_showRelevant.Text = "Подходящие";
             this.radioButton_showRelevant.UseVisualStyleBackColor = true;
+            // 
+            // radioButton_shoall
+            // 
+            this.radioButton_shoall.AutoSize = true;
+            this.radioButton_shoall.Location = new System.Drawing.Point(6, 16);
+            this.radioButton_shoall.Name = "radioButton_shoall";
+            this.radioButton_shoall.Size = new System.Drawing.Size(95, 17);
+            this.radioButton_shoall.TabIndex = 0;
+            this.radioButton_shoall.TabStop = true;
+            this.radioButton_shoall.Text = "Показать все";
+            this.radioButton_shoall.UseVisualStyleBackColor = true;
             // 
             // ContainerBatchesForm
             // 

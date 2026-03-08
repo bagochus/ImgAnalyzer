@@ -443,7 +443,7 @@ namespace ImgAnalyzer
                             header.Width = width;
                             header.Height = height;
                             header.Count = count;
-
+                            header.id = id;
                             batches.Add(header);
                         }
                     }
