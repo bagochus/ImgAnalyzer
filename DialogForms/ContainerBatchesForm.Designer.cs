@@ -116,6 +116,7 @@
             // radioButton_showRelevant
             // 
             this.radioButton_showRelevant.AutoSize = true;
+            this.radioButton_showRelevant.Checked = true;
             this.radioButton_showRelevant.Location = new System.Drawing.Point(6, 39);
             this.radioButton_showRelevant.Name = "radioButton_showRelevant";
             this.radioButton_showRelevant.Size = new System.Drawing.Size(89, 17);
@@ -123,17 +124,18 @@
             this.radioButton_showRelevant.TabStop = true;
             this.radioButton_showRelevant.Text = "Подходящие";
             this.radioButton_showRelevant.UseVisualStyleBackColor = true;
+            this.radioButton_showRelevant.CheckedChanged += new System.EventHandler(this.radioButton_showRelevant_CheckedChanged);
             // 
             // radioButton_shoall
             // 
             this.radioButton_shoall.AutoSize = true;
-            this.radioButton_shoall.Location = new System.Drawing.Point(6, 16);
+            this.radioButton_shoall.Location = new System.Drawing.Point(6, 17);
             this.radioButton_shoall.Name = "radioButton_shoall";
             this.radioButton_shoall.Size = new System.Drawing.Size(95, 17);
             this.radioButton_shoall.TabIndex = 0;
-            this.radioButton_shoall.TabStop = true;
             this.radioButton_shoall.Text = "Показать все";
             this.radioButton_shoall.UseVisualStyleBackColor = true;
+            this.radioButton_shoall.CheckedChanged += new System.EventHandler(this.radioButton_shoall_CheckedChanged);
             // 
             // ContainerBatchesForm
             // 

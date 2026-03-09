@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImgAnalyzer.DialogForms;
@@ -213,7 +214,14 @@ namespace ImgAnalyzer
             
         }
 
+        private void UpdateCommentField()
+        { 
+            
         
+        
+        }
+
+
         private void ChangeStitchMode()
         {
             switch (stitchMode)
@@ -345,7 +353,7 @@ namespace ImgAnalyzer
             {
                 stitchBatch = batch;
                 label_selected_stitch.Text = "Выбрано: " + phaseBatch.Name;
-
+                batch.
             }
         }
 
@@ -379,10 +387,21 @@ namespace ImgAnalyzer
             autoPhase.calculationMode = phaseCalculationMode;
             autoPhase.useAutoSquare = useAutoSquare;
             autoPhase.generateLUT = generateLUT;
+            autoPhase.requestParams = checkBox_req_params.Checked;
 
             if (phaseCalculationMode == PhaseCalculationMode.UseBatch) autoPhase.phaseBatch = phaseBatch;   
             if(stitchMode == StitchMode.UseBatch) autoPhase.stitchedPhaseBatch = stitchBatch;
 
+            //Task.Run(() => autoPhase.Run());
+
+            var log_form = new LogForm();
+            Thread thread = new Thread(() => autoPhase.Run(log_form));
+            log_form.Show();
+
+            
+            thread.Start();
+
+            Close();
 
         }
 

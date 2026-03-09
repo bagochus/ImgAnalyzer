@@ -12,13 +12,13 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer.Macros
 {
-    public partial class AutoPhaseForm : Form
+    public partial class LogForm : Form
     {
         public Color textColor = Color.Black;
 
         public Action stopButtonClick = () => { };
 
-        public AutoPhaseForm()
+        public LogForm()
         {
             InitializeComponent();
         }
@@ -35,6 +35,22 @@ namespace ImgAnalyzer.Macros
             logBox.SelectionColor = textColor;
             logBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
             logBox.ScrollToCaret();
+        }
+
+        public void AppendErrorLog(string message)
+        {
+            if (logBox.InvokeRequired)
+            {
+                logBox.Invoke(new Action(() => AppendLog(message)));
+                return;
+            }
+            textColor = Color.Red;
+            logBox.SelectionColor = textColor;
+            logBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
+
+            logBox.ScrollToCaret();
+            textColor = Color.Black;
+
         }
 
         public void ReplaceLastLine(string newText)

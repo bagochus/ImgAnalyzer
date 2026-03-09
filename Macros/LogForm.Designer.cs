@@ -1,6 +1,6 @@
 ﻿namespace ImgAnalyzer.Macros
 {
-    partial class AutoPhaseForm
+    partial class LogForm
     {
         /// <summary>
         /// Required designer variable.

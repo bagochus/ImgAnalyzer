@@ -26,19 +26,33 @@ namespace ImgAnalyzer.DialogForms
         private List<BatchHeader> localHeaders = new List<BatchHeader>();
         private List<BatchHeader> databaseHeaders = new List<BatchHeader>();
 
+        private List<BatchHeader> localHeaders_disp = new List<BatchHeader>();
+        private List<BatchHeader> databaseHeaders_disp = new List<BatchHeader>();
+
+
 
         private string sample_name = "";
         private string type = "";
 
-
-        public ContainerBatchesForm(bool selectMode = false)
+        public static ContainerBatch GetBatch(string sample, string type)
         {
+            ContainerBatchesForm form = new ContainerBatchesForm(true, sample, type);
+
+            form.ShowDialog();
+
+            return form._selectedBatch;
+        }
+
+        public ContainerBatchesForm(bool selectMode = false, string sample_name = "", string type = "")
+        {
+            this.sample_name = sample_name;
+            this.type = type;
             InitializeComponent();
             if(!selectMode) HideSelectModeControls();
 
             InitTable();
 
-            FillTable();
+            FillTable(selectMode);
         }
 
 
@@ -109,31 +123,30 @@ namespace ImgAnalyzer.DialogForms
 
             dataGridView1.Rows.Clear();
 
-            IEnumerable<BatchHeader> local, db;
 
             if (showOnlyRelevant)
             {
-                local = localHeaders.Where(x => x.Sample == sample_name && x.Type == type);
-                db = databaseHeaders.Where(x => x.Sample == sample_name && x.Type == type);
+                localHeaders_disp = localHeaders.Where(x => x.Sample == sample_name && x.Type == type).ToList();
+                databaseHeaders_disp = databaseHeaders.Where(x => x.Sample == sample_name && x.Type == type).ToList();
             }
             else
             {
-                local = localHeaders;
-                db = databaseHeaders;   
+                localHeaders_disp = localHeaders;
+                databaseHeaders_disp = databaseHeaders;   
             }
 
-            if (local.Count() > 0)
+            if (localHeaders_disp.Count() > 0)
             {
                 AddStyledSeparatorRow("Загружено:");
                 separator1_index = 0;
-                AddBatchHeaderToGrid(local);
+                AddBatchHeaderToGrid(localHeaders_disp);
             }
 
-            if (db.Count()> 0)
+            if (databaseHeaders_disp.Count()> 0)
             {
                 AddStyledSeparatorRow("Библиотека:");
-                separator2_index = local.Count() + 1;
-                AddBatchHeaderToGrid(db);
+                separator2_index = localHeaders_disp.Count() == 0? 0 :  localHeaders_disp.Count() + 1;
+                AddBatchHeaderToGrid(databaseHeaders_disp);
             }
         }
 
@@ -197,43 +210,6 @@ namespace ImgAnalyzer.DialogForms
         private void CreateContainerBatch()
         {
             AddBatchToDB.AddNewBatch();
-            return;
-            ContainerBatch batch = new ContainerBatch();
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                // Настройки диалогового окна
-                openFileDialog.Title = "Выберите .bin файлы";
-                openFileDialog.Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*";
-                openFileDialog.Multiselect = true; // Разрешаем выбор нескольких файлов
-                openFileDialog.DefaultExt = "bin";
-                openFileDialog.AddExtension = true;
-                openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "containers");
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    batch.LocateImageBatch(openFileDialog.FileNames);
-
-                }
-            }
-            if (batch.Count <= 0)
-            {
-                MessageBox.Show("Ни один из файлов не подходит");
-                return;
-            }
-
-            string userInput = Interaction.InputBox("Введите имя группы",
-                               "Добавлено "+ batch.Count.ToString() + " карт",
-                               "New_Group");
-
-            if (userInput != "")
-            {
-                batch.Name = userInput;
-                ImageManager.containerBatches.Add(batch);
-            
-            
-            }
-
-
         }
 
         private void ExtractContainer(ContainerBatch batch, int index)
@@ -242,6 +218,49 @@ namespace ImgAnalyzer.DialogForms
             DataManager_2D.containers.Add(container);
         }
 
+        private void SelectClick()
+        {
+            //ничего не выбрано
+            if (dataGridView1.SelectedRows.Count <= 0) return;
+            int index = dataGridView1.SelectedRows[0].Index;
+            //выбран разделитель
+            if (index == separator1_index
+                || index == separator2_index) return;
+
+            try
+            {
+                if (localHeaders_disp.Count > 0 && index <= localHeaders_disp.Count)
+                {
+                    _selectedBatch = ImageManager.containerBatches[localHeaders_disp[index + 1].id];
+                }
+                else if (databaseHeaders_disp.Count > 0 && index > separator2_index)
+                {
+                    int offset_index = index - separator2_index - 1;
+                    _selectedBatch = SamplesDB.GetBatch(databaseHeaders_disp[offset_index].id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _selectedBatch = null;
+                MessageBox.Show("Не удалось загрузить пакет: \n" + ex.Message);
+                return;
+            }
+
+            if (_selectedBatch.Count == 0)
+            {
+                _selectedBatch = null;
+                MessageBox.Show("Не удалось загрузить карты из выбранного пакета данных");
+            }
+            else Close();
+        }
+
+        private void ChangeBatchVisiblity()
+        {
+            UpdatateDBHeaders();
+            UpdateLocalHeaders();
+
+            FillTable(radioButton_showRelevant.Checked);
+        }
 
 
 
@@ -282,21 +301,21 @@ namespace ImgAnalyzer.DialogForms
         }
 
 
-        public static ContainerBatch GetBatch(string sample, string type)
-        { 
-            ContainerBatchesForm form = new ContainerBatchesForm(true);
 
-            form.type = type;
-            form.sample_name = sample;
-            form.ShowDialog();
-
-            return form._selectedBatch;
-        
-        }
 
         private void button_select_Click(object sender, EventArgs e)
         {
+            SelectClick();
+        }
 
+        private void radioButton_shoall_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBatchVisiblity();
+        }
+
+        private void radioButton_showRelevant_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBatchVisiblity();
         }
     }
 }

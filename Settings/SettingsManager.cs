@@ -69,7 +69,7 @@ namespace ImgAnalyzer
         {
 
             GetSettingsFromDatabase(settings);
-            if (forceRequest && true)
+            if (forceRequest || true)
             {
                 SettigRequestForm form = new SettigRequestForm(settings);
                 form.ShowDialog();

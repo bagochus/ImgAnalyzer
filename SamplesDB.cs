@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.IO;
+using System.Diagnostics.Eventing.Reader;
 
 namespace ImgAnalyzer
 {
@@ -404,6 +405,40 @@ namespace ImgAnalyzer
             }
 
             return batches;
+        }
+
+
+        public static ContainerBatch GetBatch(int id)
+        {
+            var batch = new ContainerBatch();
+            
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT Name, Comment, Filenames FROM ContainerBatches WHERE Id = @Id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            batch.Name = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                            string comment = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                            string filenamesJson = reader.GetString(2);
+
+                            var filenames = JsonSerializer.Deserialize<List<string>>(filenamesJson) ?? new List<string>();
+                            batch.LocateImageBatch(filenames.ToArray());
+
+                        }
+                    }
+                }
+            }
+
+            return batch;
+
         }
 
         public static List<BatchHeader> GetBatchHeaders()

@@ -28,6 +28,7 @@ namespace ImgAnalyzer.Macros
 
         public bool generateLUT = true;
         public bool useAutoSquare = true;
+        public bool requestParams = true;
 
         /*
         public bool useImages = true;
@@ -42,11 +43,14 @@ namespace ImgAnalyzer.Macros
 
         internal ContainerBatch phaseBatch = null;
         internal ContainerBatch stitchedPhaseBatch = null;
+        internal string comment = "";
 
 
         private string folder1, folder2, folder3;
         private Action<string> writeLog = null;
-        private AutoPhaseForm form = null;
+        private Action<string> writeErrorLog = null;
+        private Action<string> replaceLastLine = null;
+        //private AutoPhaseForm form = null;
 
         public CancellationTokenSource cts;
 
@@ -117,10 +121,6 @@ namespace ImgAnalyzer.Macros
             folder3 = settings.Single(x => x.Name == "FolderC").GetValue<string>();
         }
 
-        
-
-
-
         private void RequestParams()
         {
 
@@ -128,7 +128,7 @@ namespace ImgAnalyzer.Macros
             if (useAutoSquare) AddAutoSquareSettings();
             if (calculationMode == PhaseCalculationMode.UseImages) AddPhaseSettings();
 
-            SettingsManager.RequestSettingList(settings);
+            SettingsManager.RequestSettingList(settings,requestParams);
 
             if (calculationMode == PhaseCalculationMode.UseImages) RetrieveImageSettings();
             if (useAutoSquare) RetrieveAutoSqareSettings();
@@ -140,12 +140,15 @@ namespace ImgAnalyzer.Macros
         }
 
 
-        public async Task Run()
+        public async Task Run(LogForm form)
         {
-            form = new AutoPhaseForm();
-            this.form.Show();
-            writeLog = this.form.AppendLog;
-
+            //form = new AutoPhaseForm();
+            //this.form.Show();
+            writeLog = form.AppendLog;
+            //TODO: добавить запись в глобальный лог
+            writeErrorLog = form.AppendErrorLog;
+            replaceLastLine = form.ReplaceLastLine;
+            form.stopButtonClick += () => { cts.Cancel(); };
             //AutoPhase instance = new AutoPhase();
             cts = new CancellationTokenSource();
             cts.Token.ThrowIfCancellationRequested();
@@ -154,6 +157,84 @@ namespace ImgAnalyzer.Macros
                 await Task.Run(_run);
             }
             catch (Exception ex) { writeLog(ex.Message); }
+        }
+
+        private async Task _run()
+        {
+            writeLog("Запрос параметров от пользователя...");
+            RequestParams();
+
+            if (calculationMode == PhaseCalculationMode.UseImages)
+            {
+                try
+                {
+                    AddImages();
+                }
+                catch (Exception ex)
+                {
+                    writeErrorLog("Не удалось обработать исходные изображения: " + ex.Message);
+                    return;
+                }
+
+                writeLog("Рачет фазовых профилей...");
+                try
+                {
+                    await CalculatePhaseProfiles();
+                }
+                catch (Exception ex)
+                {
+                    writeErrorLog("Не удалось выполнить расчет фазовых профилей");
+                    writeErrorLog(ex.Message);
+                    return;
+                }
+
+            }
+            else if (calculationMode == PhaseCalculationMode.UseBatch)
+            {
+                if (phaseBatch == null)
+                {
+                    writeLog("Не указан пакет фазовых профилей");
+                    return;
+                }
+            }
+
+
+            if (stitchMode == StitchMode.Calculate)
+            {
+                try { await StitchPhaseBatch(); }
+                catch (Exception ex)
+                {
+                    writeErrorLog("Ошибка при сшивке фазы:");
+                    writeErrorLog(ex.Message);
+                    return;
+                }
+
+            }
+            else if (stitchMode == StitchMode.UseBatch)
+            {
+                if (stitchedPhaseBatch == null)
+                {
+                    writeLog("Не указан пакет фазовых профилей");
+                    return;
+                }
+
+            }
+            else return;
+
+            if (generateLUT)
+            {
+                try { await GeneratuLUT(); }
+                catch (Exception ex)
+                {
+                    writeErrorLog("Ошибка при построении LUT:");
+                    writeErrorLog(ex.Message);
+                    return;
+                }
+            }
+            else
+            {
+                writeLog("Обработка завершена");
+            }
 
         }
 
@@ -196,9 +277,8 @@ namespace ImgAnalyzer.Macros
 
                 catch (Exception ex)
                 {
-                    this.form.textColor = Color.Red;
-                    writeLog("Не удалось выполнить поиск активных областей");
-                    writeLog(ex.Message);
+                    writeErrorLog("Не удалось выполнить поиск активных областей");
+                    writeErrorLog(ex.Message);
                     return;
                 }
             }
@@ -264,10 +344,10 @@ namespace ImgAnalyzer.Macros
                 ImageManager.Batch_C() };
             pmg.UseTransformation = true;
             pmg._cancellationToken = cts.Token;
-            form.AppendLog("Расчет фазовых профилей...");
+            writeLog("Расчет фазовых профилей...");
             pmg.containerPorcessed += () =>
             {
-                form.ReplaceLastLine($"Расчет фазовых профилей...{pmg.processed_containers}/{pmg.total_containers}");
+                replaceLastLine($"Расчет фазовых профилей...{pmg.processed_containers}/{pmg.total_containers}");
             };
             await pmg.Execute();
 
@@ -299,7 +379,7 @@ namespace ImgAnalyzer.Macros
             sfw._cancellationToken = cts.Token;
             sfw.containerPorcessed += () =>
             {
-                form.ReplaceLastLine($"Сшивка группы фазовых профилей...{sfw.processed_containers}/{sfw.total_containers}");
+                replaceLastLine($"Сшивка группы фазовых профилей...{sfw.processed_containers}/{sfw.total_containers}");
             };
 
             await sfw.Execute();
@@ -326,8 +406,7 @@ namespace ImgAnalyzer.Macros
 
             if (!pr_calc.Check())
             {
-                this.form.textColor = Color.Red;
-                writeLog("Ошибка при расчете фазового диапазона ");
+                writeErrorLog("Ошибка при расчете фазового диапазона ");
                 return;
             }
             var container_range = new Container_2D_double(pr_calc.MeasureFull());
@@ -342,7 +421,7 @@ namespace ImgAnalyzer.Macros
             pr_form.AddHeader("Введите параметры для LU таблицы. PHASE_0 - значение фазы," +
                 " которе выводится при подаче 0 по HDMI (черный цвет), PHASE_255 - значение фазы," +
                 " которе выводится при подаче 255 по HDMI (белый цвет)." +
-                $" Работа гарантируется в диапазоне {phase_lo:f2}-{phase_hi:f2}" +
+                $" Работа гарантируется в диапазоне >>>  {phase_lo:f2} - {phase_hi:f2} <<<" +
                 ". DAC_0/DAC_STEP начальное значение и шаг по коду ЦАП, которое указывалось" +
                 " при настройке калибровки в управляющей программе ПФМС" +
                 "");
@@ -361,10 +440,10 @@ namespace ImgAnalyzer.Macros
             lut_calc.SingleValueParameters = new double[] { ph0, ph255, dac_0, dac_step };
             lut_calc.imageSources = new IImageSource[] { stitchedPhaseBatch };
 
-            form.AppendLog("Построение LU таблицы...");
+            writeLog("Построение LU таблицы...");
             lut_calc.containerPorcessed += () =>
             {
-                form.ReplaceLastLine($"Построение LU таблицы...{lut_calc.processed_steps}/{lut_calc.total_steps}");
+                replaceLastLine($"Построение LU таблицы...{lut_calc.processed_steps}/{lut_calc.total_steps}");
             };
 
             try
@@ -373,103 +452,13 @@ namespace ImgAnalyzer.Macros
             }
             catch (Exception ex)
             {
-                this.form.textColor = Color.Red;
-                writeLog("Ошибка при построении LUT: " + ex.Message);
+                writeErrorLog("Ошибка при построении LUT: " + ex.Message);
                 return;
             }
-            form.AppendLog("Обработка завершениа");
+            writeLog("Обработка завершениа");
         }
 
-        private async Task _run()
-        {
-
-            
-            form.stopButtonClick += () => { cts.Cancel(); };
-            writeLog("Запрос параметров от пользователя...");
-            RequestParams();
-
-
-            if (calculationMode == PhaseCalculationMode.UseImages)
-            {
-                try
-                {
-                    AddImages();
-                }
-                catch (Exception ex)
-                {
-                    this.form.textColor = Color.Red;
-                    writeLog("Не удалось обработать исходные изображения: " + ex.Message);
-                    return;
-                }
-
-                writeLog("Рачет фазовых профилей...");
-                try
-                {
-                    await CalculatePhaseProfiles();
-                }
-                catch (Exception ex)
-                {
-                    this.form.textColor = Color.Red;
-                    writeLog("Не удалось выполнить расчет фазовых профилей");
-                    writeLog(ex.Message);
-                    return;
-                }
-
-            }
-            else if (calculationMode == PhaseCalculationMode.UseBatch)
-            {
-                if (phaseBatch == null)
-                {
-                    writeLog("Не указан пакет фазовых профилей");
-                    return;
-                }
-            }
-
-
-            if (stitchMode == StitchMode.Calculate)
-            {
-                try { await StitchPhaseBatch(); }
-                catch (Exception ex)
-                {
-                    this.form.textColor = Color.Red;
-                    writeLog("Ошибка при сшивке фазы:");
-                    writeLog(ex.Message);
-                    return;
-                }
-
-            }
-            else if (stitchMode == StitchMode.UseBatch)
-            {
-                if (stitchedPhaseBatch == null)
-                {
-                    writeLog("Не указан пакет фазовых профилей");
-                    return;
-                }
-
-            } else return;
-
-            if (generateLUT)
-            {
-                try { await GeneratuLUT(); }
-                catch (Exception ex)
-                {
-                    this.form.textColor = Color.Red;
-                    writeLog("Ошибка при построении LUT:");
-                    writeLog(ex.Message);
-                    return;
-                }
-            }
-            else
-            {
-                writeLog("Обработка завершена");
-            }
-                
-                
-                
-
-
-
-        }
+        
 
 
         private void FillFitterField(SqareFitter sf)

@@ -55,6 +55,7 @@
             this.radioButton_lut = new System.Windows.Forms.RadioButton();
             this.radioButton_no_lut = new System.Windows.Forms.RadioButton();
             this.button_start = new System.Windows.Forms.Button();
+            this.checkBox_req_params = new System.Windows.Forms.CheckBox();
             this.groupBox_phase.SuspendLayout();
             this.groupBox_stitch.SuspendLayout();
             this.groupBox_lut.SuspendLayout();
@@ -156,7 +157,7 @@
             // label_selected_phase
             // 
             this.label_selected_phase.AutoSize = true;
-            this.label_selected_phase.Location = new System.Drawing.Point(223, 80);
+            this.label_selected_phase.Location = new System.Drawing.Point(6, 74);
             this.label_selected_phase.Name = "label_selected_phase";
             this.label_selected_phase.Size = new System.Drawing.Size(68, 13);
             this.label_selected_phase.TabIndex = 16;
@@ -166,7 +167,7 @@
             // 
             // button_select_phase
             // 
-            this.button_select_phase.Location = new System.Drawing.Point(227, 45);
+            this.button_select_phase.Location = new System.Drawing.Point(231, 45);
             this.button_select_phase.Name = "button_select_phase";
             this.button_select_phase.Size = new System.Drawing.Size(69, 23);
             this.button_select_phase.TabIndex = 16;
@@ -232,7 +233,7 @@
             // label_selected_stitch
             // 
             this.label_selected_stitch.AutoSize = true;
-            this.label_selected_stitch.Location = new System.Drawing.Point(224, 95);
+            this.label_selected_stitch.Location = new System.Drawing.Point(6, 95);
             this.label_selected_stitch.Name = "label_selected_stitch";
             this.label_selected_stitch.Size = new System.Drawing.Size(68, 13);
             this.label_selected_stitch.TabIndex = 16;
@@ -243,7 +244,7 @@
             // 
             // button_select_stitch
             // 
-            this.button_select_stitch.Location = new System.Drawing.Point(227, 60);
+            this.button_select_stitch.Location = new System.Drawing.Point(231, 66);
             this.button_select_stitch.Name = "button_select_stitch";
             this.button_select_stitch.Size = new System.Drawing.Size(69, 23);
             this.button_select_stitch.TabIndex = 17;
@@ -329,11 +330,24 @@
             this.button_start.UseVisualStyleBackColor = true;
             this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
+            // checkBox_req_params
+            // 
+            this.checkBox_req_params.AutoSize = true;
+            this.checkBox_req_params.Checked = true;
+            this.checkBox_req_params.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_req_params.Location = new System.Drawing.Point(26, 488);
+            this.checkBox_req_params.Name = "checkBox_req_params";
+            this.checkBox_req_params.Size = new System.Drawing.Size(213, 17);
+            this.checkBox_req_params.TabIndex = 16;
+            this.checkBox_req_params.Text = "Показать параметры перед стартом";
+            this.checkBox_req_params.UseVisualStyleBackColor = true;
+            // 
             // NewMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(806, 582);
+            this.Controls.Add(this.checkBox_req_params);
             this.Controls.Add(this.richTextBox_batch);
             this.Controls.Add(this.checkBox_auto_sq);
             this.Controls.Add(this.button_infoAutoSquare);
@@ -386,5 +400,6 @@
         private System.Windows.Forms.Button button_select_stitch;
         private System.Windows.Forms.Label label_selected_phase;
         private System.Windows.Forms.Label label_selected_stitch;
+        private System.Windows.Forms.CheckBox checkBox_req_params;
     }
 }
