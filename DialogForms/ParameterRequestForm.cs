@@ -17,14 +17,32 @@ namespace ImgAnalyzer.DialogForms
         // Словарь для хранения значений параметров
         private Dictionary<string, TextBox> parameterControls = new Dictionary<string, TextBox>();
         private Dictionary<string, Type> parameterTypes = new Dictionary<string, Type>();
-
+        private int header_offset = 0;
+        
         private TextBox firstBox;
+
 
         public ParameterRequestForm()
         {
             InitializeComponent();
         }
 
+        public void AddHeader(string text)
+        {
+            if (parameterControls.Count > 0) return;
+
+            Label header_label = new Label();
+            header_label.Width = Width - 180;
+            header_label.Left = 20;
+            header_label.Top = 20;
+            header_label.AutoSize = true;
+            header_label.MaximumSize = new Size(Width - 180, 0);
+            header_label.Text = text;
+            this.Controls.Add(header_label);
+            header_offset = header_label.Height+20;
+            
+        
+        }
 
         // Добавление запроса double параметра
         public void AddDoubleRequest(string parameterName)
@@ -50,7 +68,7 @@ namespace ImgAnalyzer.DialogForms
             Label label = new Label();
             label.Text = parameterName + ":";
             label.AutoSize = true;
-            label.Top = 20 + parameterControls.Count * 30;
+            label.Top = header_offset + 20 + parameterControls.Count * 30;
             label.Left = 20;
 
             // Создаем TextBox

@@ -9,6 +9,7 @@ namespace ImgAnalyzer
 {
     public static class FileManagement
     {
+        
         public static string CreateUniqueFolder(string baseFolderName)
         {
             // Получаем директорию исполняемого файла

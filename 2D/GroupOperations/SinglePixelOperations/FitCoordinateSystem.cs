@@ -25,7 +25,9 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
         private string[] _imageSourceNames = { "Группа изображений с системой координат" };
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
 
+        public int SampleId { get; set; }
 
         protected double[,] result;
         protected int width;

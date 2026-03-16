@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SkiaSharp;
+
 
 namespace ImgAnalyzer
 {
@@ -24,8 +26,13 @@ namespace ImgAnalyzer
 
         private int height;
         public int Height { get { return height; } }
-
         public int Count {  get { return Filenames.Count; } }
+
+        public string sample = "";
+        public string Batchype = "";
+        public string comment = "";
+        public int id = -1;
+
 
         public EventHandler DataChanged;
 
@@ -38,20 +45,12 @@ namespace ImgAnalyzer
             if (filenames.Length == 0) return;
             if (this.filenames.Count == 0) GetParameters(filenames[0]);
 
-
-
             foreach (string filename in filenames) 
             {
                 if (CheckParamenters(filename)) this.filenames.Add(filename);
-            
             }
-
-
             DataChanged?.Invoke(this, new EventArgs());
-
         }
-
-
 
         private void GetParameters(string filename) 
         {
@@ -78,7 +77,6 @@ namespace ImgAnalyzer
 
         private bool CheckParamenters(string filename)
         {
-
 
             int _width;
             int _height;
@@ -112,35 +110,32 @@ namespace ImgAnalyzer
 
         }
 
-        public void AddContainer(IContainer_2D container)
+        public void AddContainer(IContainer_2D container, bool copy_container = false)
         {
-            if (workFolder == "") workFolder = CreateFolder(Name);
-
-
+            
             if (filenames.Count == 0)
             {
-                if (container.Filename == "")
+                if (container.Filename == "" || copy_container)
                 {
+                    if (workFolder == "") workFolder = CreateFolder(Name);
                     container.SaveToFile(Path.Combine(workFolder, "cont_"+ filenames.Count.ToString() +".bin"));
                 }
                 filenames.Add(container.Filename);
                 containerType = container.GetType();
+                width = container.Width;
+                height = container.Height;
 
             }
             else
             {
                 if(!CheckConsistency(container)) return;
-                if (container.Filename == "")
+                if (container.Filename == "" || copy_container)
                 {
                     container.SaveToFile(Path.Combine(workFolder, "cont_" + filenames.Count.ToString() + ".bin"));
                 }
                 filenames.Add(container.Filename);
 
             }
-
-
-
-
         }
 
         private bool CheckConsistency(IContainer_2D container)
@@ -151,7 +146,6 @@ namespace ImgAnalyzer
             if (container.Height != height) return false;
 
             return true;
-
         }
 
 
@@ -184,6 +178,25 @@ namespace ImgAnalyzer
             return newPath;
         }
 
+        public void UpdateComment(string comment)
+        {
+            this.comment = comment;
+            if (id >= 0) SamplesDB.UpdateBatchComment(id, comment);
+        }
+
+
+        public BatchHeader GetHeader()
+        { 
+            BatchHeader result = new BatchHeader(); 
+            result.Name = Name;
+            result.Type = Batchype;
+            result.Sample = sample;
+            result.Width = Width;
+            result.Height = Height;
+            result.Count = Count;
+
+            return result;
+        }
 
     }
 

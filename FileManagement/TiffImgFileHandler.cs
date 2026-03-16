@@ -103,6 +103,8 @@ namespace ImgAnalyzer
             return pixelData;
         }
 
+        //public ushort 
+
         public double[] GetLineDouble(int index)
         {
             SelectLine(index);

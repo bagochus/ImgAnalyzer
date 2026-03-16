@@ -28,6 +28,27 @@ namespace ImgAnalyzer.ImageView
             blu_red.AddColor(Color.Red, 1);
             Schemes.Add(blu_red);
 
+            ColorScheme blu_greeen_red = new ColorScheme();
+            blu_greeen_red.Name = "Blue-Green-Red";
+            blu_greeen_red.AddColor(Color.Blue, 0);
+            blu_greeen_red.AddColor(Color.Green, 0.5);
+            blu_greeen_red.AddColor(Color.Red, 1);
+            Schemes.Add(blu_greeen_red);
+
+
+            ColorScheme mashup = new ColorScheme();
+            mashup.Name = "Mashup";
+            mashup.AddColor(Color.Gray, 0);
+            mashup.AddColor(Color.Red, 0.1);
+            mashup.AddColor(Color.Blue, 0.2);
+            mashup.AddColor(Color.Green, 0.3);
+            mashup.AddColor(Color.Magenta, .4);
+            mashup.AddColor(Color.Yellow, .5);
+            mashup.AddColor(Color.Cyan, .6);
+            Schemes.Add(mashup);
+
+
+
             ColorScheme Heat = new ColorScheme();
             Heat.Name = "Heat";
             Heat.AddColor(Color.Black, 0);

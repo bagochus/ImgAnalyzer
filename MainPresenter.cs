@@ -140,7 +140,7 @@ namespace ImgAnalyzer
 
         public void OpenContainerBatchesForm()
         {
-            Form form_batches = Application.OpenForms["2D Container Batches"];
+            Form form_batches = Application.OpenForms["ContainerBatchesForm"];
 
             if (form_batches == null)
             {

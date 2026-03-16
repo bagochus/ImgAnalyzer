@@ -21,6 +21,7 @@ namespace ImgAnalyzer._2D
         Func<int, int, double> GetMaxData;
         Func<int, int, double> GetMinData;
 
+        public double top, bottom, range;
 
         public PhaseRange()
         {
@@ -65,9 +66,9 @@ namespace ImgAnalyzer._2D
                      ArrangeMaxValue(GetMinData(i, j));
                     ArrangeMinValue(GetMaxData(i, j));
                 }
-            double bottom = max_values[sortedArrayCount -1];
-            double top = min_values[sortedArrayCount -1];
-            double range = top- bottom;
+             bottom = max_values[sortedArrayCount -1];
+             top = min_values[sortedArrayCount -1];
+             range = top- bottom;
 
 
             for (int i = 0; i < width; i++)

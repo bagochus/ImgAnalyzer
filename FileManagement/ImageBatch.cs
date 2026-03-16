@@ -4,9 +4,11 @@ using NetTopologySuite.Triangulate.QuadEdge;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -75,7 +77,6 @@ namespace ImgAnalyzer
             try
             { _samplesPerPixel = tiff_img.GetField(TiffTag.SAMPLESPERPIXEL)[0].ToInt(); }
             catch { _samplesPerPixel = 1; }
-            
             int _bitsPerSample = tiff_img.GetField(TiffTag.BITSPERSAMPLE)[0].ToInt();
 
             return (width == _width) &&
@@ -87,8 +88,6 @@ namespace ImgAnalyzer
 
         private void CheckAllFiles()
         {
-
-
             for (int i = 0; i < filenames.Count; i++)
             {
                 if (!CheckParamenters(i))
@@ -101,12 +100,48 @@ namespace ImgAnalyzer
                         filenames.Remove(filenames[i]);
                     }
                 }
+            }
+        }
+
+        public void SweepDirectory(string dir, bool ignore8bit)
+        {
+            
+            string[] tiffFiles = Directory.GetFiles(dir, "*.tiff");
+            string[] allTiffFiles = Directory.GetFiles(dir, "*.tif");
+            string[] combinedFiles = Directory.GetFiles(dir, "*.tif*");
 
 
+            this.filenames = new List<string>(SortFilePaths(combinedFiles));
+            GetParameters(0);
 
+            if (bitsPerSample == 8 && ignore8bit)
+            { 
+                filenames = new List<string>();
+                return;
             }
 
+            for (int i = 0; i < filenames.Count; i++)
+                if (!CheckParamenters(i)) filenames.Remove(filenames[i]);
 
+        }
+
+        public static string[] SortFilePaths(string[] paths)
+        {
+            return paths
+                .OrderBy(p => Path.GetDirectoryName(p))  // группируем по папке
+                .ThenBy(p =>
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(p);
+                    var match = Regex.Match(fileName, @"^(.*?)(\d+)$");
+
+                    if (match.Success)
+                    {
+                        // Сначала текстовая часть, потом числовая
+                        return $"{match.Groups[1].Value}_{int.Parse(match.Groups[2].Value):D10}";
+                    }
+                    return fileName;
+                }, StringComparer.Ordinal)
+                .ToArray();
         }
 
         public I2DFileHandler Get2DFileHandler(int index)
@@ -128,6 +163,11 @@ namespace ImgAnalyzer
             return hndl;
 
         }
+
+
+
+
+
 
 
 

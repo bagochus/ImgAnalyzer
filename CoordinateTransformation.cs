@@ -501,6 +501,22 @@ namespace ImgAnalyzer
             }
         }
 
+        public bool Contains(I2DFileHandler fileHandler) 
+        {
+            Func<PointF, bool> contains = (p) =>
+            {
+                return p.X >= 0 & p.X <= fileHandler.Width & p.Y >= 0 & p.Y <= fileHandler.Height;
+            };
+
+            bool result = true;
+            result &= contains(point_BL);
+            result &= contains(point_TL);
+            result &= contains(point_BR);
+            result &= contains(point_TR);
+            return result;
+        }
+
+
 
     }
 }

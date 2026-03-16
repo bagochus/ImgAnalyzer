@@ -120,5 +120,27 @@ namespace ImgAnalyzer._2D
 
 
         }
+
+        public double GetInterpolatedValue(double x, double y)
+        {
+            if (x < 0 || x >= width - 1 || y < 0 || y >= height - 1)
+                throw new ArgumentOutOfRangeException();
+
+            int x1 = (int)Math.Floor(x);
+            int y1 = (int)Math.Floor(y);
+            int x2 = x1 + 1;
+            int y2 = y1 + 1;
+
+            double dx = x - x1;
+            double dy = y - y1;
+            double w1 = (1 - dx) * (1 - dy);
+            double w2 = dx * (1 - dy);
+            double w3 = (1 - dx) * dy;
+            double w4 = dx * dy;
+
+            return ddata(x1, y1) * w1 + ddata(x2, y1) * w2 + ddata(x1, y2) * w3 + ddata(x2, y2) * w4;
+        }
+
+
     }
 }

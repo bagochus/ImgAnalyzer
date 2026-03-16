@@ -33,6 +33,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
         //-------------local----------------------------------------------
 
         string error_message = "";
@@ -89,7 +92,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         private void GeneratePhaseImage(int n)
         {
-
+            /*
             int[,] dataA = ImageProcessor_2D.Index(imageSources[0] as ImageBatch, n);
             int[,] dataB = ImageProcessor_2D.Index(imageSources[1] as ImageBatch, n);
             int[,] dataC = ImageProcessor_2D.Index(imageSources[2] as ImageBatch, n);
@@ -99,9 +102,20 @@ namespace ImgAnalyzer._2D.GroupOperations
             double[,] ddataA = ImageProcessor_2D.FitData(dataA, ct1);
             double[,] ddataB = ImageProcessor_2D.FitData(dataB, ct2);
             double[,] ddataC = ImageProcessor_2D.FitData(dataC, ct3);
+            */
 
+            var ib0 = (imageSources[0] as ImageBatch);
+            var ib1 = (imageSources[1] as ImageBatch);
+            var ib2 = (imageSources[2] as ImageBatch);
 
-           
+            var hndl0 = (imageSources[0].Get2DFileHandler(n) as TiffImgFileHandler);
+            var hndl1 = (imageSources[1].Get2DFileHandler(n) as TiffImgFileHandler);
+            var hndl2 = (imageSources[2].Get2DFileHandler(n) as TiffImgFileHandler);
+
+            double[,] ddataA = ImageProcessor_2D.FitImage2(hndl0, ib0.coordinateTransformation);
+            double[,] ddataB = ImageProcessor_2D.FitImage2(hndl1, ib1.coordinateTransformation);
+            double[,] ddataC = ImageProcessor_2D.FitImage2(hndl2, ib2.coordinateTransformation);
+
             for (int i = 0; i < ddataA.GetLength(0); i++)
                 for (int j = 0; j < ddataA.GetLength(1); j++)
                 {

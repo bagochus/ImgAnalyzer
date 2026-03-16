@@ -82,7 +82,7 @@ namespace ImgAnalyzer.DialogForms
 
         private void ConstructForm(IGroupOperation op)
         {
-
+            
             
 
             label_description.Text = op.Description;
@@ -226,7 +226,7 @@ namespace ImgAnalyzer.DialogForms
         {
             if (ReadForm(operation))
             {
-                DataManager_2D.tasks.Add( operation.Execute());
+                await operation.Execute();
                 this.Close();
 
             }

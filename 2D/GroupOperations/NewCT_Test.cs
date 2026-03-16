@@ -9,16 +9,15 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class PhaseMeasurmentGroup3 : IGroupOperation
+    public class NewCT_test : IGroupOperation
     {
 
         //-------------interface properties-----------------------------
-        public string Description { get { return "Вычисляет фазу на основе данных с 3 камер, без использования\n" +
-                " нормировочных карт по формуле atan(k1I1+k2I2+k3I3/m1I1+m2I2+m3I3)\n"; } }
+        public string Description { get => "Test";  }
 
         public double[] SingleValueParameters {  get; set; }
 
-        string[] singeValueNames = new string[] { "k1", "k2", "k3", "m1", "m2", "m3" };
+        string[] singeValueNames = new string[] { "n" };
         public string[] SingleValueNames { get { return singeValueNames; } }
 
         public IContainer_2D[] ContainerParameters { get; set; }
@@ -27,10 +26,14 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public IImageSource[] imageSources { get; set; }
 
-        private string[] imgSourceNames = { "A(sin)","B(cos)","C(-cos)" };
+        private string[] imgSourceNames = { "A"};
         public string[] imageSourceNames { get { return imgSourceNames; } }
 
         public bool UseTransformation { get; set; }
+
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
 
         //-------------local----------------------------------------------
 
@@ -43,85 +46,35 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public async Task Execute()
         {
-            if (!Check())
-            {
-                MessageBox.Show(error_message); return;
-            }
 
 
-            k1 = SingleValueParameters[0];
-            k2 = SingleValueParameters[1];
-            k3 = SingleValueParameters[2];
-            m1 = SingleValueParameters[3];
-            m2 = SingleValueParameters[4];
-            m3 = SingleValueParameters[5];
+
+            int n = (int)SingleValueParameters[0];
 
 
-            ContainerBatch batch = new ContainerBatch();
-            batch.Name = "PhaseNormless";
-            ImageManager.containerBatches.Add(batch);
+
+            var ib0 = (imageSources[0] as ImageBatch);
+
+
+            var hndl0 = (imageSources[0].Get2DFileHandler(n) as TiffImgFileHandler);
+
+
+            double[,] ddataA = ImageProcessor_2D.FitImage2(hndl0, ib0.coordinateTransformation);
+
+            DataManager_2D.containers.Add(new Container_2D_double(ddataA) {Name = "Test" });
             
-            DataManager_2D.workToBeDone += min_count;
-
-            string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
-
-
-
-
-            for (int i = 0; i < min_count; i++)
-            {
-
-                await Task.Run(() =>
-                {
-                    GeneratePhaseImage(i);
-                    Container_2D_double c = new Container_2D_double(phase);
-                    DataManager_2D.progress.Report(1);
-
-                    string filename = Path.Combine(foldername, i.ToString() + ".bin");
-                    c.SaveToFile(filename);
-                    batch.Filenames.Add(filename);
-
-                });
-            }
            
         }
 
 
-        private void GeneratePhaseImage(int n)
-        {
-
-            int[,] dataA = ImageProcessor_2D.Index(imageSources[0] as ImageBatch, n);
-            int[,] dataB = ImageProcessor_2D.Index(imageSources[1] as ImageBatch, n);
-            int[,] dataC = ImageProcessor_2D.Index(imageSources[2] as ImageBatch, n);
-            var ct1 = (imageSources[0] as ImageBatch).coordinateTransformation;
-            var ct2 = (imageSources[1] as ImageBatch).coordinateTransformation;
-            var ct3 = (imageSources[2] as ImageBatch).coordinateTransformation;
-            double[,] ddataA = ImageProcessor_2D.FitData(dataA, ct1);
-            double[,] ddataB = ImageProcessor_2D.FitData(dataB, ct2);
-            double[,] ddataC = ImageProcessor_2D.FitData(dataC, ct3);
-
-
-           
-            for (int i = 0; i < ddataA.GetLength(0); i++)
-                for (int j = 0; j < ddataA.GetLength(1); j++)
-                {
-
-                    double a = ddataA[i, j];
-                    double b = ddataB[i, j];
-                    double c = ddataC[i, j];
-
-                    double sin_value = k1*a + k2*b + k3*c;
-                    double cos_value = m1*a + m2*b + m3*c;
-
-                    phase[i, j] = Math.Atan2(sin_value,cos_value) / Math.PI * 180 + 180;
-
-                }
-        }
+       
 
 
 
         private bool Check()
         {
+
+
             if (!UseTransformation)
             {
                 error_message = "Необходимо преорбразование координат";

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,40 +9,43 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class PhaseMeasurmentGroup2 : IGroupOperation
+    public class Phase3_Single_old : IGroupOperation
     {
 
         //-------------interface properties-----------------------------
-        public string Description { get { return "Вычисляет фазу на основании 2 каналов.\n Минимум интенсивности - const, k1= А1/А2 = const"; } }
+        public string Description { get { return "Вычисляет фазу на основе данных с 3 камер, без использования\n" +
+                " нормировочных карт по формуле atan(k1I1+k2I2+k3I3/m1I1+m2I2+m3I3)\n" +
+                "Отладочная функция, вычисляет фунцию для одного кадра и выводит промежуточные данные"; } }
 
         public double[] SingleValueParameters {  get; set; }
 
-        private string[] singleValueNames = { "k1" ,"A_min", "B_min" };
-        public string[] SingleValueNames { get { return singleValueNames; } }
+        string[] singeValueNames = new string[] { "k1", "k2", "k3", "m1", "m2", "m3","n" };
+        public string[] SingleValueNames { get { return singeValueNames; } }
 
         public IContainer_2D[] ContainerParameters { get; set; }
 
-        //private string[] containerNames = { "A_min", "A_max", "B_min", "B_max", "C_min", "C_max" };
         public string[] ContainerNames { get { return new string[0]; } }
 
-        public IImageSource[] imageSources {  get; set; }
+        public IImageSource[] imageSources { get; set; }
 
         private string[] imgSourceNames = { "A(sin)","B(cos)","C(-cos)" };
         public string[] imageSourceNames { get { return imgSourceNames; } }
 
         public bool UseTransformation { get; set; }
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
 
         //-------------local----------------------------------------------
 
         string error_message = "";
         int min_count = Int32.MaxValue;
+        double[,] phase = null;
+        double[,] numerator = null;
+        double[,] denominator = null;
 
-        private double a_min;
-        private double b_min;
-        private double k1;
-
-
-
+        double k1, k2, k3, m1, m2, m3;
+        int n;
 
         public async Task Execute()
         {
@@ -48,48 +53,44 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 MessageBox.Show(error_message); return;
             }
+
+
             k1 = SingleValueParameters[0];
-
-            a_min= SingleValueParameters[1];
-            b_min= SingleValueParameters[2];
-
-
-
-
-            ContainerBatch batch = new ContainerBatch();
-            batch.Name = "Phase";
-            ImageManager.containerBatches.Add(batch);
-            DataManager_2D.workToBeDone += min_count;
-
-            for (int i = 0; i < min_count; i++)
-            {
-
-                await Task.Run(() =>
-                {
-                    double[,] phaseData = GeneratePhaseImage(i);
-                    Container_2D_double c = new Container_2D_double(phaseData);
-                    batch.AddContainer(c);
-                    DataManager_2D.progress.Report(1);
-
-                });
+            k2 = SingleValueParameters[1];
+            k3 = SingleValueParameters[2];
+            m1 = SingleValueParameters[3];
+            m2 = SingleValueParameters[4];
+            m3 = SingleValueParameters[5];
+            n = (int)SingleValueParameters[6];
 
 
-            }
-            
+            //ContainerBatch batch = new ContainerBatch();
+            //batch.Name = "PhaseNormless";
+            //ImageManager.containerBatches.Add(batch);
+
+            //DataManager_2D.workToBeDone += min_count;
+
+            //string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
 
 
+            GeneratePhaseImage(n);
+            Container_2D_double ph = new Container_2D_double(phase);
+            ph.Name = "Phase" + n.ToString();
+            Container_2D_double num = new Container_2D_double(numerator);
+            num.Name = "Numerator" + n.ToString();
+            Container_2D_double denom = new Container_2D_double(denominator);
+            denom.Name = "Denominator" + n.ToString();
+            DataManager_2D.containers.Add(ph);
+            DataManager_2D.containers.Add(num);
+            DataManager_2D.containers.Add(denom);
 
 
-
-
-
-
-
-
+           
+           
         }
 
 
-        private double[,] GeneratePhaseImage(int n)
+        private void GeneratePhaseImage(int n)
         {
 
             int[,] dataA = ImageProcessor_2D.Index(imageSources[0] as ImageBatch, n);
@@ -102,34 +103,38 @@ namespace ImgAnalyzer._2D.GroupOperations
             double[,] ddataB = ImageProcessor_2D.FitData(dataB, ct2);
             double[,] ddataC = ImageProcessor_2D.FitData(dataC, ct3);
 
-            double[,] phase = new double[ddataA.GetLength(0), ddataA.GetLength(1)];
 
+           
             for (int i = 0; i < ddataA.GetLength(0); i++)
                 for (int j = 0; j < ddataA.GetLength(1); j++)
                 {
 
-
                     double a = ddataA[i, j];
                     double b = ddataB[i, j];
-                    double c = ddataB[i, j];
+                    double c = ddataC[i, j];
 
+                    double sin_value = k1*a + k2*b + k3*c;
+                    double cos_value = m1*a + m2*b + m3*c;
 
-
-                    phase[i, j] = Math.Atan(((a-a_min)/(b_min))*k1) / Math.PI * 180;
+                    numerator[i, j] = sin_value;
+                    denominator[i, j] = cos_value;
+                    phase[i, j] = Math.Atan2(sin_value,cos_value) / Math.PI * 180 + 180;
 
 
                 }
-            return phase;
-
-
-
-
         }
 
 
 
         private bool Check()
         {
+            if (!UseTransformation)
+            {
+                //error_message = "Необходимо преорбразование координат";
+                UseTransformation = true;
+
+            }
+
             bool result = true;
             result &= (imageSources[0] is ImageBatch);
             result &= (imageSources[1] is ImageBatch);
@@ -163,12 +168,12 @@ namespace ImgAnalyzer._2D.GroupOperations
             var ct3 = (imageSources[2] as ImageBatch).coordinateTransformation;
             result = (ct1.frame_width == ct2.frame_width);
             result &= (ct1.frame_width == ct3.frame_width);
-            result &= (ct1.frame_width == ContainerParameters[0].Width);
             result &= (ct1.frame_height == ct2.frame_height);
             result &= (ct1.frame_height == ct3.frame_height);
-            
 
-
+            phase = new double[ct1.frame_width, ct1.frame_height];
+            numerator = new double[ct1.frame_width, ct1.frame_height];
+            denominator = new double[ct1.frame_width, ct1.frame_height];
 
             if (!result)
             {
@@ -176,8 +181,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 return false;
 
             }
-            
-
+           
 
             return result;
 

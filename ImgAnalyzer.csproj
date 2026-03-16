@@ -187,7 +187,12 @@
   <ItemGroup>
     <Compile Include="1D\DataManager_1D.cs" />
     <Compile Include="2D\Calculations\Acos.cs" />
+    <Compile Include="2D\Calculations\FindSqr.cs" />
+    <Compile Include="2D\Calculations\PeakFilter.cs" />
     <Compile Include="2D\Calculations\PhaseRange.cs" />
+    <Compile Include="2D\Calculations\SqareFitter.cs" />
+    <Compile Include="2D\Calculations\StitchSpatialy3.cs" />
+    <Compile Include="2D\Calculations\StitchSpatialy2.cs" />
     <Compile Include="2D\Calculations\StitchSpatialyFilter.cs" />
     <Compile Include="2D\Calculations\Substract.cs" />
     <Compile Include="2D\Calculations\PlotXY.cs" />
@@ -225,11 +230,12 @@
     <Compile Include="2D\GroupOperations\LUT_Mask.cs" />
     <Compile Include="2D\GroupOperations\LUT.cs" />
     <Compile Include="2D\GroupOperations\Measurment2D.cs" />
+    <Compile Include="2D\GroupOperations\Phase3_single_old.cs" />
     <Compile Include="2D\GroupOperations\Phase3_single.cs" />
-    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup3.cs" />
-    <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
-    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup2.cs" />
+    <Compile Include="2D\GroupOperations\NewCT_Test.cs" />
+    <Compile Include="2D\GroupOperations\PhaseMeasurmentGroupOld.cs" />
     <Compile Include="2D\GroupOperations\PhaseMeasurmentGroup.cs" />
+    <Compile Include="2D\GroupOperations\Scaling_Group.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\FitCoordinateSystem.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Index.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Full_3P.cs" />
@@ -246,15 +252,24 @@
     <Compile Include="2D\GroupOperations\SinglePixelOperations\Max.cs" />
     <Compile Include="2D\GroupOperations\SinglePixelOperations\SinglePixelOperation.cs" />
     <Compile Include="2D\GroupOperations\StitchFramewise.cs" />
+    <Compile Include="2D\Math\GeometricLineFitter.cs" />
+    <Compile Include="2D\Math\Line_2D.cs" />
     <Compile Include="2D\PhaseMeasurer.cs" />
     <Compile Include="CoordinateTransformation.cs" />
     <Compile Include="DB_Manager.cs" />
+    <Compile Include="DialogForms\AddBatchToDB.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\AddBatchToDB.Designer.cs">
+      <DependentUpon>AddBatchToDB.cs</DependentUpon>
+    </Compile>
     <Compile Include="DialogForms\AddMeasurment_2D.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="DialogForms\AddMeasurment_2D.Designer.cs">
       <DependentUpon>AddMeasurment_2D.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileManagement\BatchDatatypes.cs" />
     <Compile Include="DialogForms\ChanellSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -272,6 +287,18 @@
     </Compile>
     <Compile Include="DialogForms\ContainerBatchesForm.Designer.cs">
       <DependentUpon>ContainerBatchesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\SettigRequestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\SettigRequestForm.Designer.cs">
+      <DependentUpon>SettigRequestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DialogForms\FormSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogForms\FormSettings.Designer.cs">
+      <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="DialogForms\Form_GroupOperations.cs">
       <SubType>Form</SubType>
@@ -328,6 +355,8 @@
     <Compile Include="DialogForms\SourceSelectForm.Designer.cs">
       <DependentUpon>SourceSelectForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileManagement\BatchHeader.cs" />
+    <Compile Include="FileManagement\BatchMetadata.cs" />
     <Compile Include="FileManagement\ContainerBatch.cs" />
     <Compile Include="FileManagement\ContainerFileHandler.cs" />
     <Compile Include="FileManagement\FileManagement.cs" />
@@ -358,6 +387,13 @@
     <Compile Include="ImageView\ImgViewSettingsForm.Designer.cs">
       <DependentUpon>ImgViewSettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Macros\AutoPhase.cs" />
+    <Compile Include="Macros\LogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Macros\LogForm.Designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -375,6 +411,12 @@
     <Compile Include="MeasurmentTypes\Measurment.cs" />
     <Compile Include="MeasurmentTypes\PointMeasurmentCT.cs" />
     <Compile Include="MeasurmentTypes\PolygonMeasurmentCT.cs" />
+    <Compile Include="NewMainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewMainForm.Designer.cs">
+      <DependentUpon>NewMainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlotForm_scatter.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -394,9 +436,15 @@
     <Compile Include="MeasurmentTypes\PolygonMeasurment.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SamplesDB.cs" />
+    <Compile Include="Settings\SettingDefinition.cs" />
+    <Compile Include="Settings\SettingsManager.cs" />
     <Compile Include="StaticFunctions.cs" />
     <EmbeddedResource Include="2D\Form_2D.resx">
       <DependentUpon>Form_2D.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\AddBatchToDB.resx">
+      <DependentUpon>AddBatchToDB.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\AddMeasurment_2D.resx">
       <DependentUpon>AddMeasurment_2D.cs</DependentUpon>
@@ -434,6 +482,9 @@
     <EmbeddedResource Include="DialogForms\ProfilesForm.resx">
       <DependentUpon>ProfilesForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\SettigRequestForm.resx">
+      <DependentUpon>SettigRequestForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\SourceSelectForm.resx">
       <DependentUpon>SourceSelectForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -449,8 +500,14 @@
     <EmbeddedResource Include="ImageView\ImgViewSettingsForm.resx">
       <DependentUpon>ImgViewSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Macros\LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewMainForm.resx">
+      <DependentUpon>NewMainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PlotForm_scatter.resx">
       <DependentUpon>PlotForm_scatter.cs</DependentUpon>

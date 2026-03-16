@@ -1,9 +1,11 @@
 ﻿using ScottPlot.Colormaps;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -38,6 +40,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
+
         //-------------local----------------------------------------------
 
         string error_message = "";
@@ -51,6 +57,23 @@ namespace ImgAnalyzer._2D.GroupOperations
         Func<int, int, double> getDataPrev;
         Func<int, int, double> getDataNext;
 
+        private int lowerPeriod = 0;
+
+        //---------------output variables for internal call---------------
+
+        public int total_containers = 0;
+        public int processed_containers = 0;
+        public event Action containerPorcessed = () => { };
+        public CancellationToken _cancellationToken;
+
+        public ContainerBatch batch;
+
+        public int id;
+
+        public bool internal_call = false;
+
+
+
         public async Task Execute()
         {
             if (!Check())
@@ -62,21 +85,46 @@ namespace ImgAnalyzer._2D.GroupOperations
             I2DFileHandler hndlPrev = null, hndlNext = null;
 
 
-            ContainerBatch batch = new ContainerBatch();
+            batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
-            ImageManager.containerBatches.Add(batch);
+            batch.Batchype = BatchDatatypes.PhaseUnwrapped;
+
+            batch.comment = "Развернутая (сшитая) фаза\n";
+            batch.comment = $"Cоздано {DateTime.Now}\n";
+            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
+            if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
+
+            id = SamplesDB.AddContainerBatch(batch, batch.Batchype, SampleId, batch.comment);
+
+            //ImageManager.containerBatches.Add(batch);
+
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
+            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder });
+            string root_folder = containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
+
+            //string filename = Path.Combine(foldername, "0.bin");
+            //ContainerParameters[0].SaveToFile(filename);
+            batch.AddContainer(ContainerParameters[0], true);
+            //batch.Filenames.Add(filename);
 
 
-            string filename = Path.Combine(foldername, "0.bin");
-            ContainerParameters[0].SaveToFile(filename);
-            batch.Filenames.Add(filename);
+            total_containers = imageSources[0].Count;
+
 
             for (int i = 1; i < imageSources[0].Count; i++)
             {
+
+                if (_cancellationToken.IsCancellationRequested)
+                {                    
+                    SamplesDB.AppendBatchCommentNewLine(id, 
+                        "Расчет был прерван до завершения!!!\n"+
+                        "Данные могут быть некорректны!!!");
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
 
                 if (i == 1)
                 {
@@ -84,7 +132,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 }
                 else
                 {
-                    getDataPrev = (int x, int y) => phase_prev[x,y];
+                    getDataPrev = (int x, int y) => phase_prev[x, y];
                 }
                 hndlNext = imageSources[0].Get2DFileHandler(i);
                 getDataNext = hndlNext.GetPixelValue;
@@ -95,24 +143,34 @@ namespace ImgAnalyzer._2D.GroupOperations
                     Container_2D_double c = new Container_2D_double(phase);
                     DataManager_2D.progress.Report(1);
 
-                    filename = Path.Combine(foldername, i.ToString() + ".bin");
-                    c.SaveToFile(filename);
-                    batch.Filenames.Add(filename);
+                    //filename = Path.Combine(foldername, i.ToString() + ".bin");
+                    //c.SaveToFile(filename);
+                    batch.AddContainer(c);
 
                 //});
 
+                SamplesDB.UpdateContainerBatch(id, batch);
+
+
                 //hndlPrev = hndlNext;
                 hndlNext.Dispose();
-
+                processed_containers++;
+                containerPorcessed();
 
             }
+
+            CorrectPhaseShift(batch);
 
         }
 
         private int FindAddition(double x1, double x2)
         {
             if (x1 < 0 || x1 > top || x2 < 0 || x2 > top)
+            {
+                Debugger.Break();
                 throw new ArgumentException("Phase out of range");
+            }    
+
 
             if (x1 < thr && x2 > (top - thr)) return -1;
             else if (x2 < thr && (x1 > (top - thr))) return 1;
@@ -126,29 +184,60 @@ namespace ImgAnalyzer._2D.GroupOperations
                 for (int j = 0; j < height; j++)
                 {
                     double phaseCalculatedPrev = getDataPrev(i,j);
-                    double phaseMeasuredPrev = phaseCalculatedPrev % top;
-                    int periodsPrev = (int)(phaseCalculatedPrev / top);
+                    double phaseMeasuredPrev = 0;
+
+                    if (phaseCalculatedPrev < 0)
+                    {
+                        phaseMeasuredPrev += (int)Math.Ceiling(-phaseCalculatedPrev / top) * top;
+                    }
+                    else 
+                    {
+                        phaseMeasuredPrev = phaseCalculatedPrev % top;
+                    }
+                    int periodPrev = (int)Math.Floor(phaseCalculatedPrev / top);
+                    if (periodPrev < lowerPeriod) lowerPeriod = periodPrev;
 
                     double phaseMeasuredNext = getDataNext(i, j);
 
                     int addition = FindAddition(phaseMeasuredPrev, phaseMeasuredNext);
 
-                    phase_prev[i, j] = phase[i, j] = phaseMeasuredNext + top * (addition + periodsPrev);
+                    phase_prev[i, j] = phase[i, j] = phaseMeasuredNext + top * (addition + periodPrev);
+
                     
                 }
+        }
+
+
+        private void CorrectPhaseShift(ContainerBatch batch)
+        {
+            processed_containers = 0;
+            for (int n = 0; n<batch.Count;n++)
+            {
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    //some comment actions
+                    _cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                ContainerFileHandler hndl = batch.Get2DFileHandler(n) as  ContainerFileHandler;
+                for (int i = 0; i< hndl.Width; i++) 
+                    for (int j = 0;j< hndl.Height; j++)
+                    {
+                        hndl.SetPixel(i,j, hndl.GetPixelValue(i,j) - top * lowerPeriod);
+                    }
+                hndl.Save();
+                hndl.Dispose();
+                processed_containers++;
+                containerPorcessed();
+            }
         }
 
 
 
         private bool Check()
         {
-           
 
-           
-
-            
-
-            
             width = imageSources[0].Width;
             height = imageSources[0].Height;
 

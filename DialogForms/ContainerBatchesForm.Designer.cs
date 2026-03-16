@@ -33,7 +33,12 @@
             this.button_delete = new System.Windows.Forms.Button();
             this.button_add = new System.Windows.Forms.Button();
             this.button_extract = new System.Windows.Forms.Button();
+            this.button_select = new System.Windows.Forms.Button();
+            this.groupBox_showmode = new System.Windows.Forms.GroupBox();
+            this.radioButton_showRelevant = new System.Windows.Forms.RadioButton();
+            this.radioButton_shoall = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.groupBox_showmode.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridView1
@@ -86,11 +91,59 @@
             this.button_extract.UseVisualStyleBackColor = true;
             this.button_extract.Click += new System.EventHandler(this.button_extract_Click);
             // 
+            // button_select
+            // 
+            this.button_select.Location = new System.Drawing.Point(643, 335);
+            this.button_select.Name = "button_select";
+            this.button_select.Size = new System.Drawing.Size(145, 23);
+            this.button_select.TabIndex = 5;
+            this.button_select.Text = "Выбрать";
+            this.button_select.UseVisualStyleBackColor = true;
+            this.button_select.Click += new System.EventHandler(this.button_select_Click);
+            // 
+            // groupBox_showmode
+            // 
+            this.groupBox_showmode.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.groupBox_showmode.Controls.Add(this.radioButton_showRelevant);
+            this.groupBox_showmode.Controls.Add(this.radioButton_shoall);
+            this.groupBox_showmode.Location = new System.Drawing.Point(643, 364);
+            this.groupBox_showmode.Name = "groupBox_showmode";
+            this.groupBox_showmode.Size = new System.Drawing.Size(145, 74);
+            this.groupBox_showmode.TabIndex = 6;
+            this.groupBox_showmode.TabStop = false;
+            this.groupBox_showmode.Text = "Отображение";
+            // 
+            // radioButton_showRelevant
+            // 
+            this.radioButton_showRelevant.AutoSize = true;
+            this.radioButton_showRelevant.Checked = true;
+            this.radioButton_showRelevant.Location = new System.Drawing.Point(6, 39);
+            this.radioButton_showRelevant.Name = "radioButton_showRelevant";
+            this.radioButton_showRelevant.Size = new System.Drawing.Size(89, 17);
+            this.radioButton_showRelevant.TabIndex = 1;
+            this.radioButton_showRelevant.TabStop = true;
+            this.radioButton_showRelevant.Text = "Подходящие";
+            this.radioButton_showRelevant.UseVisualStyleBackColor = true;
+            this.radioButton_showRelevant.CheckedChanged += new System.EventHandler(this.radioButton_showRelevant_CheckedChanged);
+            // 
+            // radioButton_shoall
+            // 
+            this.radioButton_shoall.AutoSize = true;
+            this.radioButton_shoall.Location = new System.Drawing.Point(6, 17);
+            this.radioButton_shoall.Name = "radioButton_shoall";
+            this.radioButton_shoall.Size = new System.Drawing.Size(95, 17);
+            this.radioButton_shoall.TabIndex = 0;
+            this.radioButton_shoall.Text = "Показать все";
+            this.radioButton_shoall.UseVisualStyleBackColor = true;
+            this.radioButton_shoall.CheckedChanged += new System.EventHandler(this.radioButton_shoall_CheckedChanged);
+            // 
             // ContainerBatchesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.groupBox_showmode);
+            this.Controls.Add(this.button_select);
             this.Controls.Add(this.button_extract);
             this.Controls.Add(this.button_add);
             this.Controls.Add(this.button_delete);
@@ -99,6 +152,8 @@
             this.Name = "ContainerBatchesForm";
             this.Text = "2D Container Batches";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.groupBox_showmode.ResumeLayout(false);
+            this.groupBox_showmode.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -110,5 +165,9 @@
         private System.Windows.Forms.Button button_delete;
         private System.Windows.Forms.Button button_add;
         private System.Windows.Forms.Button button_extract;
+        private System.Windows.Forms.Button button_select;
+        private System.Windows.Forms.GroupBox groupBox_showmode;
+        private System.Windows.Forms.RadioButton radioButton_showRelevant;
+        private System.Windows.Forms.RadioButton radioButton_shoall;
     }
 }

@@ -21,5 +21,9 @@ namespace ImgAnalyzer._2D.GroupOperations
         bool UseTransformation { get; set; }
 
 
+        string UserComment { get; set; }
+
+        int SampleId { get; set; }
+
     }
 }
