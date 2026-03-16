@@ -245,7 +245,7 @@ namespace ImgAnalyzer
             {
                 connection.Open();
 
-                string _name = Name;    
+                string _name = Name;
                 if (Name == "")
                 {
                     int prev_id = 0;
@@ -254,8 +254,8 @@ namespace ImgAnalyzer
                     {
                         prev_id = Convert.ToInt32(command.ExecuteScalar());
                     }
-                    _name = batchType + (prev_id+1).ToString();
-                }    
+                    _name = batchType + (prev_id + 1).ToString();
+                }
 
                 string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames)" +
                     " VALUES (@sampleId, @Name, @batchType, @comment, @filenames); SELECT last_insert_rowid();";
@@ -411,12 +411,12 @@ namespace ImgAnalyzer
         public static ContainerBatch GetBatch(int id)
         {
             var batch = new ContainerBatch();
-            
+
             using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
-                string query = "SELECT Name, Comment, Filenames FROM ContainerBatches WHERE Id = @Id";
+                string query = "SELECT Id, Name, Comment, Filenames FROM ContainerBatches WHERE Id = @Id";
                 using (var command = new SQLiteCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);
@@ -425,12 +425,14 @@ namespace ImgAnalyzer
                     {
                         while (reader.Read())
                         {
-                            batch.Name = reader.IsDBNull(0) ? "" : reader.GetString(0);
-                            string comment = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                            string filenamesJson = reader.GetString(2);
+                            batch.id = reader.GetInt32(0);
+                            batch.Name = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                            string comment = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                            string filenamesJson = reader.GetString(3);
 
                             var filenames = JsonSerializer.Deserialize<List<string>>(filenamesJson) ?? new List<string>();
                             batch.LocateImageBatch(filenames.ToArray());
+                            batch.comment = comment;
 
                         }
                     }
@@ -463,7 +465,7 @@ namespace ImgAnalyzer
                             int id = reader.GetInt32(0);
                             string name = reader.GetString(1);
                             int sample_id = reader.GetInt32(2);
-                            string batchType = reader.GetString(3); 
+                            string batchType = reader.GetString(3);
 
 
                             int width = reader.GetInt32(4);
@@ -599,7 +601,25 @@ namespace ImgAnalyzer
 
 
 
-    }
+        public static bool UpdateBatchComment(int id, string comment)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
 
+                string query = "UPDATE ContainerBatches SET Comment = @comment WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    command.Parameters.AddWithValue("@comment", comment ?? "");
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+
+
+        }
+    }
 
 }

@@ -28,6 +28,12 @@ namespace ImgAnalyzer
         public int Height { get { return height; } }
         public int Count {  get { return Filenames.Count; } }
 
+        public string sample = "";
+        public string Batchype = "";
+        public string comment = "";
+        public int id = -1;
+
+
         public EventHandler DataChanged;
 
         public CoordinateTransformation coordinateTransformation { get; set; }
@@ -71,7 +77,6 @@ namespace ImgAnalyzer
 
         private bool CheckParamenters(string filename)
         {
-
 
             int _width;
             int _height;
@@ -173,13 +178,19 @@ namespace ImgAnalyzer
             return newPath;
         }
 
+        public void UpdateComment(string comment)
+        {
+            this.comment = comment;
+            if (id >= 0) SamplesDB.UpdateBatchComment(id, comment);
+        }
+
 
         public BatchHeader GetHeader()
         { 
             BatchHeader result = new BatchHeader(); 
             result.Name = Name;
-            result.Type = BatchDatatypes.Unknown;
-            result.Sample = "";
+            result.Type = Batchype;
+            result.Sample = sample;
             result.Width = Width;
             result.Height = Height;
             result.Count = Count;

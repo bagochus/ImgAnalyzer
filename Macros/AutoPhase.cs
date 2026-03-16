@@ -336,6 +336,15 @@ namespace ImgAnalyzer.Macros
 
         private async Task CalculatePhaseProfiles()
         {
+
+            /*
+             sample id = ....
+            input comment = ....
+
+             
+             
+             */
+
             PhaseMeasurmentGroup pmg = new PhaseMeasurmentGroup();
             pmg.SingleValueParameters = new double[] { k1, k2, k3, m1, m2, m3 };
             pmg.imageSources = new IImageSource[]
@@ -349,6 +358,10 @@ namespace ImgAnalyzer.Macros
             {
                 replaceLastLine($"Расчет фазовых профилей...{pmg.processed_containers}/{pmg.total_containers}");
             };
+
+            
+
+
             await pmg.Execute();
 
             phaseBatch = pmg.batch;

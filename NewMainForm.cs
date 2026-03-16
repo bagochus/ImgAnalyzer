@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using ImgAnalyzer.DialogForms;
 using ImgAnalyzer.Macros;
 using Microsoft.VisualBasic;
@@ -38,10 +40,12 @@ namespace ImgAnalyzer
         private bool generateLUT = true;
         private bool generateLUT_prev_state = true;
 
+        string input_text = "";
+
         private ContainerBatch phaseBatch, stitchBatch;
 
-
-
+        private enum BatchCommentBinding { New, Phase, Stitch }
+        private BatchCommentBinding commentBinding = BatchCommentBinding.New;
 
 
 
@@ -141,6 +145,9 @@ namespace ImgAnalyzer
 
             UpdateSamplesList();
 
+            
+
+
         }
 
         private void Phase_click(object sender, EventArgs e)
@@ -192,6 +199,10 @@ namespace ImgAnalyzer
                     button_hintphase.Visible = true;
                     button_select_phase.Visible = false;
                     label_selected_phase.Visible = false;
+                    richTextBox_batch.Text = input_text;
+                    commentBinding = BatchCommentBinding.New;
+                    richTextBox_batch.Text = input_text;
+                    richTextBox_batch_Leave(this, EventArgs.Empty);
                     if (stitchMode == StitchMode.UseBatch)
                     {
                         stitchMode = StitchMode.Calculate;
@@ -203,7 +214,9 @@ namespace ImgAnalyzer
                     button_select_phase.Visible = true;
                     label_selected_phase.Visible = true;
                     button_hintphase.Visible = false;
-                    
+                    richTextBox_batch.Text = phaseBatch?.comment ?? string.Empty;
+                    richTextBox_batch_Leave(this, EventArgs.Empty);
+
                     if (stitchMode == StitchMode.UseBatch)
                     {
                         stitchMode = StitchMode.Calculate;
@@ -213,14 +226,6 @@ namespace ImgAnalyzer
             }
             
         }
-
-        private void UpdateCommentField()
-        { 
-            
-        
-        
-        }
-
 
         private void ChangeStitchMode()
         {
@@ -239,6 +244,8 @@ namespace ImgAnalyzer
                         else phaseCalculationMode = PhaseCalculationMode.UseBatch;
                         ChangeCalculationMode();
                     }
+
+
                     break;
                     case StitchMode.Calculate:
                     //
@@ -279,6 +286,10 @@ namespace ImgAnalyzer
                     //phase calc off
                     phaseCalculationMode = PhaseCalculationMode.None;
                     ChangeCalculationMode();
+                    commentBinding = BatchCommentBinding.Stitch;
+                    richTextBox_batch.Text = stitchBatch?.comment ?? string.Empty;
+                    richTextBox_batch_Leave(this, EventArgs.Empty);
+
                     radioButton_calc.Checked = false;
                     radioButton_batch_phase.Checked = false;
                     button_hintphase.Visible = false;
@@ -302,7 +313,6 @@ namespace ImgAnalyzer
                 richTextBox_sample.Text = comment;
                 isPlaceholderActive1 = false;
             }
-            
             else
             {
                 richTextBox_sample.Clear(); 
@@ -340,8 +350,17 @@ namespace ImgAnalyzer
             if (batch != null)
             { 
                 phaseBatch = batch;
-                label_selected_phase.Text = "Выбрано: " + phaseBatch.Name;    
-            
+                label_selected_phase.Text = "Выбрано: " + phaseBatch.Name;
+                commentBinding = BatchCommentBinding.Phase;
+
+                if (batch.comment.Length > 0)
+                {
+
+                    if (!isPlaceholderActive2) input_text = richTextBox_batch.Text;
+                    richTextBox_batch.ForeColor = Color.Black;
+                    richTextBox_batch.Text = batch.comment;
+                    isPlaceholderActive2 = false;
+                }
             }
         
         }
@@ -353,7 +372,16 @@ namespace ImgAnalyzer
             {
                 stitchBatch = batch;
                 label_selected_stitch.Text = "Выбрано: " + phaseBatch.Name;
-                batch.
+                commentBinding = BatchCommentBinding.Stitch;
+
+                if (batch.comment.Length > 0)
+                {
+                    
+                    if (!isPlaceholderActive2) input_text = richTextBox_batch.Text;
+                    richTextBox_batch.ForeColor = Color.Black;
+                    richTextBox_batch.Text = batch.comment;
+                    isPlaceholderActive2 = false;
+                }
             }
         }
 
@@ -485,6 +513,8 @@ namespace ImgAnalyzer
                 //richTextBox_sample.Font = new Font(richTextBox_sample.Font, FontStyle.Italic);
                 isPlaceholderActive2 = true;
             }
+            else if (commentBinding == BatchCommentBinding.Phase) phaseBatch?.UpdateComment(richTextBox_batch.Text);
+            else if (commentBinding == BatchCommentBinding.Stitch) stitchBatch?.UpdateComment(richTextBox_batch.Text);
         }
 
         private void richTextBox_batch_KeyDown(object sender, KeyEventArgs e)
