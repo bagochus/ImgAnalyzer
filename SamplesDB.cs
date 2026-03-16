@@ -312,6 +312,46 @@ namespace ImgAnalyzer
             }
         }
 
+        public static bool UpdateContainerBatch(int id, ContainerBatch batch)
+        {
+            if (batch == null) return false;
+
+            bool result = true;
+
+            try 
+            {
+                string filenamesJson = JsonSerializer.Serialize(batch.Filenames);
+
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string _name = batch.Name;
+
+
+                    string query = "UPDATE ContainerBatches" +
+                        " SET Name = @Name," +
+                        " Filenames = @filenames," +
+                        " Comment = @comment" +
+                        " Count = @Count" +
+                        " Width = @width" +
+                        " Height = @height" +
+                        " WHERE Id = @Id";
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Name", batch.Name);
+                        command.Parameters.AddWithValue("@comment", batch.comment ?? "");
+                        command.Parameters.AddWithValue("@filenames", filenamesJson);
+                        command.Parameters.AddWithValue("@width", batch.Width);
+                        command.Parameters.AddWithValue("@height", batch.Height);
+                        command.Parameters.AddWithValue("@Count", batch.Count);
+                    }
+                }
+            }
+            catch { result = false; }
+            return result;
+        }
+
+
 
         /// <summary>
         /// Получает имена файлов для указанной партии
@@ -372,40 +412,6 @@ namespace ImgAnalyzer
             return GetSampleId(name) != -1;
         }
 
-        /// <summary>
-        /// Получает информацию о всех партиях для указанного образца и типа
-        /// </summary>
-        public static List<Tuple<int, string, List<string>>> GetBatchesInfo(int sampleId, string batchType)
-        {
-            var batches = new List<Tuple<int, string, List<string>>>();
-
-            using (var connection = new SQLiteConnection(connectionString))
-            {
-                connection.Open();
-
-                string query = "SELECT Id, Comment, Filenames FROM ContainerBatches WHERE SampleId = @sampleId AND BatchType = @batchType ORDER BY Id";
-                using (var command = new SQLiteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@sampleId", sampleId);
-                    command.Parameters.AddWithValue("@batchType", batchType);
-
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int id = reader.GetInt32(0);
-                            string comment = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                            string filenamesJson = reader.GetString(2);
-                            var filenames = JsonSerializer.Deserialize<List<string>>(filenamesJson) ?? new List<string>();
-
-                            batches.Add(Tuple.Create(id, comment, filenames));
-                        }
-                    }
-                }
-            }
-
-            return batches;
-        }
 
 
         public static ContainerBatch GetBatch(int id)

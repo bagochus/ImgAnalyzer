@@ -40,6 +40,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
+
         //-------------local----------------------------------------------
 
         string error_message = "";
@@ -64,6 +68,12 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public ContainerBatch batch;
 
+        public int id;
+
+        public bool internal_call = false;
+
+
+
         public async Task Execute()
         {
             if (!Check())
@@ -77,12 +87,24 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
- 
-            ImageManager.containerBatches.Add(batch);
+            batch.Batchype = BatchDatatypes.PhaseUnwrapped;
+
+            batch.comment = "Развернутая (сшитая) фаза\n";
+            batch.comment = $"Cоздано {DateTime.Now}\n";
+            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
+            if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
+
+            id = SamplesDB.AddContainerBatch(batch, batch.Batchype, SampleId, batch.comment);
+
+            //ImageManager.containerBatches.Add(batch);
+
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
+            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder });
+            string root_folder = containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
 
             //string filename = Path.Combine(foldername, "0.bin");
             //ContainerParameters[0].SaveToFile(filename);
@@ -97,8 +119,10 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
 
                 if (_cancellationToken.IsCancellationRequested)
-                {
-                    //some comment actions
+                {                    
+                    SamplesDB.AppendBatchCommentNewLine(id, 
+                        "Расчет был прерван до завершения!!!\n"+
+                        "Данные могут быть некорректны!!!");
                     _cancellationToken.ThrowIfCancellationRequested();
                 }
 
@@ -124,6 +148,9 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.AddContainer(c);
 
                 //});
+
+                SamplesDB.UpdateContainerBatch(id, batch);
+
 
                 //hndlPrev = hndlNext;
                 hndlNext.Dispose();

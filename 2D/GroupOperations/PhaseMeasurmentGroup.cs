@@ -33,9 +33,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
-        string UserComment { get; set; }
+        public string UserComment { get; set; }
 
-        int SampleId { get; set; }
+        public int SampleId { get; set; }
 
         //-------------local----------------------------------------------
 
@@ -44,6 +44,8 @@ namespace ImgAnalyzer._2D.GroupOperations
         double[,] phase = null;
 
         double k1, k2, k3, m1, m2, m3;
+
+
 
         //---------------output variables for internal call---------------
 
@@ -54,10 +56,15 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public ContainerBatch batch;
 
+        public int id;
+
+        public bool internal_call = false;
+
         public async Task Execute()
         {
             if (!Check())
             {
+                if (internal_call) return;
                 MessageBox.Show(error_message); return;
             }
 
@@ -71,12 +78,23 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
             batch = new ContainerBatch();
-            batch.Name = "PhaseNormless";
-            ImageManager.containerBatches.Add(batch);
+            batch.Name = "Phase";
+            batch.Batchype = BatchDatatypes.PhaseWrapped;
+            
+            batch.comment = "Фаза, измеренная по алгоритму 1 (без нормировки, арктангенс)\n";
+            batch.comment = $"Cоздано {DateTime.Now}\n";
+            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
+            if (UserComment?.Length > 0)  batch.comment += UserComment+Environment.NewLine;
+            
+            id = SamplesDB.AddContainerBatch(batch,batch.Batchype,SampleId,batch.comment);
+            //ImageManager.containerBatches.Add(batch);
             
             DataManager_2D.workToBeDone += min_count;
 
-            string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
+            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder });
+            string root_folder = containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
 
 
 
@@ -86,9 +104,11 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                 if (_cancellationToken.IsCancellationRequested)
                 {
-                    //some comment actions
+                    SamplesDB.AppendBatchCommentNewLine(id,
+                        "Расчет был прерван до завершения!!!\n" +
+                        "Данные могут быть некорректны!!!");
                     _cancellationToken.ThrowIfCancellationRequested();
-                
+
                 }
                 // await Task.Run( () =>
                 // {
@@ -104,7 +124,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                 processed_containers++;
                 containerPorcessed();
-
+                SamplesDB.UpdateContainerBatch(id, batch);  
                 //batch.Filenames.Add(filename);
 
                 //});
@@ -215,21 +235,10 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 error_message = "Размеры активных областей не совпадают";
                 return false;
-
             }
            
 
             return result;
-
-
-
-
-
         }
-
-
-
-
-
     }
 }

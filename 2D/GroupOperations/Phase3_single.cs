@@ -33,6 +33,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
         //-------------local----------------------------------------------
 
         string error_message = "";

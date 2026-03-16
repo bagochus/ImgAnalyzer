@@ -25,7 +25,7 @@ namespace ImgAnalyzer._2D
     {
         
 
-        private int startx, starty;
+        //private int startx, starty;
         //private int width, height;
         private double thr;
         private double top = 360;
@@ -86,8 +86,7 @@ namespace ImgAnalyzer._2D
             shifts = new int[width, height];
             errData = new int[width, height];
             thr = SingleValueParameters[0];
-            //startx = (int)SingleValueParameters[1];
-            //starty = (int)SingleValueParameters[2];
+
             getData = (int x,int y) => ContainerParameters[0].ddata(x,y);
 
             cellMarks = new CellMark[width, height];
@@ -95,33 +94,27 @@ namespace ImgAnalyzer._2D
             cellIndicies = new int[width, height];  
 
 
-            if (starty < 0 || starty > height || startx < 0 || startx > width) 
-            {
-                throw new ArgumentException("Начальная точка вне диапазона");
-            }
-
             Actions();
-
 
             if (!save_debug_data) { return result; }
 
-            double[,] res2 = new double[width, height];
+            double[,] marks = new double[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    res2[i, j] = (int)cellMarks[i, j];
-            DataManager_2D.containers.Add(new Container_2D_double(res2) {Name = "marks" });
+                    marks[i, j] = (int)cellMarks[i, j];
+            DataManager_2D.containers.Add(new Container_2D_double(marks) {Name = "marks" });
 
-            double[,] res3 = new double[width, height];
+            double[,] errors = new double[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    res3[i, j] = (int)errData[i, j];
-            DataManager_2D.containers.Add(new Container_2D_double(res3) { Name = "errors" });
+                    errors[i, j] = (int)errData[i, j];
+            DataManager_2D.containers.Add(new Container_2D_double(errors) { Name = "errors" });
 
-            int[,] res4 = new int[width, height];
+            int[,] indicies = new int[width, height];
             for (int i = 0; i < width; i++)
                 for (int j = 0; j < height; j++)
-                    res4[i, j] = cellIndicies[i, j];
-            DataManager_2D.containers.Add(new Container_2D_int(res4) { Name = "inds" });
+                    indicies[i, j] = cellIndicies[i, j];
+            DataManager_2D.containers.Add(new Container_2D_int(indicies) { Name = "inds" });
 
 
             return result;
@@ -130,7 +123,7 @@ namespace ImgAnalyzer._2D
 
         protected virtual void Actions()
         {
-            CalcBorders();
+            CalcBorders();   
             Point point = new Point(0, 0);
 
             while (FindNewStartPoint(out point))

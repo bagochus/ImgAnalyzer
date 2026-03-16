@@ -30,6 +30,13 @@ namespace ImgAnalyzer.Macros
         public bool useAutoSquare = true;
         public bool requestParams = true;
 
+        internal ContainerBatch phaseBatch = null;
+        internal ContainerBatch stitchedPhaseBatch = null;
+        internal string comment = "";
+
+        internal int sample_id = -1;
+
+
         /*
         public bool useImages = true;
         public bool useAutoSquare = true;
@@ -41,9 +48,7 @@ namespace ImgAnalyzer.Macros
 
         
 
-        internal ContainerBatch phaseBatch = null;
-        internal ContainerBatch stitchedPhaseBatch = null;
-        internal string comment = "";
+
 
 
         private string folder1, folder2, folder3;
@@ -68,7 +73,7 @@ namespace ImgAnalyzer.Macros
 
         double range_percentile = 99.5;
 
-
+        
 
 
 
@@ -341,8 +346,6 @@ namespace ImgAnalyzer.Macros
              sample id = ....
             input comment = ....
 
-             
-             
              */
 
             PhaseMeasurmentGroup pmg = new PhaseMeasurmentGroup();
@@ -352,16 +355,19 @@ namespace ImgAnalyzer.Macros
                 ImageManager.Batch_B(),
                 ImageManager.Batch_C() };
             pmg.UseTransformation = true;
-            pmg._cancellationToken = cts.Token;
+
             writeLog("Расчет фазовых профилей...");
             pmg.containerPorcessed += () =>
             {
                 replaceLastLine($"Расчет фазовых профилей...{pmg.processed_containers}/{pmg.total_containers}");
             };
 
-            
-
-
+            //  internal call settings
+            pmg._cancellationToken = cts.Token;
+            pmg.SampleId = sample_id;
+            pmg.internal_call = true;
+            pmg.UserComment = comment;
+            //-----------------------------
             await pmg.Execute();
 
             phaseBatch = pmg.batch;
@@ -394,6 +400,14 @@ namespace ImgAnalyzer.Macros
             {
                 replaceLastLine($"Сшивка группы фазовых профилей...{sfw.processed_containers}/{sfw.total_containers}");
             };
+
+            //  internal call settings
+            sfw._cancellationToken = cts.Token;
+            sfw.SampleId = sample_id;
+            sfw.internal_call = true;
+            sfw.UserComment = comment;
+            //-----------------------------
+
 
             await sfw.Execute();
             stitchedPhaseBatch = sfw.batch;

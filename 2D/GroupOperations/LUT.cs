@@ -48,6 +48,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
+
         //-------------local----------------------------------------------
 
         string error_message = "";
@@ -89,6 +93,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
         public CancellationToken _cancellationToken;
+
+
+
 
 
         public async Task Execute()
@@ -139,7 +146,18 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            string foldername = FileManagement.CreateUniqueFolder("D:\\containers\\" + batch.Name);
+            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            var lutFolder = SettingDefinition.CreateGlobal("containerFolder", 
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop)+ "LUT\\"
+                , "Папка для LU таблиц");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder ,lutFolder});
+            string root_folder = containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
+
+
+            string lut_folder = lutFolder.GetValue<string>();
+
+
 
 
 

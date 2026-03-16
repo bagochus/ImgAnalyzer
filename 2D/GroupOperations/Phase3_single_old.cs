@@ -32,6 +32,9 @@ namespace ImgAnalyzer._2D.GroupOperations
         public string[] imageSourceNames { get { return imgSourceNames; } }
 
         public bool UseTransformation { get; set; }
+        public string UserComment { get; set; }
+
+        public int SampleId { get; set; }
 
         //-------------local----------------------------------------------
 

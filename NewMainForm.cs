@@ -416,6 +416,9 @@ namespace ImgAnalyzer
             autoPhase.useAutoSquare = useAutoSquare;
             autoPhase.generateLUT = generateLUT;
             autoPhase.requestParams = checkBox_req_params.Checked;
+            autoPhase.sample_id = selectedSampleId;
+
+
 
             if (phaseCalculationMode == PhaseCalculationMode.UseBatch) autoPhase.phaseBatch = phaseBatch;   
             if(stitchMode == StitchMode.UseBatch) autoPhase.stitchedPhaseBatch = stitchBatch;
