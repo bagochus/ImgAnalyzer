@@ -107,21 +107,149 @@ namespace ImgAnalyzer._2D.GroupOperations
         public CancellationToken _cancellationToken;
         public bool internalCall = true;
 
-
+        public ContainerBatch batch;
 
 
         public async Task Execute()
         {
-            if (!internalCall) DisplayMessage = (x) => { MessageBox.Show(x); };
-
+            Init();
 
             if (!Check())
             {
                 DisplayMessage(error_message); return;
             }
 
+            await Task.Run(() =>
+            {
+                SweepInputData();
+                PatchTable();
+                ManageFiles();
+            });
+        }
 
 
+        private void ManageFiles()
+        {
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                DisplayMessage("Операция прервана");
+                _cancellationToken.ThrowIfCancellationRequested();
+            }
+
+
+            batch = new ContainerBatch();
+            batch.Name = ImageManager.GetUniqueSourceName("LUT");
+            if (SamplesDB.ContainerBatchExists("LUT", SampleId))
+            {
+                int n = 0;
+                while (SamplesDB.ContainerBatchExists(batch.Name, SampleId))
+                {
+                    n++;
+                    batch.Name = $"LUT_{n}";
+                }
+            }
+            batch.Batchype = BatchDatatypes.LUT;
+            //ImageManager.containerBatches.Add(batch);
+
+
+            var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            var _lutFolder = SettingDefinition.CreateGlobal("containerFolder",
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\"
+                , "Папка для LU таблиц");
+            var _lutSummaryFile = SettingDefinition.CreateGlobal("lutSummaryFile",
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\_lut_summary.txt"
+                , "Статистика по LUT файлам");
+
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder, _lutFolder, _lutSummaryFile });
+
+            string containerFolder = _containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(_containerFolder + batch.Name + "_" + SamplesDB.GetSampleName(SampleId));
+            string lutFolder = _lutFolder.GetValue<string>();
+            string lutSummaryFile = _lutSummaryFile.GetValue<string>();
+
+
+
+            double[,] lut_data = new double[lut_width, lut_height];
+            for (int lut_layer = 0; lut_layer < lut_depth; lut_layer++)
+            {
+                for (int i = 0; i < lut_width; i++)
+                    for (int j = 0; j < lut_height; j++)
+                        lut_data[i, j] = lut[i, j, lut_layer];
+
+                Container_2D_double c = new Container_2D_double(lut_data);
+
+
+                string filename = Path.Combine(foldername, lut_layer.ToString() + ".bin");
+                c.SaveToFile(filename);
+                batch.Filenames.Add(filename);
+            }
+            WriteLUTFile(Path.Combine(foldername, "LUT.txt"));
+            
+
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                //some comment actions
+                _cancellationToken.ThrowIfCancellationRequested();
+            }
+
+
+            string report_msg1 = $"{dead_blocks}/{totalBlocks} битых секторов \n" +
+                    $"{patched_cells}/{totalCells} ячеек интерполировано\n" +
+                    //$"{trimmed_values}/{totalCells} значений было вне допустимого диапазона\n" +
+                    $"{clipped_under_blocks}/{totalBlocks} блоков клиппированы по мин. коду\n" +
+                    $"{clipped_over_blocks}/{totalBlocks} блоков клиппированы по макс. коду\n" +
+                    $"{banded_blocks}/{totalBlocks} блоков подвержены бандингу";
+
+            string report_msg2 = $"Расчетная 'черная' фаза (HDMI = 0) - {out0:f2} deg\n" +
+                                 $"Расчетная 'белая' фаза (HDMI = 255) - {out255:f2} deg\n" +
+                                 $"Диапазон  - {out255 - out0:f2} - deg \n";
+
+
+
+
+            DisplayMessage("LUT таблица сгенерирована\n" + report_msg1);
+
+            batch.comment = "Lookup таблица\n";
+            batch.comment = $"Cоздано {DateTime.Now}\n";
+            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
+            if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
+
+            if (imageSources[0] is ContainerBatch)
+                if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
+                    batch.comment += "Original phase data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
+            batch.comment += report_msg2 + report_msg1;
+
+
+
+            try
+            {
+
+                Directory.CreateDirectory(lutFolder);
+                string lut_filename = batch.Name + "_" + SamplesDB.GetSampleName(SampleId) + ".txt";
+                string comment_filename = batch.Name + "_" + SamplesDB.GetSampleName(SampleId) + ".txt";
+                WriteLUTFile(Path.Combine(lutFolder, lut_filename));
+                using (StreamWriter sw = new StreamWriter(lutSummaryFile, true))
+                {
+                    sw.WriteLine("=====================================");
+                    sw.WriteLine($"Filename : {lut_filename}");
+                    sw.WriteLine(batch.comment);
+                }
+                using (StreamWriter sw = new StreamWriter(Path.Combine(lutFolder, comment_filename)))
+                {
+                    sw.WriteLine("=====================================");
+                    sw.WriteLine($"Filename : {lut_filename}");
+                    sw.WriteLine(batch.comment);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                DisplayMessage("Не удалось сохранить LUT в общую папку: " + ex.Message);
+            }
+        }
+
+        private void Init()
+        {
             out0 = SingleValueParameters[0];
             out255 = SingleValueParameters[1];
             vstart = SingleValueParameters[2];
@@ -152,124 +280,15 @@ namespace ImgAnalyzer._2D.GroupOperations
                 GetMaskData = (x, y) => 1;
             }
 
-
-
-            ContainerBatch batch = new ContainerBatch();
-            batch.Name = ImageManager.GetUniqueSourceName("LUT");
-            batch.Batchype = BatchDatatypes.LUT;
-            //batch.Width = width;
-            //block_height = height;
-            ImageManager.containerBatches.Add(batch);
+            if (!internalCall) DisplayMessage = (x) => { MessageBox.Show(x); };
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers\\", "Папка для сохранения данных");
-            var _lutFolder = SettingDefinition.CreateGlobal("containerFolder", 
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop)+ "LUT\\"
-                , "Папка для LU таблиц");
-            var _lutSummaryFile = SettingDefinition.CreateGlobal("lutSummaryFile",
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\lut_summary.txt"
-                , "Статистика по LUT файлам");
-
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder ,_lutFolder, _lutSummaryFile});
-
-            string containerFolder = _containerFolder.GetValue<string>();
-            string foldername = FileManagement.CreateUniqueFolder(_containerFolder + batch.Name);
-            string lutFolder = _lutFolder.GetValue<string>();
-            string lutSummaryFile = _lutSummaryFile.GetValue<string>(); 
-
-
-
-
-
-            await Task.Run(() =>
+            if (_cancellationToken.IsCancellationRequested)
             {
-                SweepInputData();
-                PatchTable();
-
-                double[,] lut_data = new double[lut_width, lut_height];
-                for (int lut_layer = 0; lut_layer < lut_depth;lut_layer++)
-                {
-                    for (int i = 0;i < lut_width;i++)
-                        for (int j = 0;j < lut_height;j++)
-                            lut_data[i,j] = lut[i,j,lut_layer];
-
-                    Container_2D_double c = new Container_2D_double(lut_data);
-                    
-                    DataManager_2D.progress.Report(1);
-
-                    string filename = Path.Combine(foldername, lut_layer.ToString() + ".bin");
-                    c.SaveToFile(filename);
-                    batch.Filenames.Add(filename);
-                }
-
-                if (_cancellationToken.IsCancellationRequested)
-                {
-                    //some comment actions
-                    _cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                WriteLUTFile(Path.Combine(foldername, "LUT.txt"));
-
-            });
-
-            string report_msg1 = $"{dead_blocks}/{totalBlocks} битых секторов \n" +
-                                $"{patched_cells}/{totalCells} ячеек интерполировано\n" +
-                                //$"{trimmed_values}/{totalCells} значений было вне допустимого диапазона\n" +
-                                $"{clipped_under_blocks}/{totalBlocks} блоков клиппированы по мин. коду\n" +
-                                $"{clipped_over_blocks}/{totalBlocks} блоков клиппированы по макс. коду\n" +
-                                $"{banded_blocks}/{totalBlocks} блоков подвержены бандингу";
-
-            string report_msg2 = $"Расчетная 'черная' фаза (HDMI = 0) - {out0:f2} deg\n" +
-                                 $"Расчетная 'белая' фаза (HDMI = 255) - {out255:f2} deg\n" +
-                                 $"Диапазон  - {out255-out0:f2} - deg \n";
-
-
-
-            /*
-             
-                         out0 = SingleValueParameters[0];
-            out255 = SingleValueParameters[1];
-            vstart = SingleValueParameters[2];
-            vstep = SingleValueParameters[3];
-            width = imageSources[0].Width;
-            height = imageSources[0].Height;
-             
-             
-             
-             */
-
-            DisplayMessage("LUT таблица сгенерирована\n" + report_msg1);
-
-            batch.comment = "Lookup таблица\n";
-            batch.comment = $"Cоздано {DateTime.Now}\n";
-            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
-            if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
-
-            if (imageSources[0] is ContainerBatch)
-                if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
-                    batch.comment += "Original phase data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
-            batch.comment += report_msg1 + report_msg2;
-
-
-            try {
-                Directory.CreateDirectory(containerFolder);
-                Directory.CreateDirectory(lutFolder);
-
-                char[] invalidChars = Path.GetInvalidFileNameChars();
-
-                var sample_name = SamplesDB.GetSampleName(SampleId);
-                string clean_foldername = string.Concat( sample_name.Where(ch => !invalidChars.Contains(ch)));
-
-                
-                Directory.CreateDirectory(lutFolder+"\\" +clean_foldername );
-
-
+                DisplayMessage("Операция прервана");
+                _cancellationToken.ThrowIfCancellationRequested();
             }
-            catch { }
-
-
-
 
         }
 
@@ -319,6 +338,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 hndl.Dispose();
                 processed_steps++;
                 containerPorcessed();
+                DataManager_2D.progress.Report(1);
             }
         }
 
@@ -330,7 +350,6 @@ namespace ImgAnalyzer._2D.GroupOperations
                 for (int j = 0; j < lut_height; j++)
                 {
                     FindCodes(avgFieldPrev[i, j], avgField[i, j],n,i,j);
-
                 }
         }
         

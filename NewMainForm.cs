@@ -30,7 +30,7 @@ namespace ImgAnalyzer
         private List<string> sampleList = new List<string>();
 
         //private enum PhaseCalculationMode {None, UseImages, UseBatch }
-        private PhaseCalculationMode phaseCalculationMode;
+        private PhaseCalculationMode phaseCalculationMode = PhaseCalculationMode.UseImages;
 
         //private enum StitchMode { None, Calculate, UseBatch }
         private StitchMode stitchMode = StitchMode.Calculate;
