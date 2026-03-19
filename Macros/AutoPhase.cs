@@ -37,18 +37,7 @@ namespace ImgAnalyzer.Macros
         internal int sample_id = -1;
 
 
-        /*
-        public bool useImages = true;
-        public bool useAutoSquare = true;
-        public bool calculatePhase = true;
-        public bool stitchPhase = true;
-        */
-
         List<SettingDefinition> settings = new List<SettingDefinition>();
-
-        
-
-
 
 
         private string folder1, folder2, folder3;
@@ -342,12 +331,6 @@ namespace ImgAnalyzer.Macros
         private async Task CalculatePhaseProfiles()
         {
 
-            /*
-             sample id = ....
-            input comment = ....
-
-             */
-
             PhaseMeasurmentGroup pmg = new PhaseMeasurmentGroup();
             pmg.SingleValueParameters = new double[] { k1, k2, k3, m1, m2, m3 };
             pmg.imageSources = new IImageSource[]
@@ -396,6 +379,8 @@ namespace ImgAnalyzer.Macros
             sfw.ContainerParameters = new IContainer_2D[] { phase_stitched };
             sfw.imageSources = new IImageSource[] { phaseBatch };
             sfw._cancellationToken = cts.Token;
+            sfw.UserComment += $"Сшивка первого кадра произведена по алгоритму заливки, порог фазы = {stitch_thr}";
+
             sfw.containerPorcessed += () =>
             {
                 replaceLastLine($"Сшивка группы фазовых профилей...{sfw.processed_containers}/{sfw.total_containers}");
@@ -441,9 +426,6 @@ namespace ImgAnalyzer.Macros
             double phase_lo = pr_calc.bottom;
             double phase_hi = pr_calc.top;
 
-
-            LU_Table lut_calc = new LU_Table();
-
             ParameterRequestForm pr_form = new ParameterRequestForm();
             pr_form.AddHeader("Введите параметры для LU таблицы. PHASE_0 - значение фазы," +
                 " которе выводится при подаче 0 по HDMI (черный цвет), PHASE_255 - значение фазы," +
@@ -463,6 +445,13 @@ namespace ImgAnalyzer.Macros
             double ph255 = pr_form.RequestDouble("PHASE_255");
             double dac_0 = pr_form.RequestDouble("DAC_0");
             double dac_step = pr_form.RequestDouble("DAC_STEP");
+
+
+            LU_Table lut_calc = new LU_Table();
+            lut_calc.internalCall = true;
+            lut_calc.DisplayMessage += writeLog;
+            lut_calc.SampleId = sample_id;
+            lut_calc._cancellationToken = cts.Token;
 
             lut_calc.SingleValueParameters = new double[] { ph0, ph255, dac_0, dac_step };
             lut_calc.imageSources = new IImageSource[] { stitchedPhaseBatch };

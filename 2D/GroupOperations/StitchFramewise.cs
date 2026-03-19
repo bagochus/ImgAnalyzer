@@ -94,6 +94,10 @@ namespace ImgAnalyzer._2D.GroupOperations
             if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
             if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
 
+            if (imageSources[0] is ContainerBatch)
+                if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
+                    batch.comment += "Phase measurment data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
+
             id = SamplesDB.AddContainerBatch(batch, batch.Batchype, SampleId, batch.comment);
 
             //ImageManager.containerBatches.Add(batch);
