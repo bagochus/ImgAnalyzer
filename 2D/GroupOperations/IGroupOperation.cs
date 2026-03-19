@@ -25,5 +25,6 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         int SampleId { get; set; }
 
+
     }
 }

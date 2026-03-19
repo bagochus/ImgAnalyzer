@@ -1,11 +1,8 @@
-﻿using ScottPlot.Colormaps;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -59,6 +56,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         double[,] avgField, avgFieldPrev;
         int[,,] lut;
+        int[,] reportMap;
 
         double out0, out255, vstart, vstep;
         Func<int, int, double> GetData;
@@ -68,7 +66,10 @@ namespace ImgAnalyzer._2D.GroupOperations
         int lut_width = 64;
         int lut_height = 64;
         int lut_depth = 256;
-        int max_code = 4096;
+        int max_code = 4095;
+        int min_code = 0;
+        int totalCells { get => lut_width * lut_height * lut_depth; }
+        int totalBlocks { get => lut_height * lut_depth; }
 
         int block_width;
         int block_height;
@@ -76,12 +77,23 @@ namespace ImgAnalyzer._2D.GroupOperations
         protected bool useMask = false;
         protected bool useGradientTails = false;
 
+        internal enum reportCodes : int {good = 0, over, under, overunder, banding, dead };
+
+        public Action<string> DisplayMessage = (x) => {};
+
+
         //--------------------report data----------------
 
+        
         protected int patched_cells = 0;
         protected int patched_pilars = 0;
         protected int trimmed_values = 0;
 
+
+        protected int clipped_under_blocks = 0;
+        protected int clipped_over_blocks = 0;
+        protected int banded_blocks = 0;
+        protected int dead_blocks = 0;
 
 
         //---------------output variables for internal call---------------
@@ -93,16 +105,19 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
         public CancellationToken _cancellationToken;
-
+        public bool internalCall = true;
 
 
 
 
         public async Task Execute()
         {
+            if (!internalCall) DisplayMessage = (x) => { MessageBox.Show(x); };
+
+
             if (!Check())
             {
-                MessageBox.Show(error_message); return;
+                DisplayMessage(error_message); return;
             }
 
 
@@ -120,6 +135,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             avgField = new double[lut_width, lut_height];
             avgFieldPrev = new double[lut_width, lut_height];
             lut = new int[lut_width, lut_height, lut_depth];
+            reportMap = new int[lut_width, lut_height];
 
             for (int i = 0; i < lut_width; i++)
                 for (int j = 0; j < lut_height; j++)
@@ -140,22 +156,27 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             ContainerBatch batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("LUT");
+            batch.Batchype = BatchDatatypes.LUT;
             //batch.Width = width;
             //block_height = height;
             ImageManager.containerBatches.Add(batch);
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
-            var lutFolder = SettingDefinition.CreateGlobal("containerFolder", 
+            var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+            var _lutFolder = SettingDefinition.CreateGlobal("containerFolder", 
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop)+ "LUT\\"
                 , "Папка для LU таблиц");
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder ,lutFolder});
-            string root_folder = containerFolder.GetValue<string>();
-            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
+            var _lutSummaryFile = SettingDefinition.CreateGlobal("lutSummaryFile",
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\lut_summary.txt"
+                , "Статистика по LUT файлам");
 
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder ,_lutFolder, _lutSummaryFile});
 
-            string lut_folder = lutFolder.GetValue<string>();
+            string containerFolder = _containerFolder.GetValue<string>();
+            string foldername = FileManagement.CreateUniqueFolder(_containerFolder + batch.Name);
+            string lutFolder = _lutFolder.GetValue<string>();
+            string lutSummaryFile = _lutSummaryFile.GetValue<string>(); 
 
 
 
@@ -165,6 +186,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 SweepInputData();
                 PatchTable();
+
                 double[,] lut_data = new double[lut_width, lut_height];
                 for (int lut_layer = 0; lut_layer < lut_depth;lut_layer++)
                 {
@@ -191,12 +213,63 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             });
 
-            MessageBox.Show("LUT таблица сгенерирована\n" +
-                $"{patched_pilars} битых секторов скопировано\n" +
-                $"{patched_cells} ячеек интерполировано\n" +
-                $"{trimmed_values} значений было вне допустимого диапазона");
+            string report_msg1 = $"{dead_blocks}/{totalBlocks} битых секторов \n" +
+                                $"{patched_cells}/{totalCells} ячеек интерполировано\n" +
+                                //$"{trimmed_values}/{totalCells} значений было вне допустимого диапазона\n" +
+                                $"{clipped_under_blocks}/{totalBlocks} блоков клиппированы по мин. коду\n" +
+                                $"{clipped_over_blocks}/{totalBlocks} блоков клиппированы по макс. коду\n" +
+                                $"{banded_blocks}/{totalBlocks} блоков подвержены бандингу";
 
-            
+            string report_msg2 = $"Расчетная 'черная' фаза (HDMI = 0) - {out0:f2} deg\n" +
+                                 $"Расчетная 'белая' фаза (HDMI = 255) - {out255:f2} deg\n" +
+                                 $"Диапазон  - {out255-out0:f2} - deg \n";
+
+
+
+            /*
+             
+                         out0 = SingleValueParameters[0];
+            out255 = SingleValueParameters[1];
+            vstart = SingleValueParameters[2];
+            vstep = SingleValueParameters[3];
+            width = imageSources[0].Width;
+            height = imageSources[0].Height;
+             
+             
+             
+             */
+
+            DisplayMessage("LUT таблица сгенерирована\n" + report_msg1);
+
+            batch.comment = "Lookup таблица\n";
+            batch.comment = $"Cоздано {DateTime.Now}\n";
+            if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
+            if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
+
+            if (imageSources[0] is ContainerBatch)
+                if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
+                    batch.comment += "Original phase data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
+            batch.comment += report_msg1 + report_msg2;
+
+
+            try {
+                Directory.CreateDirectory(containerFolder);
+                Directory.CreateDirectory(lutFolder);
+
+                char[] invalidChars = Path.GetInvalidFileNameChars();
+
+                var sample_name = SamplesDB.GetSampleName(SampleId);
+                string clean_foldername = string.Concat( sample_name.Where(ch => !invalidChars.Contains(ch)));
+
+                
+                Directory.CreateDirectory(lutFolder+"\\" +clean_foldername );
+
+
+            }
+            catch { }
+
+
+
 
         }
 
@@ -234,7 +307,7 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
-                    //some comment actions
+                    DisplayMessage("Операция прервана");
                     _cancellationToken.ThrowIfCancellationRequested();
                 }
 
@@ -358,7 +431,8 @@ namespace ImgAnalyzer._2D.GroupOperations
                     {
                         Point nearestPilar = FindNearestGoodPilar(goodPilars, i, j);
                         ClonePilar(nearestPilar.X, i,nearestPilar.Y,j);
-                    
+                        dead_blocks++;
+                        reportMap[i, j] = (int)reportCodes.dead;
                     }
                 }
 
@@ -368,6 +442,8 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         private void PatchOneValuePilar(int i, int j)
         {
+            dead_blocks++;
+            reportMap[i, j] = (int)reportCodes.dead;
             int value = 0;
             for (int k = 0; k < lut_depth; k++)
             {
@@ -381,6 +457,10 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         }
 
+
+        // функция интерполирует недостающие значения колонны i:j
+        // подразумевается, что в колонне есть минимум 2 "хороших значения"
+        // остальные значения выставляются по 
         private void PatchFewValuesPilar(int i, int j)
         {
             int[] patched_array = new int[lut_depth];
@@ -415,9 +495,9 @@ namespace ImgAnalyzer._2D.GroupOperations
                         for (int k_temp = good_index1 + 1; k_temp < good_index2; k_temp++)
                         {
                             double patch_value = good_value1 + (k_temp - good_index1) * step;
-                            if (patch_value < 0)
+                            if (patch_value < min_code)
                             {
-                                patch_value = 0;
+                                patch_value = min_code;
                                 trimmed_values++;
                             }
                             if (patch_value > max_code)
@@ -448,6 +528,19 @@ namespace ImgAnalyzer._2D.GroupOperations
                 }
             }
 
+            // head - 0 индекс - (темные цвета)
+            // tail - 255 индекс - (светлые цвета)
+
+            if (need_head_patch)
+            { 
+                clipped_under_blocks++;
+                reportMap[i, j] = (int)reportCodes.under;
+            }
+            if (need_tail_patch)
+            { 
+                clipped_under_blocks++;
+                reportMap[i, j] = need_head_patch? (int)reportCodes.overunder : (int)reportCodes.over;
+            } 
 
             if (need_head_patch && useGradientTails)
             {
@@ -623,6 +716,29 @@ namespace ImgAnalyzer._2D.GroupOperations
                     }
                 }
             return result;
+        }
+
+
+        private void MarkBandedBlocks()
+        {
+            for (int i = 0; i < lut_width; i++)
+                for (int j = 0; j < lut_height; j++)
+                {
+                    for (int k = 0; k < lut_depth - 1; k++) 
+                    {
+                        if (lut[i, j, k] == lut[i, j, k + 1] && reportMap[i, j] == 0)
+                        {
+                            reportMap[i, j] = (int)reportCodes.banding;
+                            banded_blocks++;
+                            break;
+                        }
+                    }
+                }
+
+
+
+
+
         }
 
         private void WriteLUTFile(string filename)

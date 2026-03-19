@@ -110,24 +110,16 @@ namespace ImgAnalyzer._2D.GroupOperations
                     _cancellationToken.ThrowIfCancellationRequested();
 
                 }
-                // await Task.Run( () =>
-                // {
-                
-                GeneratePhaseImage(i);
+
+                await Task.Run(() => { GeneratePhaseImage(i); 
                 Container_2D_double c = new Container_2D_double(phase);
                 c.Name = batch.Name + "_" + i.ToString();
                 DataManager_2D.progress.Report(1);
-
-                //string filename = Path.Combine(foldername, i.ToString() + ".bin");
-                //c.SaveToFile(filename);
                 batch.AddContainer(c);
-
                 processed_containers++;
                 containerPorcessed();
-                SamplesDB.UpdateContainerBatch(id, batch);  
-                //batch.Filenames.Add(filename);
-
-                //});
+                SamplesDB.UpdateContainerBatch(id, batch);
+                });
             }
 
         }
