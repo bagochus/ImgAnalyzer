@@ -374,9 +374,12 @@ namespace ImgAnalyzer
 
                     string query = "UPDATE ContainerBatches" +
                         " SET Filenames = @filenames" +
+                        " Count = @Count" +
                         " WHERE Id = @Id";
                     using (var command = new SQLiteCommand(query, connection))
                     {
+                        command.Parameters.AddWithValue("@Id", id);
+                        command.Parameters.AddWithValue("@Count", batch.Count);
                         command.Parameters.AddWithValue("@filenames", filenamesJson);
                         int rowsAffected = command.ExecuteNonQuery();
                         return (rowsAffected == 1);

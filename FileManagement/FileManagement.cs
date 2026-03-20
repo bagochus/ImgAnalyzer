@@ -10,20 +10,16 @@ namespace ImgAnalyzer
     public static class FileManagement
     {
         
-        public static string CreateUniqueFolder(string baseFolderName, string newFolderName)
+        public static string CreateUniqueFolder(string baseFolderName)
         {
             // Получаем директорию исполняемого файла
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-            // Формируем начальный путь
-            string folderPath = Path.Combine(baseFolderName, newFolderName);
-            string newFolderPath = folderPath;
+            string newFolderPath = baseFolderName;
 
             // Если папка уже существует, добавляем суффиксы
             int counter = 1;
             while (Directory.Exists(baseFolderName))
             {
-                newFolderPath = $"{folderPath}_{counter}";
+                newFolderPath = $"{baseFolderName}_{counter}";
                 counter++;
 
                 // Защита от бесконечного цикла

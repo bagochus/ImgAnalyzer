@@ -32,13 +32,19 @@ namespace ImgAnalyzer
         public string Sample { get { return sample; } } 
         public string BatchType = "";
         public string comment = "";
-        public int id = -1; 
-        public int Id { get { return id; } 
-            set {
-                this.id = value;
-                sample = SamplesDB.GetSampleName(id);
-            } }
-        public int SampleId = -1;
+       
+        public int id = -1;
+
+        private int sampleId = -1;
+        public int SampleId
+        {
+            get { return sampleId; }
+            set
+            {
+                this.sampleId = value;
+                sample = SamplesDB.GetSampleName(sampleId);
+            }
+        }
 
 
         public EventHandler DataChanged;
@@ -162,7 +168,7 @@ namespace ImgAnalyzer
             var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers", "Папка для сохранения данных");
             SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder });
             string containerFolder = _containerFolder.GetValue<string>();
-            return FileManagement.CreateUniqueFolder(containerFolder,name);
+            return FileManagement.CreateUniqueFolder(containerFolder+"\\"+name);
 
             // Получаем путь к папке с программой
         }

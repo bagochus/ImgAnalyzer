@@ -371,7 +371,7 @@ namespace ImgAnalyzer
             if (batch != null)
             {
                 stitchBatch = batch;
-                label_selected_stitch.Text = "Выбрано: " + phaseBatch.Name;
+                label_selected_stitch.Text = "Выбрано: " + stitchBatch.Name;
                 commentBinding = BatchCommentBinding.Stitch;
 
                 if (batch.comment.Length > 0)

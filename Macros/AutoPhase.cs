@@ -377,7 +377,7 @@ namespace ImgAnalyzer.Macros
             sfw.ContainerParameters = new IContainer_2D[] { phase_stitched };
             sfw.imageSources = new IImageSource[] { phaseBatch };
             sfw._cancellationToken = cts.Token;
-            sfw.UserComment += $"Сшивка первого кадра произведена по алгоритму заливки, порог фазы = {stitch_thr}";
+            sfw.UserComment = $"Сшивка первого кадра произведена по алгоритму заливки, порог фазы = {stitch_thr}";
 
             sfw.containerPorcessed += () =>
             {

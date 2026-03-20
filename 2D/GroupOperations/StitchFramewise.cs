@@ -40,6 +40,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
+
         public string UserComment { get; set; }
 
         public int SampleId { get; set; }
@@ -87,6 +88,18 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
+            batch.SampleId = SampleId;
+            if (SamplesDB.ContainerBatchExists("PhaseStitch", SampleId))
+            {
+                int n = 0;
+                while (SamplesDB.ContainerBatchExists(batch.Name, SampleId))
+                {
+                    n++;
+                    batch.Name = $"PhaseStitch_{n}";
+                }
+            }
+
+
             batch.BatchType = BatchDatatypes.PhaseUnwrapped;
 
             batch.comment += "Развернутая (сшитая) фаза\n";
@@ -98,7 +111,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
                     batch.comment += "Phase measurment data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
 
-            id = SamplesDB.AddContainerBatch(batch);
+
 
             //ImageManager.containerBatches.Add(batch);
 
@@ -106,6 +119,8 @@ namespace ImgAnalyzer._2D.GroupOperations
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
             batch.AddContainer(ContainerParameters[0], true);
+            id = SamplesDB.AddContainerBatch(batch);
+
 
             total_containers = imageSources[0].Count;
 
@@ -141,7 +156,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                 });
 
-                SamplesDB.UpdateContainerBatch(id, batch);
+                SamplesDB.UpdateBatchFilenames(id, batch);
 
                 hndlNext.Dispose();
                 processed_containers++;
