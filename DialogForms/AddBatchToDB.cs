@@ -140,8 +140,10 @@ namespace ImgAnalyzer.DialogForms
             SamplesDB.AddSample(comboBox_sample.Text);
             
             _batch.Name = textBox_name.Text;
-            int sample_id = SamplesDB.GetSampleId(comboBox_sample.Text);
-            int batch_id = SamplesDB.AddContainerBatch(_batch, comboBox_type.Text,sample_id,richTextBox_comment.Text);
+            _batch.SampleId= SamplesDB.GetSampleId(comboBox_sample.Text);
+            // _batch.Sample = SamplesDB.GetSampleName(_batch.SampleId);
+            _batch.comment = richTextBox_comment.Text;
+            int batch_id = SamplesDB.AddContainerBatch(_batch);
 
             //TODO: write metadata to file
 

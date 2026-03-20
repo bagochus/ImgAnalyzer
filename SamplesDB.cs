@@ -272,7 +272,7 @@ namespace ImgAnalyzer
             }
         }
 
-        public static int AddContainerBatch(ContainerBatch batch, string batchType, int sampleId, string comment = "")
+        public static int AddContainerBatch(ContainerBatch batch)
         {
             string filenamesJson = JsonSerializer.Serialize(batch.Filenames);
 
@@ -290,17 +290,17 @@ namespace ImgAnalyzer
                     {
                         prev_id = Convert.ToInt32(command.ExecuteScalar());
                     }
-                    _name = batchType + (prev_id + 1).ToString();
+                    _name = batch.BatchType + (prev_id + 1).ToString();
                 }
 
                 string query = "INSERT INTO ContainerBatches (SampleId, Name, BatchType, Comment, Filenames, Width, Height, Count)" +
                     " VALUES (@sampleId, @Name, @batchType, @comment, @filenames, @width, @height, @Count); SELECT last_insert_rowid();";
                 using (var command = new SQLiteCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@sampleId", sampleId);
+                    command.Parameters.AddWithValue("@sampleId", batch.SampleId);
                     command.Parameters.AddWithValue("@Name", _name);
-                    command.Parameters.AddWithValue("@batchType", batchType);
-                    command.Parameters.AddWithValue("@comment", comment ?? "");
+                    command.Parameters.AddWithValue("@batchType", batch.BatchType);
+                    command.Parameters.AddWithValue("@comment", batch.comment ?? "");
                     command.Parameters.AddWithValue("@filenames", filenamesJson);
                     command.Parameters.AddWithValue("@width", batch.Width);
                     command.Parameters.AddWithValue("@height", batch.Height);
@@ -315,6 +315,7 @@ namespace ImgAnalyzer
         public static bool UpdateContainerBatch(int id, ContainerBatch batch)
         {
             if (batch == null) return false;
+            if (id < 0) return false;   
 
             bool result = true;
 
@@ -344,6 +345,41 @@ namespace ImgAnalyzer
                         command.Parameters.AddWithValue("@width", batch.Width);
                         command.Parameters.AddWithValue("@height", batch.Height);
                         command.Parameters.AddWithValue("@Count", batch.Count);
+                        int rowsAffected = command.ExecuteNonQuery();
+
+                        return (rowsAffected == 1);
+                    }
+                }
+            }
+            catch { result = false; }
+            return result;
+        }
+
+        public static bool UpdateBatchFilenames(int id, ContainerBatch batch)
+        {
+            if (batch == null) return false;
+            if (id < 0) return false;
+
+            bool result = true;
+
+            try
+            {
+                string filenamesJson = JsonSerializer.Serialize(batch.Filenames);
+
+                using (var connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    string _name = batch.Name;
+
+
+                    string query = "UPDATE ContainerBatches" +
+                        " SET Filenames = @filenames" +
+                        " WHERE Id = @Id";
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@filenames", filenamesJson);
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return (rowsAffected == 1);
                     }
                 }
             }

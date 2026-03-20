@@ -57,7 +57,6 @@ namespace ImgAnalyzer._2D.GroupOperations
         public ContainerBatch batch;
 
         public int id;
-
         public bool internal_call = false;
 
         public async Task Execute()
@@ -79,23 +78,27 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             batch = new ContainerBatch();
             batch.Name = "Phase";
-            batch.Batchype = BatchDatatypes.PhaseWrapped;
+            batch.SampleId = SampleId;
+            if (SamplesDB.ContainerBatchExists("Phase", SampleId))
+            {
+                int n = 0;
+                while (SamplesDB.ContainerBatchExists(batch.Name, SampleId))
+                {
+                    n++;
+                    batch.Name = $"Phase_{n}";
+                }
+            }
+            batch.BatchType = BatchDatatypes.PhaseWrapped;
             
-            batch.comment = "Фаза, измеренная по алгоритму 1 (без нормировки, арктангенс)\n";
-            batch.comment = $"Cоздано {DateTime.Now}\n";
+            batch.comment += "Фаза, измеренная по алгоритму 1 (без нормировки, арктангенс)\n";
+            batch.comment += $"Cоздано {DateTime.Now}\n";
             if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
             if (UserComment?.Length > 0)  batch.comment += UserComment+Environment.NewLine;
             
-            id = SamplesDB.AddContainerBatch(batch,batch.Batchype,SampleId,batch.comment);
+            id = SamplesDB.AddContainerBatch(batch);
             //ImageManager.containerBatches.Add(batch);
             
             DataManager_2D.workToBeDone += min_count;
-
-            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder });
-            string root_folder = containerFolder.GetValue<string>();
-            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
-
 
 
             total_containers = min_count;
@@ -111,14 +114,19 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                 }
 
-                await Task.Run(() => { GeneratePhaseImage(i); 
-                Container_2D_double c = new Container_2D_double(phase);
-                c.Name = batch.Name + "_" + i.ToString();
-                DataManager_2D.progress.Report(1);
-                batch.AddContainer(c);
-                processed_containers++;
-                containerPorcessed();
-                SamplesDB.UpdateContainerBatch(id, batch);
+                await Task.Run(() =>
+                {
+                    GeneratePhaseImage(i);
+                    Container_2D_double c = new Container_2D_double(phase);
+                    c.Name = batch.Name + "_" + i.ToString();
+                    DataManager_2D.progress.Report(1);
+                    batch.AddContainer(c);
+                    processed_containers++;
+                    containerPorcessed();
+                    if (SamplesDB.UpdateBatchFilenames(id, batch) == false)
+                    {
+                        SamplesDB.AppendBatchCommentNewLine(id, "Не удалось обновить запись в БД\n");
+                    }
                 });
             }
 

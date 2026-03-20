@@ -17,7 +17,7 @@ namespace ImgAnalyzer
         private Type containerType = null;
         //private List<string> containers = new List<string>();
         private string workFolder = "";
-
+        public string WorkFolder { get { return workFolder; } }
 
         public string Name { get; set; }
 
@@ -28,10 +28,17 @@ namespace ImgAnalyzer
         public int Height { get { return height; } }
         public int Count {  get { return Filenames.Count; } }
 
-        public string sample = "";
-        public string Batchype = "";
+        private string sample = "";
+        public string Sample { get { return sample; } } 
+        public string BatchType = "";
         public string comment = "";
-        public int id = -1;
+        public int id = -1; 
+        public int Id { get { return id; } 
+            set {
+                this.id = value;
+                sample = SamplesDB.GetSampleName(id);
+            } }
+        public int SampleId = -1;
 
 
         public EventHandler DataChanged;
@@ -112,12 +119,12 @@ namespace ImgAnalyzer
 
         public void AddContainer(IContainer_2D container, bool copy_container = false)
         {
-            
+            //copy_container - сохранить контейнер в новый файл, даже если он уже куда то сохранен
             if (filenames.Count == 0)
             {
                 if (container.Filename == "" || copy_container)
                 {
-                    if (workFolder == "") workFolder = CreateFolder(Name);
+                    if (workFolder == "") workFolder = CreateFolder(Name+"_"+sample);
                     container.SaveToFile(Path.Combine(workFolder, "cont_"+ filenames.Count.ToString() +".bin"));
                 }
                 filenames.Add(container.Filename);
@@ -151,31 +158,13 @@ namespace ImgAnalyzer
 
         public static string CreateFolder(string name)
         {
+
+            var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers", "Папка для сохранения данных");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder });
+            string containerFolder = _containerFolder.GetValue<string>();
+            return FileManagement.CreateUniqueFolder(containerFolder,name);
+
             // Получаем путь к папке с программой
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-
-            // Создаем полный путь к целевой папке
-            string targetPath = Path.Combine(appPath, name);
-
-            // Если папка не существует, создаем ее
-            if (!Directory.Exists(targetPath))
-            {
-                Directory.CreateDirectory(targetPath);
-                return targetPath;
-            }
-
-            // Если папка существует, ищем доступное имя с суффиксом
-            int counter = 0;
-            string newPath;
-            do
-            {
-                newPath = Path.Combine(appPath, $"{name}_{counter}");
-                counter++;
-            } while (Directory.Exists(newPath));
-
-            // Создаем папку с новым именем
-            Directory.CreateDirectory(newPath);
-            return newPath;
         }
 
         public void UpdateComment(string comment)
@@ -189,7 +178,7 @@ namespace ImgAnalyzer
         { 
             BatchHeader result = new BatchHeader(); 
             result.Name = Name;
-            result.Type = Batchype;
+            result.Type = BatchType;
             result.Sample = sample;
             result.Width = Width;
             result.Height = Height;

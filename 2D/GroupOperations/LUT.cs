@@ -148,22 +148,21 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.Name = $"LUT_{n}";
                 }
             }
-            batch.Batchype = BatchDatatypes.LUT;
+            batch.BatchType = BatchDatatypes.LUT;
             //ImageManager.containerBatches.Add(batch);
 
 
-            var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers\\", "Папка для сохранения данных");
+
             var _lutFolder = SettingDefinition.CreateGlobal("containerFolder",
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\"
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\LUT"
                 , "Папка для LU таблиц");
             var _lutSummaryFile = SettingDefinition.CreateGlobal("lutSummaryFile",
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "LUT\\_lut_summary.txt"
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\LUT\\_lut_summary.txt"
                 , "Статистика по LUT файлам");
 
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder, _lutFolder, _lutSummaryFile });
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _lutFolder, _lutSummaryFile });
 
-            string containerFolder = _containerFolder.GetValue<string>();
-            string foldername = FileManagement.CreateUniqueFolder(_containerFolder + batch.Name + "_" + SamplesDB.GetSampleName(SampleId));
+
             string lutFolder = _lutFolder.GetValue<string>();
             string lutSummaryFile = _lutSummaryFile.GetValue<string>();
 
@@ -177,13 +176,11 @@ namespace ImgAnalyzer._2D.GroupOperations
                         lut_data[i, j] = lut[i, j, lut_layer];
 
                 Container_2D_double c = new Container_2D_double(lut_data);
+                c.Name = "lut_layer_" + lut_layer.ToString();
+                batch.AddContainer(c);
 
-
-                string filename = Path.Combine(foldername, lut_layer.ToString() + ".bin");
-                c.SaveToFile(filename);
-                batch.Filenames.Add(filename);
             }
-            WriteLUTFile(Path.Combine(foldername, "LUT.txt"));
+            WriteLUTFile(Path.Combine(batch.WorkFolder, "LUT.txt"));
             
 
             if (_cancellationToken.IsCancellationRequested)

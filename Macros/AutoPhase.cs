@@ -136,14 +136,12 @@ namespace ImgAnalyzer.Macros
 
         public async Task Run(LogForm form)
         {
-            //form = new AutoPhaseForm();
-            //this.form.Show();
+
             writeLog = form.AppendLog;
             //TODO: добавить запись в глобальный лог
             writeErrorLog = form.AppendErrorLog;
             replaceLastLine = form.ReplaceLastLine;
             form.stopButtonClick += () => { cts.Cancel(); };
-            //AutoPhase instance = new AutoPhase();
             cts = new CancellationTokenSource();
             cts.Token.ThrowIfCancellationRequested();
             try

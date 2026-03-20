@@ -82,15 +82,15 @@ namespace ImgAnalyzer._2D.GroupOperations
             }
 
             thr = SingleValueParameters[0];
-            I2DFileHandler hndlPrev = null, hndlNext = null;
+            I2DFileHandler hndlNext = null;
 
 
             batch = new ContainerBatch();
             batch.Name = ImageManager.GetUniqueSourceName("PhaseStitch");
-            batch.Batchype = BatchDatatypes.PhaseUnwrapped;
+            batch.BatchType = BatchDatatypes.PhaseUnwrapped;
 
-            batch.comment = "Развернутая (сшитая) фаза\n";
-            batch.comment = $"Cоздано {DateTime.Now}\n";
+            batch.comment += "Развернутая (сшитая) фаза\n";
+            batch.comment += $"Cоздано {DateTime.Now}\n";
             if (SampleId > 0) batch.comment += $"Образец: {SamplesDB.GetSampleName(SampleId)}\n";
             if (UserComment?.Length > 0) batch.comment += UserComment + Environment.NewLine;
 
@@ -98,27 +98,18 @@ namespace ImgAnalyzer._2D.GroupOperations
                 if ((imageSources[0] as ContainerBatch).comment?.Length > 0)
                     batch.comment += "Phase measurment data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
 
-            id = SamplesDB.AddContainerBatch(batch, batch.Batchype, SampleId, batch.comment);
+            id = SamplesDB.AddContainerBatch(batch);
 
             //ImageManager.containerBatches.Add(batch);
 
 
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            var containerFolder = SettingDefinition.CreateGlobal("containerFolder", "D:\\containers\\", "Папка для сохранения данных");
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { containerFolder });
-            string root_folder = containerFolder.GetValue<string>();
-            string foldername = FileManagement.CreateUniqueFolder(containerFolder + batch.Name);
-
-            //string filename = Path.Combine(foldername, "0.bin");
-            //ContainerParameters[0].SaveToFile(filename);
             batch.AddContainer(ContainerParameters[0], true);
-            //batch.Filenames.Add(filename);
-
 
             total_containers = imageSources[0].Count;
 
-
+            //начинаем с 1, так как первый кадр - исходная фаза
             for (int i = 1; i < imageSources[0].Count; i++)
             {
 
@@ -141,30 +132,22 @@ namespace ImgAnalyzer._2D.GroupOperations
                 hndlNext = imageSources[0].Get2DFileHandler(i);
                 getDataNext = hndlNext.GetPixelValue;
 
-                //await Task.Run(() =>
-                //{
+                await Task.Run(() =>
+                {
                     GeneratePhaseImage();
                     Container_2D_double c = new Container_2D_double(phase);
                     DataManager_2D.progress.Report(1);
-
-                    //filename = Path.Combine(foldername, i.ToString() + ".bin");
-                    //c.SaveToFile(filename);
                     batch.AddContainer(c);
 
-                //});
+                });
 
                 SamplesDB.UpdateContainerBatch(id, batch);
 
-
-                //hndlPrev = hndlNext;
                 hndlNext.Dispose();
                 processed_containers++;
                 containerPorcessed();
-
             }
-
             CorrectPhaseShift(batch);
-
         }
 
         private int FindAddition(double x1, double x2)
@@ -237,14 +220,10 @@ namespace ImgAnalyzer._2D.GroupOperations
             }
         }
 
-
-
         private bool Check()
         {
-
             width = imageSources[0].Width;
             height = imageSources[0].Height;
-
 
             bool result = ( imageSources[0].Width == ContainerParameters[0].Width );
             result &= (imageSources[0].Height == ContainerParameters[0].Height);
@@ -252,23 +231,11 @@ namespace ImgAnalyzer._2D.GroupOperations
             {
                 error_message = "Размеры активных областей не совпадают";
                 return false;
-
             }
             phase = new double[imageSources[0].Width, imageSources[0].Height];
             phase_prev = new double[imageSources[0].Width, imageSources[0].Height];
 
             return result;
-
-
-
-
-
         }
-
-
-
-
-
-
     }
 }
