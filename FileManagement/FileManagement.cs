@@ -17,7 +17,7 @@ namespace ImgAnalyzer
 
             // Если папка уже существует, добавляем суффиксы
             int counter = 1;
-            while (Directory.Exists(baseFolderName))
+            while (Directory.Exists(newFolderPath))
             {
                 newFolderPath = $"{baseFolderName}_{counter}";
                 counter++;

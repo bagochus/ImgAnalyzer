@@ -112,15 +112,16 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public async Task Execute()
         {
-            Init();
 
             if (!Check())
             {
                 DisplayMessage(error_message); return;
             }
 
+
             await Task.Run(() =>
             {
+                Init();
                 SweepInputData();
                 PatchTable();
                 ManageFiles();
@@ -138,6 +139,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
             batch = new ContainerBatch();
+            batch.SampleId = SampleId;
             batch.Name = ImageManager.GetUniqueSourceName("LUT");
             if (SamplesDB.ContainerBatchExists("LUT", SampleId))
             {
@@ -149,6 +151,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 }
             }
             batch.BatchType = BatchDatatypes.LUT;
+
             //ImageManager.containerBatches.Add(batch);
 
 
@@ -180,6 +183,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 batch.AddContainer(c);
 
             }
+            SamplesDB.AddContainerBatch(batch);
             WriteLUTFile(Path.Combine(batch.WorkFolder, "LUT.txt"));
             
 
@@ -223,7 +227,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
                 Directory.CreateDirectory(lutFolder);
                 string lut_filename = batch.Name + "_" + SamplesDB.GetSampleName(SampleId) + ".txt";
-                string comment_filename = batch.Name + "_" + SamplesDB.GetSampleName(SampleId) + ".txt";
+                string comment_filename = batch.Name + "_" + SamplesDB.GetSampleName(SampleId) + "_comment.txt";
                 WriteLUTFile(Path.Combine(lutFolder, lut_filename));
                 using (StreamWriter sw = new StreamWriter(lutSummaryFile, true))
                 {

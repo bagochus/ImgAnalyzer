@@ -373,7 +373,7 @@ namespace ImgAnalyzer
 
 
                     string query = "UPDATE ContainerBatches" +
-                        " SET Filenames = @filenames" +
+                        " SET Filenames = @filenames," +
                         " Count = @Count" +
                         " WHERE Id = @Id";
                     using (var command = new SQLiteCommand(query, connection))

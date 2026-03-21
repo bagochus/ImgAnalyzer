@@ -118,14 +118,21 @@ namespace ImgAnalyzer.Macros
         private void RequestParams()
         {
 
-            if (calculationMode == PhaseCalculationMode.UseImages) AddImageSettings();
-            if (useAutoSquare) AddAutoSquareSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages)
+            {
+                AddImageSettings();
+                if (useAutoSquare) AddAutoSquareSettings();
+            }
             if (calculationMode == PhaseCalculationMode.UseImages) AddPhaseSettings();
 
+            if (settings.Count == 0) return;
             SettingsManager.RequestSettingList(settings,requestParams);
 
-            if (calculationMode == PhaseCalculationMode.UseImages) RetrieveImageSettings();
-            if (useAutoSquare) RetrieveAutoSqareSettings();
+            if (calculationMode == PhaseCalculationMode.UseImages)
+            {
+                RetrieveImageSettings();
+                if (useAutoSquare) RetrieveAutoSqareSettings();
+            }
             if (calculationMode == PhaseCalculationMode.UseImages) RetrievePhaseSettings();
 
             //add stitch and lut stuff
