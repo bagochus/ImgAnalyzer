@@ -99,10 +99,9 @@ namespace ImgAnalyzer._2D
 
 
             }
-
-
-
         }
+
+
 
         public static void CalculateFullCT()
         {

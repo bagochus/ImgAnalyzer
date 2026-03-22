@@ -75,5 +75,19 @@ namespace ImgAnalyzer._2D
         {
             return data;
         }
+
+        public override double SumWhere(Func<double, bool> criteria)
+        {
+            double result = 0;
+            foreach (var v in data) if (criteria(v)) result += v;
+            return result;
+        }
+
+        public override int CountWhere(Func<double, bool> criteria)
+        {
+            int result = 0;
+            foreach (var v in data) if (criteria(v)) result++;
+            return result;
+        }
     }
 }

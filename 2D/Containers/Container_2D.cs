@@ -141,6 +141,9 @@ namespace ImgAnalyzer._2D
             return ddata(x1, y1) * w1 + ddata(x2, y1) * w2 + ddata(x1, y2) * w3 + ddata(x2, y2) * w4;
         }
 
+        public abstract double SumWhere(Func<double, bool> criteria);
 
+
+        public abstract int CountWhere(Func<double, bool> criteria);
     }
 }

@@ -26,6 +26,9 @@ namespace ImgAnalyzer._2D
         double Min();
         int GetCount(double v1, double v2);
 
+        double SumWhere(Func<double, bool> criteria);
+
+        int CountWhere(Func<double, bool> criteria);
 
     }
 }

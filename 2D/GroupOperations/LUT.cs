@@ -183,7 +183,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 batch.AddContainer(c);
 
             }
-            SamplesDB.AddContainerBatch(batch);
+
             WriteLUTFile(Path.Combine(batch.WorkFolder, "LUT.txt"));
             
 
@@ -220,7 +220,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                     batch.comment += "Original phase data: " + ((imageSources[0] as ContainerBatch).comment) + $"\n";
             batch.comment += report_msg2 + report_msg1;
 
-
+            SamplesDB.AddContainerBatch(batch);
 
             try
             {

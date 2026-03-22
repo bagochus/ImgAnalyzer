@@ -195,6 +195,7 @@
     <Compile Include="2D\Calculations\StitchSpatialy2.cs" />
     <Compile Include="2D\Calculations\StitchSpatialyFilter.cs" />
     <Compile Include="2D\Calculations\Patch.cs" />
+    <Compile Include="2D\Calculations\Difference.cs" />
     <Compile Include="2D\Calculations\Substract.cs" />
     <Compile Include="2D\Calculations\PlotXY.cs" />
     <Compile Include="2D\Calculations\InverseX.cs" />

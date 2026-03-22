@@ -15,6 +15,7 @@ using ImgAnalyzer.DialogForms;
 using System.Threading;
 using NetTopologySuite.Triangulate;
 using System.IO;
+using ImgAnalyzer._2D.Calculations;
 
 namespace ImgAnalyzer.Macros
 {
@@ -65,7 +66,7 @@ namespace ImgAnalyzer.Macros
 
         int lut_max_code = 4095;
         int lut_min_code = 0;
-
+        double phase_range_thr = 30;
 
 
         private void AddPhaseSettings()
@@ -128,12 +129,13 @@ namespace ImgAnalyzer.Macros
         {
             settings.Add(SD.CreateLocal("lut_min_code", (int)0, this, "Минимально разрешенный код для LUT"));
             settings.Add(SD.CreateLocal("lut_max_code", (int)4095, this, "Максимально разрешенный код для LUT"));
+            settings.Add(SD.CreateLocal("phase_range_thr", 30.0, this, "Порог фазового диапазона для того чтобы считать пиксель дефектным"));
         }
         private void RetrieveLutSettings()
         {
             lut_min_code = settings.Single(x => x.Name == "lut_min_code").GetValue<int>();
             lut_max_code = settings.Single(x => x.Name == "lut_max_code").GetValue<int>();
-
+            phase_range_thr = settings.Single(x => x.Name == "phase_range_thr").GetValue<double>();
         }
 
 
@@ -441,7 +443,7 @@ namespace ImgAnalyzer.Macros
             sfw._cancellationToken = cts.Token;
             sfw.SampleId = sample_id;
             sfw.internal_call = true;
-            sfw.UserComment = comment;
+           // sfw.UserComment = comment;
             //-----------------------------
 
 
@@ -453,6 +455,7 @@ namespace ImgAnalyzer.Macros
         private async Task GeneratuLUT()
         {
 
+            
             var phase_start = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[0]);
             var phase_end = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[stitchedPhaseBatch.Count - 1]);
 
@@ -478,6 +481,19 @@ namespace ImgAnalyzer.Macros
 
             double phase_lo = pr_calc.bottom;
             double phase_hi = pr_calc.top;
+
+            var diff_calc = new Difference();
+            diff_calc.ContainerParameters = new IContainer_2D[] { phase_start, phase_end };
+            IContainer_2D diff_map = new Container_2D_double(ImageProcessor_2D.PerformCalculation(diff_calc));
+
+            var threshold_calc = new Threshold();
+            threshold_calc.SingleValueParameters = new double[] {0,1,1,phase_range_thr, phase_range_thr+1.0 };
+            threshold_calc.ContainerParameters = new IContainer_2D[] { diff_map};
+
+            IContainer_2D defect_map = new Container_2D_double(ImageProcessor_2D.PerformCalculation(threshold_calc));
+
+
+
 
             ParameterRequestForm pr_form = new ParameterRequestForm();
             pr_form.AddHeader("Введите параметры для LU таблицы. PHASE_0 - значение фазы," +
