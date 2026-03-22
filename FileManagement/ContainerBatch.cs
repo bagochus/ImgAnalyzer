@@ -193,6 +193,23 @@ namespace ImgAnalyzer
             return result;
         }
 
+
+        public bool DeleteAllFiles()
+        {
+            bool result = true;
+            for (int i = filenames.Count - 1; i >= 0; i--)
+            {
+                try
+                {
+                    File.Delete(filenames[i]);
+                    filenames.RemoveAt(i);
+                }
+                catch { result = false; }
+            }
+
+            return result;
+        }
+
     }
 
 

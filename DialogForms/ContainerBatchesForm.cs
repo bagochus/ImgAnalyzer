@@ -53,6 +53,7 @@ namespace ImgAnalyzer.DialogForms
             InitTable();
 
             FillTable(selectMode);
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
         }
 
 
@@ -185,8 +186,25 @@ namespace ImgAnalyzer.DialogForms
 
 
 
-        private void OpenImage(int BatchIndex)
+        private void OpenImage()
         {
+            ContainerBatch batch = null;
+            try
+            {
+                bool fromDB = false;
+                var header = GetSelectedBatch(out fromDB);
+                if (header == null) return;
+                if (fromDB) batch = SamplesDB.GetBatch(header.id);
+                else batch = ImageManager.containerBatches[header.id];
+            }
+            catch (Exception ex)
+            {
+                _selectedBatch = null;
+                MessageBox.Show("Не удалось загрузить пакет: \n" + ex.Message);
+                return;
+            }
+            if (batch.Count == 0) return;
+
             int n=-1;
             string str = "Номер кадра";
             ParameterRequestForm form = new ParameterRequestForm();
@@ -197,13 +215,13 @@ namespace ImgAnalyzer.DialogForms
                 n = form.RequestInt(str);
 
             } else return;
-            if (n >= ImageManager.containerBatches[BatchIndex].Count && n<0)
+            if (n >= batch.Count || n<0)
             {
                 MessageBox.Show("Index out of range");
 
                 return;
             }
-            ImageViewForm ivForm = new ImageViewForm(ImageManager.containerBatches[BatchIndex], n);
+            ImageViewForm ivForm = new ImageViewForm(batch, n);
             ivForm.Show();
         }
 
@@ -212,32 +230,60 @@ namespace ImgAnalyzer.DialogForms
             AddBatchToDB.AddNewBatch();
         }
 
-        private void ExtractContainer(ContainerBatch batch, int index)
+
+
+        private void ExtractContainer()
         {
-            IContainer_2D container = Container_2D.ReadFromFile(batch.Filenames[index]);
+            ContainerBatch batch = null;
+            try
+            {
+                bool fromDB = false;
+                var header = GetSelectedBatch(out fromDB);
+                if (header == null) return;
+                if (fromDB) batch = SamplesDB.GetBatch(header.id);
+                else batch = ImageManager.containerBatches[header.id];
+            }
+            catch (Exception ex)
+            {
+                _selectedBatch = null;
+                MessageBox.Show("Не удалось загрузить пакет: \n" + ex.Message);
+                return;
+            }
+            if (batch.Count == 0) return;
+
+
+            if (dataGridView1.SelectedRows.Count <= 0) return;
+            int BatchIndex = dataGridView1.SelectedRows[0].Index;
+            int n = -1;
+            string str = "Номер кадра";
+            ParameterRequestForm form = new ParameterRequestForm();
+            form.AddIntRequest(str);
+            form.ShowDialog();
+            if (form.DialogResult == DialogResult.OK)
+            {
+                n = form.RequestInt(str);
+            }
+            else return;
+            if (n >= batch.Count || n < 0)
+            {
+                MessageBox.Show("Index out of range");
+
+                return;
+            }
+
+            IContainer_2D container = Container_2D.ReadFromFile(batch.Filenames[n]);
             DataManager_2D.containers.Add(container);
         }
 
         private void SelectClick()
         {
-            //ничего не выбрано
-            if (dataGridView1.SelectedRows.Count <= 0) return;
-            int index = dataGridView1.SelectedRows[0].Index;
-            //выбран разделитель
-            if (index == separator1_index
-                || index == separator2_index) return;
-
             try
             {
-                if (localHeaders_disp.Count > 0 && index <= localHeaders_disp.Count)
-                {
-                    _selectedBatch = ImageManager.containerBatches[localHeaders_disp[index + 1].id];
-                }
-                else if (databaseHeaders_disp.Count > 0 && index > separator2_index)
-                {
-                    int offset_index = index - separator2_index - 1;
-                    _selectedBatch = SamplesDB.GetBatch(databaseHeaders_disp[offset_index].id);
-                }
+                bool fromDB = false;
+                var header = GetSelectedBatch(out fromDB);
+                if (header == null) return;
+                if (fromDB) _selectedBatch = SamplesDB.GetBatch(header.id);
+                else _selectedBatch = ImageManager.containerBatches[header.id];
             }
             catch (Exception ex)
             {
@@ -254,6 +300,107 @@ namespace ImgAnalyzer.DialogForms
             else Close();
         }
 
+        private BatchHeader GetSelectedBatch(out bool fromDB)
+        {
+            fromDB = false;
+
+            //ничего не выбрано
+            if (dataGridView1.SelectedRows.Count <= 0) return null;
+            int index = dataGridView1.SelectedRows[0].Index;
+            //выбран разделитель
+            if (index == separator1_index
+                || index == separator2_index) return null;
+
+            if (localHeaders_disp.Count > 0 && index <= localHeaders_disp.Count)
+            {
+
+                return localHeaders_disp[index + 1];
+            }
+            else if (databaseHeaders_disp.Count > 0 && index > separator2_index)
+            {
+                fromDB = true;
+                int offset_index = index - separator2_index - 1;
+                return databaseHeaders_disp[offset_index];
+            }
+            return null;
+        }
+
+        private void DeleteBatchClick()
+        {
+            try
+            {
+                bool fromDB = false;
+                var header = GetSelectedBatch(out fromDB);
+                if (header == null) return;
+                if (fromDB) 
+                {
+                    if (!SamplesDB.DeleteContainerBatch(header.id))
+                        throw new Exception("Ошибка БД");
+                }
+                else ImageManager.containerBatches.RemoveAt(header.id);
+                FillTable();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось удалить пакет: \n" + ex.Message);
+                return;
+            }
+        }
+
+
+        private void DeleteWithFiles()
+        {
+            BatchHeader header;
+            ContainerBatch batch;
+
+            try
+            {
+                bool fromDB = false;
+                header = GetSelectedBatch(out fromDB);
+                if (header == null) return;
+                if (fromDB)
+                {
+                    batch = SamplesDB.GetBatch(header.id);
+                    if (batch == null) throw new Exception("Ошибка БД");
+                }
+                else batch = ImageManager.containerBatches[header.id];
+
+
+                int int_count = 0;
+                int id = SamplesDB.CheckFilenamesExist(batch.Filenames.ToArray(), out int_count);
+                if (int_count > 1)
+                {
+                    DialogResult dr = MessageBox.Show($"Фaйла из данного пакета найдены еще в {int_count} пакетах. Все равно удалить?",
+                        "Подтвержение",MessageBoxButtons.YesNo);
+                    if (dr == DialogResult.No) return;
+                }
+
+                DialogResult dr2 = MessageBox.Show($"Уверены что хотите удалить пакет вместе сфайлами?",
+                            "Подтвержение", MessageBoxButtons.YesNo);
+                if (dr2 == DialogResult.No) return;
+
+                if (batch.DeleteAllFiles())
+                {
+                    if (fromDB) SamplesDB.DeleteContainerBatch(header.id);
+                    else ImageManager.containerBatches.RemoveAt(header.id);
+                    FillTable();
+                }
+                else MessageBox.Show($"Не удалось удалить {batch.Count} файлов из пакета");
+                         
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось удалить пакет: \n" + ex.Message);
+                return;
+            }
+
+
+
+
+        }
+
         private void ChangeBatchVisiblity()
         {
             UpdatateDBHeaders();
@@ -262,13 +409,36 @@ namespace ImgAnalyzer.DialogForms
             FillTable(radioButton_showRelevant.Checked);
         }
 
+        private void SelectionChanged()
+        {
+            richTextBox1.Clear();
+            //ничего не выбрано
+            if (dataGridView1.SelectedRows.Count <= 0) return;
+            int index = dataGridView1.SelectedRows[0].Index;
+            //выбран разделитель
+            if (index == separator1_index
+                || index == separator2_index) return;
 
+            try
+            {
+                if (databaseHeaders_disp.Count > 0 && index > separator2_index)
+                {
+                    int offset_index = index - separator2_index - 1;
+                    int id = databaseHeaders_disp[offset_index].id;
+                    richTextBox1.Text = SamplesDB.GetBatchComment(id);
+                }
+            }
+            catch 
+            {
+
+            }
+
+        }
 
 
         private void button_show_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count <=0) return;
-            OpenImage(dataGridView1.SelectedRows[0].Index);
+            OpenImage();
         }
 
         private void button_add_Click(object sender, EventArgs e)
@@ -278,30 +448,9 @@ namespace ImgAnalyzer.DialogForms
 
         private void button_extract_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count <= 0) return;
-            int BatchIndex = dataGridView1.SelectedRows[0].Index;   
-            int n = -1;
-            string str = "Номер кадра";
-            ParameterRequestForm form = new ParameterRequestForm();
-            form.AddIntRequest(str);
-            form.ShowDialog();
-            if (form.DialogResult == DialogResult.OK)
-            {
-                n = form.RequestInt(str);
 
-            }
-            else return;
-            if (n >= ImageManager.containerBatches[BatchIndex].Count && n < 0)
-            {
-                MessageBox.Show("Index out of range");
-
-                return;
-            }
-            ExtractContainer(ImageManager.containerBatches[BatchIndex],n);
+            ExtractContainer();
         }
-
-
-
 
         private void button_select_Click(object sender, EventArgs e)
         {
@@ -316,6 +465,21 @@ namespace ImgAnalyzer.DialogForms
         private void radioButton_showRelevant_CheckedChanged(object sender, EventArgs e)
         {
             ChangeBatchVisiblity();
+        }
+
+        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            SelectionChanged();
+        }
+
+        private void button_delete_Click(object sender, EventArgs e)
+        {
+            DeleteBatchClick();
+        }
+
+        private void button_deletefiles_Click(object sender, EventArgs e)
+        {
+            DeleteWithFiles();
         }
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using ImgAnalyzer.DialogForms;
 using System.Threading;
 using NetTopologySuite.Triangulate;
+using System.IO;
 
 namespace ImgAnalyzer.Macros
 {
@@ -62,7 +63,8 @@ namespace ImgAnalyzer.Macros
 
         double range_percentile = 99.5;
 
-        
+        int lut_max_code = 4095;
+        int lut_min_code = 0;
 
 
 
@@ -114,6 +116,26 @@ namespace ImgAnalyzer.Macros
             folder2 = settings.Single(x => x.Name == "FolderB").GetValue<string>();
             folder3 = settings.Single(x => x.Name == "FolderC").GetValue<string>();
         }
+        private void AddStitchSettings()
+        {
+            settings.Add(SD.CreateLocal("stitch_thr", 70.0, this, "Порог границы фазы для сшивки"));
+        }
+        private void RetrieveStitchSettings()
+        {
+            stitch_thr = settings.Single(x => x.Name == "stitch_thr").GetValue<double>();
+        }
+        private void AddLutSettings()
+        {
+            settings.Add(SD.CreateLocal("lut_min_code", (int)0, this, "Минимально разрешенный код для LUT"));
+            settings.Add(SD.CreateLocal("lut_max_code", (int)4095, this, "Максимально разрешенный код для LUT"));
+        }
+        private void RetrieveLutSettings()
+        {
+            lut_min_code = settings.Single(x => x.Name == "lut_min_code").GetValue<int>();
+            lut_max_code = settings.Single(x => x.Name == "lut_max_code").GetValue<int>();
+
+        }
+
 
         private void RequestParams()
         {
@@ -124,6 +146,8 @@ namespace ImgAnalyzer.Macros
                 if (useAutoSquare) AddAutoSquareSettings();
             }
             if (calculationMode == PhaseCalculationMode.UseImages) AddPhaseSettings();
+            if (stitchMode == StitchMode.Calculate) AddStitchSettings();
+            if (generateLUT) AddLutSettings();
 
             if (settings.Count == 0) return;
             SettingsManager.RequestSettingList(settings,requestParams);
@@ -134,8 +158,10 @@ namespace ImgAnalyzer.Macros
                 if (useAutoSquare) RetrieveAutoSqareSettings();
             }
             if (calculationMode == PhaseCalculationMode.UseImages) RetrievePhaseSettings();
+            if (stitchMode == StitchMode.Calculate) RetrieveStitchSettings();
+            if (generateLUT) RetrieveLutSettings();
 
-            //add stitch and lut stuff
+
 
 
         }
@@ -143,7 +169,7 @@ namespace ImgAnalyzer.Macros
 
         public async Task Run(LogForm form)
         {
-
+            if (form == null) return;
             writeLog = form.AppendLog;
             //TODO: добавить запись в глобальный лог
             writeErrorLog = form.AppendErrorLog;
@@ -151,11 +177,31 @@ namespace ImgAnalyzer.Macros
             form.stopButtonClick += () => { cts.Cancel(); };
             cts = new CancellationTokenSource();
             cts.Token.ThrowIfCancellationRequested();
+            FileStream fs = null;
+            StreamWriter wr = null;
+            Directory.CreateDirectory("logs");
+            try 
+            {
+                fs = new FileStream($"logs\\auto_phase_log_{DateTime.Now:MM-dd_hh-mm-ss}.txt", FileMode.CreateNew);
+                wr = new StreamWriter(fs);
+                writeLog += (s) => wr.Write($"[{DateTime.Now:HH:mm:ss}]"+s+ Environment.NewLine);
+                writeErrorLog += (s) => wr.Write($"[{DateTime.Now:HH:mm:ss}]: err:" + s + Environment.NewLine);
+
+            }
+            catch (Exception ex) 
+            {
+                writeLog("Не удалось записать лог в файл: " + ex.Message);
+            }
             try
             {
                 await Task.Run(_run);
             }
             catch (Exception ex) { writeLog(ex.Message); }
+            finally 
+            {
+                wr?.Dispose();
+                fs?.Dispose();
+            }
         }
 
         private async Task _run()
@@ -415,6 +461,8 @@ namespace ImgAnalyzer.Macros
 
             writeLog("Расчет диапазона...");
             PhaseRange pr_calc = new PhaseRange();
+            pr_calc.internal_call = true;
+            pr_calc.DisplayMessage = writeLog;
             pr_calc.SingleValueParameters = new double[] { range_percentile };
             if (avg_start < avg_end)
                 pr_calc.ContainerParameters = new IContainer_2D[] { phase_start, phase_end };
@@ -453,6 +501,9 @@ namespace ImgAnalyzer.Macros
 
 
             LU_Table lut_calc = new LU_Table();
+
+            lut_calc.min_code = lut_min_code;
+            lut_calc.max_code = lut_max_code;
             lut_calc.internalCall = true;
             lut_calc.DisplayMessage += writeLog;
             lut_calc.SampleId = sample_id;

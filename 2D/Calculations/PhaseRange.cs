@@ -23,6 +23,9 @@ namespace ImgAnalyzer._2D
 
         public double top, bottom, range;
 
+        public bool internal_call= false;
+        public Action<string> DisplayMessage = (x) => { };
+
         public PhaseRange()
         {
             this.description =
@@ -46,6 +49,9 @@ namespace ImgAnalyzer._2D
 
         public override double[,] MeasureFull()
         {
+            if (!internal_call) DisplayMessage = (s) => MessageBox.Show(s); 
+
+
             double[,] result = new double[width, height];
             percentile = SingleValueParameters[0];
             sortedArrayCount = (int)((1 - percentile / 100 ) * width * height);
@@ -79,7 +85,7 @@ namespace ImgAnalyzer._2D
                     else result[i, j] = 0;
                 }
 
-            MessageBox.Show("Нижняя граница:\t" + bottom.ToString("F3") + " град. / " +
+            DisplayMessage("Диапазон:\nНижняя граница:\t" + bottom.ToString("F3") + " град. / " +
                 (bottom / 180 ).ToString("F3") + "П\n" +
                 "Верхняя граница:\t" + top.ToString("F3") + " град. / " +
                 (top / 180 ).ToString("F3") + "П\n" +
@@ -137,48 +143,7 @@ namespace ImgAnalyzer._2D
 
 
 
-        public override void Process()
-        {
-             
-
-
-            int step = (int)SingleValueParameters[0];
-            int xcount = width / step;
-            int ycount = height / step;
-
-
-            List<double> dx = new List<double>();
-            List<double> dy = new List<double>();
-
-            double[] datax = new double[xcount * ycount];
-            double[] datay = new double[xcount * ycount];
-
-            for (int i = 0; i < xcount; i++) 
-                for (int j = 0; j < ycount; j++)
-                {
-                    //i,j - grid indicies
-                    //x,y - container indicies
-                    int x = i * step;
-                    int y = j * step;
-                    if (ContainerParameters[0].ddata(x, y) != 0 && ContainerParameters[1].ddata(x, y) != 0)
-                    {
-                        dx.Add(ContainerParameters[0].ddata(x, y));
-                        dy.Add(ContainerParameters[1].ddata(x, y));
-                    }
-
-
-
-                }
-
-            PlotForm form = new PlotForm(ContainerParameters[0].Name);
-            form.Text ="Plot: "+ ContainerParameters[0].Name + " vs " + ContainerParameters[1].Name;
-            form.AddDataMarkers(ContainerParameters[0].Name, dx.ToArray(), dy.ToArray());
-            form.Show();
-
-
-
-        }
-
+      
 
 
 

@@ -334,8 +334,6 @@
             // checkBox_req_params
             // 
             this.checkBox_req_params.AutoSize = true;
-            this.checkBox_req_params.Checked = true;
-            this.checkBox_req_params.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_req_params.Location = new System.Drawing.Point(26, 488);
             this.checkBox_req_params.Name = "checkBox_req_params";
             this.checkBox_req_params.Size = new System.Drawing.Size(213, 17);

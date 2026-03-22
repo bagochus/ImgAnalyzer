@@ -66,8 +66,8 @@ namespace ImgAnalyzer._2D.GroupOperations
         int lut_width = 64;
         int lut_height = 64;
         int lut_depth = 256;
-        int max_code = 4095;
-        int min_code = 0;
+        public int max_code = 4095;
+        public int min_code = 0;
         int totalCells { get => lut_width * lut_height * lut_depth; }
         int totalBlocks { get => lut_height * lut_depth; }
 

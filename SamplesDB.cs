@@ -161,7 +161,9 @@ namespace ImgAnalyzer
 
 
         }
-
+        /// <summary>
+        /// Возвращает комментарий к образцу id 
+        /// </summary>
         public static string GetSampleComment(int id)
         {
             using (var connection = new SQLiteConnection(connectionString))
@@ -665,6 +667,59 @@ namespace ImgAnalyzer
 
 
         }
+
+        /// <summary>
+        /// Возвращает комментарий к образцу id 
+        /// </summary>
+        public static string GetBatchComment(int id)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT Comment FROM ContainerBatches WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+
+                    var result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return result.ToString();
+                    }
+
+                    return string.Empty;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Удаляет запись из таблицы ContainerBatches по ID
+        /// </summary>
+        /// <param name="id">ID партии для удаления</param>
+        /// <returns>true если удаление успешно, false если запись не найдена</returns>
+        public static bool DeleteContainerBatch(int id)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "DELETE FROM ContainerBatches WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+
+
+
+
     }
 
 }
