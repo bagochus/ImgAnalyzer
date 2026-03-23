@@ -144,7 +144,7 @@ namespace ImgAnalyzer
 
 
             UpdateSamplesList();
-            comboBox_sample.SelectedIndex = 0;
+            if (sampleList.Count > 0) comboBox_sample.SelectedIndex = 0;
             
 
 
