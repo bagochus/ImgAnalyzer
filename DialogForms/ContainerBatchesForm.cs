@@ -228,6 +228,7 @@ namespace ImgAnalyzer.DialogForms
         private void CreateContainerBatch()
         {
             AddBatchToDB.AddNewBatch();
+            FillTable();
         }
 
 
@@ -314,7 +315,7 @@ namespace ImgAnalyzer.DialogForms
             if (localHeaders_disp.Count > 0 && index <= localHeaders_disp.Count)
             {
 
-                return localHeaders_disp[index + 1];
+                return localHeaders_disp[index - 1];
             }
             else if (databaseHeaders_disp.Count > 0 && index > separator2_index)
             {

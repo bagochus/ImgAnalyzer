@@ -154,6 +154,8 @@ namespace ImgAnalyzer.DialogForms
                     ComboBox cb = new ComboBox();
                     cb.Location = new Point(column2_x, y_current);
                     cb.Items.AddRange(avaiable_imgSources.ToArray());
+                    cb.Items.Add("Выбрать из базы");
+                    cb.SelectedIndexChanged += ImgSourceBoxItemChanged;
                     this.Controls.Add(cb);
                     comboBox_sources.Add(cb);
                     y_current += y_step;
@@ -165,6 +167,13 @@ namespace ImgAnalyzer.DialogForms
 
         }
 
+        private void ImgSourceBoxItemChanged(object sender, EventArgs args)
+        {
+            ComboBox box = sender as ComboBox;
+            int intdex = comboBox_sources.FindIndex((x) => x ==box);
+        
+
+        }
 
         private void ClearForm()
         {
