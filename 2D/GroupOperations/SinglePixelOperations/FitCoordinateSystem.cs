@@ -105,5 +105,9 @@ namespace ImgAnalyzer._2D.GroupOperations.SinglePixelOperations
             return true;
         }
 
+        public void AppendUserComment(string comment)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

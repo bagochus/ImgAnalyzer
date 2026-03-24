@@ -45,7 +45,8 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         public bool UseTransformation { get; set; }
 
-        public string UserComment { get; set; }
+        private string userComment = "";
+        public string UserComment { get => userComment; }
 
         public int SampleId { get; set; }
 
@@ -783,7 +784,9 @@ namespace ImgAnalyzer._2D.GroupOperations
             }
         }
 
-
-
+        public void AppendUserComment(string comment)
+        {
+            userComment += comment;
+        }
     }
 }

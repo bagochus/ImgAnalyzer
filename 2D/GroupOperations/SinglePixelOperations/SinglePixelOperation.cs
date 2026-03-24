@@ -196,6 +196,9 @@ namespace ImgAnalyzer._2D.GroupOperations
         protected abstract void Prepare();
         protected abstract void Finish();
 
-
+        public void AppendUserComment(string comment)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

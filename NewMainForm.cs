@@ -417,6 +417,7 @@ namespace ImgAnalyzer
             autoPhase.generateLUT = generateLUT;
             autoPhase.requestParams = checkBox_req_params.Checked;
             autoPhase.sample_id = selectedSampleId;
+            autoPhase.comment = richTextBox_batch.Text;
 
 
 

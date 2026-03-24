@@ -21,7 +21,9 @@ namespace ImgAnalyzer._2D.GroupOperations
         bool UseTransformation { get; set; }
 
 
-        string UserComment { get; set; }
+        string UserComment { get;  }
+        void AppendUserComment(string comment);
+
 
         int SampleId { get; set; }
 

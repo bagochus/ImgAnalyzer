@@ -9,24 +9,24 @@ using System.Windows.Forms;
 
 namespace ImgAnalyzer._2D.GroupOperations
 {
-    public class NewCT_test : IGroupOperation
+    public class ApplyCT_ampl : IGroupOperation
     {
 
         //-------------interface properties-----------------------------
-        public string Description { get => "Test";  }
+        public string Description { get => "Applies ct on img group based on autosqr algo ";  }
 
         public double[] SingleValueParameters {  get; set; }
 
-        string[] singeValueNames = new string[] { "n" };
+        string[] singeValueNames = new string[0];// { "" };
         public string[] SingleValueNames { get { return singeValueNames; } }
 
         public IContainer_2D[] ContainerParameters { get; set; }
 
-        public string[] ContainerNames { get { return new string[0]; } }
+        public string[] ContainerNames { get { return new string[] { "Ampl map"}; } }
 
         public IImageSource[] imageSources { get; set; }
 
-        private string[] imgSourceNames = { "A"};
+        private string[] imgSourceNames = { "ImgGroup"};
         public string[] imageSourceNames { get { return imgSourceNames; } }
 
         public bool UseTransformation { get; set; }
@@ -48,20 +48,12 @@ namespace ImgAnalyzer._2D.GroupOperations
         {
 
 
+            SqareFitter sf = new SqareFitter(ContainerParameters[0]);
 
-            int n = (int)SingleValueParameters[0];
-
-
-
-            var ib0 = (imageSources[0] as ImageBatch);
+            try { imageSources[0].coordinateTransformation = sf.FindRange(); }
+            catch (Exception ex) { }
 
 
-            var hndl0 = (imageSources[0].Get2DFileHandler(n) as TiffImgFileHandler);
-
-
-            double[,] ddataA = ImageProcessor_2D.FitImage2(hndl0, ib0.coordinateTransformation);
-
-            DataManager_2D.containers.Add(new Container_2D_double(ddataA) {Name = "Test" });
             
            
         }

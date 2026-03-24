@@ -32,11 +32,14 @@ namespace ImgAnalyzer._2D
         private double x_angle_start, x_angle_stop, y_angle_start, y_angle_stop;
         private double inial_step, final_step;
         public double thrContrast = 0.5;
-        public double profileContrast = 45;
+        public double profileContrast = 15;
         public double widthMismath = 0.02;
         public int gridStep = 50;
 
         public int aa_size = 512;
+
+        public int sa_window_size = 4;
+
 
         public SqareFitter(IContainer_2D container)
         {
@@ -106,32 +109,59 @@ namespace ImgAnalyzer._2D
         }
 
 
+        private double[] SlidingDerivative(double[] input, int window_size)
+        {
+            if (window_size < 0 || window_size > input.Length / 2 ) throw new ArgumentException("Incorrect SA window size");
+            
+            double[] result = new double [input.Length];
+
+            for (int i = window_size; i < result.Length - window_size; i++)
+            {
+                double sum_left = 0;
+                double sum_right = 0;
+                for (int j = 0; j < window_size; j++)
+                {
+                    sum_left += input[i - j];
+                    sum_right += input[i + j];
+                }
+                result[i] = Math.Abs(sum_right - sum_left);
+            }
+            return result;
+        }
+
 
         private ProfileScanResult ScanContainer (int coord, bool X)
         {
             ProfileScanResult result = new ProfileScanResult();
             result.Coordinate = coord;
             double[] values = X? GetXProfile(coord) : GetYProfile(coord);
-            double threshold = values.Min() + (values.Max()-values.Min())*thrContrast;
+            //double threshold = values.Min() + (values.Max()-values.Min())*thrContrast;
             result.Left = -1;
-            for (int i = 0; i < values.Length - 1; i++)
-            {
-                if (values[i] <= threshold && values[i + 1] >= threshold)
+
+            double[] dv = SlidingDerivative(values, sa_window_size);
+
+
+            double max_left = 0;
+            for (int i = 0; i < values.Length / 2; i++)
+            { 
+                if (dv[i]>max_left)
                 {
-                    result.Left = i + (values[i + 1] - values[i]) / (threshold - values[i]);
-                    break;
+                    max_left = dv[i];
+                    result.Left = i;
                 }
-                    
             }
 
-            for (int i = values.Length - 1; i >= 1; i--)
+            double max_right = 0;
+            for (int i = values.Length / 2; i < values.Length; i++)
             {
-                if (values[i] <= threshold && values[i - 1] >= threshold)
-                {
-                    result.Right = i - (values[i - 1] - values[i]) / (threshold - values[i]);
-                    break;
+                if (dv[i] > max_right)
+                { 
+                    max_right = dv[i];
+                    result.Right = i;
                 }
             }
+
+
 
             if (result.Left > 0 && result.Right > 0 && result.Right > result.Left)
             {

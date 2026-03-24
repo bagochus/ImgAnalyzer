@@ -191,11 +191,9 @@ namespace ImgAnalyzer._2D.GroupOperations
 
         }
 
-
-
-
-
-
-
+        public void AppendUserComment(string comment)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using SD = ImgAnalyzer.SettingDefinition;
-using System.Drawing;
-using ImgAnalyzer._2D;
-using ImgAnalyzer._2D.GroupOperations;
-using ImgAnalyzer._2D.GroupOperations.SinglePixelOperations;
-using System.ComponentModel;
-using System.Windows.Forms;
-using ImgAnalyzer.DialogForms;
-using System.Threading;
-using NetTopologySuite.Triangulate;
-using System.IO;
+﻿using ImgAnalyzer._2D;
 using ImgAnalyzer._2D.Calculations;
+using ImgAnalyzer._2D.GroupOperations;
+using ImgAnalyzer.DialogForms;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SD = ImgAnalyzer.SettingDefinition;
 
 namespace ImgAnalyzer.Macros
 {
@@ -57,6 +50,7 @@ namespace ImgAnalyzer.Macros
         private double profileContrast = 20;
         private double widthMismath = 0.02;
         private int gridStep = 50;
+        private int autorange_sa_window = 3;
 
         double k1, k2, k3, m1, m2, m3;
 
@@ -93,13 +87,15 @@ namespace ImgAnalyzer.Macros
         {
             settings.Add(SD.CreateLocal("img_step", 5, this, "Шаг по изображениям при расчете амплитуды"));
             settings.Add(SD.CreateLocal("active_area_size", 512, this, "Разрешение получаемых фазовых карт"));
-            settings.Add(SD.CreateLocal("profile_contrast", 20.0, this, "Контраст профиля для алгоритма поиска акт.области"));
+            settings.Add(SD.CreateLocal("profile_contrast", 10.0, this, "Контраст профиля для алгоритма поиска акт.области"));
+            settings.Add(SD.CreateLocal("autorange_sa_window", (int)3, this, "Контраст профиля для алгоритма поиска акт.области"));
         }
         private void RetrieveAutoSqareSettings()
         {
             img_step = settings.Single(x => x.Name == "img_step").GetValue<int>();
             active_area_res = settings.Single(x => x.Name == "active_area_size").GetValue<int>();
             profileContrast = settings.Single(x => x.Name == "profile_contrast").GetValue<double>();
+            autorange_sa_window = settings.Single(x => x.Name == "autorange_sa_window").GetValue<int>();
         }
         private void AddImageSettings()
         {
@@ -345,6 +341,7 @@ namespace ImgAnalyzer.Macros
             cts.Token.ThrowIfCancellationRequested();
             writeLog("Расчет амплитуды для группы изображений А...");
             Container_2D_int ampl_a = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_A(), img_step));
+            DataManager_2D.containers.Add(ampl_a);
             writeLog("Поиск активной области для группы изображений А");
             var sf1 = new SqareFitter(ampl_a);
             FillFitterField(sf1);
@@ -353,6 +350,7 @@ namespace ImgAnalyzer.Macros
             cts.Token.ThrowIfCancellationRequested();
             writeLog("Расчет амплитуды для группы изображений B...");
             Container_2D_int ampl_b = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_B(), img_step));
+            DataManager_2D.containers.Add(ampl_b);
             writeLog("Поиск активной области для группы изображений B");
             var sf2 = new SqareFitter(ampl_b);
             FillFitterField(sf2);
@@ -361,6 +359,7 @@ namespace ImgAnalyzer.Macros
             cts.Token.ThrowIfCancellationRequested();
             writeLog("Расчет амплитуды для группы изображений C...");
             Container_2D_int ampl_c = new Container_2D_int(ImageProcessor_2D.Amplitude(ImageManager.Batch_C(), img_step));
+            DataManager_2D.containers.Add(ampl_b);
             writeLog("Поиск активной области для группы изображений C");
             var sf3 = new SqareFitter(ampl_c);
             FillFitterField(sf3);
@@ -402,7 +401,7 @@ namespace ImgAnalyzer.Macros
             pmg._cancellationToken = cts.Token;
             pmg.SampleId = sample_id;
             pmg.internal_call = true;
-            pmg.UserComment = comment;
+            pmg.AppendUserComment( comment);
             //-----------------------------
             await pmg.Execute();
 
@@ -432,7 +431,8 @@ namespace ImgAnalyzer.Macros
             sfw.ContainerParameters = new IContainer_2D[] { phase_stitched };
             sfw.imageSources = new IImageSource[] { phaseBatch };
             sfw._cancellationToken = cts.Token;
-            sfw.UserComment = $"Сшивка первого кадра произведена по алгоритму заливки, порог фазы = {stitch_thr}";
+            sfw.AppendUserComment ( $"Сшивка первого кадра произведена по алгоритму заливки, порог фазы = {stitch_thr}");
+            sfw.AppendUserComment( $"При сшивке проигнорировано {stitch_calc.err_count} битых пикселей");
 
             sfw.containerPorcessed += () =>
             {
@@ -556,6 +556,7 @@ namespace ImgAnalyzer.Macros
             sf.profileContrast = profileContrast;
             sf.widthMismath = widthMismath;
             sf.gridStep = gridStep;
+            sf.sa_window_size = autorange_sa_window;
 
         }
 
