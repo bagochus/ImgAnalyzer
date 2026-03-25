@@ -159,7 +159,7 @@ namespace ImgAnalyzer
 
                 ConstructImage();
             }
-
+            this.sources.Add(imageSource);
 
 
         }
@@ -918,6 +918,7 @@ namespace ImgAnalyzer
             CoordinateLabel.Text = $"Coordinates: ({x}, {y}) Value = " + hndl.GetPixelValue(x, y).ToString();
             if (slice_x) SliceX(y);
             if (slice_y) SliceY(x);
+            ImageClick(x,y);
         }
     }
 }

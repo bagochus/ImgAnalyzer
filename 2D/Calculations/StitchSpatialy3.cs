@@ -56,7 +56,7 @@ namespace ImgAnalyzer._2D
 
 
         public int err_count = 0;
-        public bool save_debug_data = false;
+        public bool save_debug_data = true;
 
         public StitchSpatially3()
         {

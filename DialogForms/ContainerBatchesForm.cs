@@ -33,6 +33,8 @@ namespace ImgAnalyzer.DialogForms
 
         private string sample_name = "";
         private string type = "";
+        bool selectionFilterEnabled = false;
+        bool selectionFilter = false;
 
         public static ContainerBatch GetBatch(string sample, string type)
         {
@@ -45,15 +47,30 @@ namespace ImgAnalyzer.DialogForms
 
         public ContainerBatchesForm(bool selectMode = false, string sample_name = "", string type = "")
         {
+            InitializeComponent();
+
             this.sample_name = sample_name;
             this.type = type;
-            InitializeComponent();
+            selectionFilterEnabled = selectMode;
+            selectionFilterEnabled &= (sample_name?.Length > 0 & type?.Length > 0);
+
+            selectionFilter = selectMode && selectionFilterEnabled;
+
+
+
+  
             if(!selectMode) HideSelectModeControls();
 
             InitTable();
 
-            FillTable(selectMode);
+            FillTable(selectMode && selectionFilterEnabled);
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+            radioButton_shoall.Checked = !selectionFilter;
+            radioButton_showRelevant.Checked = selectionFilter;
+            groupBox_showmode.Visible = selectMode;
+            groupBox_showmode.Enabled = selectionFilterEnabled;
+
         }
 
 
@@ -404,10 +421,13 @@ namespace ImgAnalyzer.DialogForms
 
         private void ChangeBatchVisiblity()
         {
+            selectionFilter = radioButton_showRelevant.Checked;
+
+
             UpdatateDBHeaders();
             UpdateLocalHeaders();
 
-            FillTable(radioButton_showRelevant.Checked);
+            FillTable(selectionFilter);
         }
 
         private void SelectionChanged()

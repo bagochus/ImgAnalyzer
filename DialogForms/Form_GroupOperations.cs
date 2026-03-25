@@ -170,9 +170,21 @@ namespace ImgAnalyzer.DialogForms
         private void ImgSourceBoxItemChanged(object sender, EventArgs args)
         {
             ComboBox box = sender as ComboBox;
-            int intdex = comboBox_sources.FindIndex((x) => x ==box);
-        
-
+            int box_index = comboBox_sources.FindIndex((x) => x ==box);
+            if (box.SelectedIndex == box.Items.Count - 1)
+            {
+                var batch = ContainerBatchesForm.GetBatch("", "");
+                if (batch != null) 
+                {
+                   box.Items.Clear();
+                    box.Items.AddRange(avaiable_imgSources.ToArray());
+                    box.Items.Add(batch.Name);
+                    box.Items.Add("Выбрать из базы");
+                    box.SelectedIndex = box.Items.Count - 2;
+                    operation.imageSources[box_index] = batch;
+                }
+                else box.SelectedIndex = -1;
+            }
         }
 
         private void ClearForm()
@@ -225,19 +237,25 @@ namespace ImgAnalyzer.DialogForms
         {
             int index = listBox_operations.SelectedIndex;
             if (index == -1) return;
-            var opr = Activator.CreateInstance(types[index]) as IGroupOperation;
-            operation = opr;
+            operation = Activator.CreateInstance(types[index]) as IGroupOperation;
             ClearForm();
-            ConstructForm(opr);
-        }
+            ConstructForm(operation);
+            if (operation.SingleValueNames.Length > 0)
+                operation.SingleValueParameters = new double[operation.SingleValueNames.Length];
+            if (operation.ContainerNames.Length > 0)
+                operation.ContainerParameters = new IContainer_2D[operation.ContainerNames.Length];
+            if (operation.imageSourceNames.Length > 0)
+                operation.imageSources = new IImageSource[operation.imageSourceNames.Length];
+            }
 
-        private async void Execute()
+        private void Execute()
         {
-            if (ReadForm(operation))
+            if (ReadForm())
             {
-                await operation.Execute();
+#pragma warning disable CS4014
+                operation.Execute();
+#pragma warning restore CS4014
                 this.Close();
-
             }
 
 
@@ -246,49 +264,50 @@ namespace ImgAnalyzer.DialogForms
 
 
 
-        private bool ReadForm(IGroupOperation op)
+        private bool ReadForm()
         {
+            IGroupOperation op = operation;
             bool input_valid = true;
             try
             {
                 if (op.SingleValueNames.Length > 0)
                 {
-                    double[] SingleValueParameters = new double[op.SingleValueNames.Length];
+                    //double[] SingleValueParameters = new double[op.SingleValueNames.Length];
                     for (int i = 0; i < op.SingleValueNames.Length; i++)
                     {
-                        SingleValueParameters[i] = Double.Parse(this.values_single[i].Text);
+                        op.SingleValueParameters[i] = Double.Parse(this.values_single[i].Text);
                     }
-                    op.SingleValueParameters = SingleValueParameters;
+                    //op.SingleValueParameters = SingleValueParameters;
                 }
 
                 if (op.ContainerNames.Length > 0)
                 {
-                    IContainer_2D[] containers = new IContainer_2D[op.ContainerNames.Length];
-                    for (int i = 0; i < containers.Length; i++)
+                    //IContainer_2D[] containers = new IContainer_2D[op.ContainerNames.Length];
+                    for (int i = 0; i < op.ContainerParameters.Length; i++)
                     {
                         int selected = comboBox_containers[i].SelectedIndex;
                         if (selected == -1) throw new Exception("Не выбран массив " + op.ContainerNames[i]);
-                        containers[i] = DataManager_2D.containers[selected];
+                        op.ContainerParameters[i] = DataManager_2D.containers[selected];
                     }
-                    op.ContainerParameters = containers;
+                    //op.ContainerParameters = containers;
                 }
 
                 if (op.imageSourceNames.Length > 0)
                 {
-                    IImageSource[] sources = new IImageSource[op.imageSourceNames.Length];
-                    for (int i = 0; i < sources.Length; i++)
+                    //IImageSource[] sources = new IImageSource[op.imageSourceNames.Length];
+                    for (int i = 0; i < op.imageSources.Length; i++)
                     {
                         int selected = comboBox_sources[i].SelectedIndex;
                         if (selected == -1) throw new Exception("Не выбран массив " + op.imageSourceNames[i]);
-                        sources[i] = ImageManager.imageSources[selected];
+                        if (selected >= ImageManager.imageSources.Count) continue;
+                        op.imageSources[i] = ImageManager.imageSources[selected];
                     }
-                    op.imageSources = sources;
+                    //op.imageSources = sources;
                 }
 
                 op.UseTransformation = checkBox_use_ct.Checked;
                 if (checkBox_use_ct.Checked)
                 {
-
                     foreach (var s in op.imageSources) input_valid &= s.coordinateTransformation != null;
                 }
                 if (!input_valid) throw new Exception("Не укзанана система координат");
