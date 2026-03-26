@@ -1,4 +1,4 @@
-﻿#define Multithread
+﻿//#define Multithread
 
 using BitMiracle.LibTiff.Classic;
 using ImgAnalyzer._2D;

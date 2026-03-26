@@ -55,17 +55,20 @@ namespace ImgAnalyzer._2D.GroupOperations
             result = new double[width, height];
             DataManager_2D.workToBeDone += imageSources[0].Count;
 
-            if (imageSources[0] is ImageBatch)
+            await Task.Run(() =>
             {
-                if (UseTransformation) await ProcessTiffCT();
-                else ProcessTiff();
+                if (imageSources[0] is ImageBatch)
+                {
+                    if (UseTransformation) ProcessTiffCT();
+                    else ProcessTiff();
 
-            }
-            else
-            {
-                 ProcessContainer();
+                }
+                else
+                {
+                    ProcessContainer();
+                }
+            });
 
-            }
 
 
 
@@ -86,7 +89,7 @@ namespace ImgAnalyzer._2D.GroupOperations
         }
 
 
-        private async Task ProcessTiffCT()
+        private void ProcessTiffCT()
         {
             Prepare();
             for (int image_counter = 0; image_counter < imageSources[0].Count; image_counter++)
@@ -95,7 +98,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 {
 #if Multithread
 
-                    double[,] data2D = await ImageProcessor_2D.FitImage(hndl, imageSources[0].coordinateTransformation);
+                    double[,] data2D =  ImageProcessor_2D.FitImage2(hndl, imageSources[0].coordinateTransformation);
 
                     Parallel.For(0, height, (int y) =>
                     {

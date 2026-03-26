@@ -225,7 +225,7 @@ namespace ImgAnalyzer.DialogForms
         private void SelectItem()
         {
             int index = comboBox_type.SelectedIndex;
-
+            if (index < 0) return;
             var calc = Activator.CreateInstance(types[index]) as ICalculation2D;
             calculation = calc;
             ClearForm();

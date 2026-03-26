@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,8 +34,11 @@ namespace ImgAnalyzer._2D.Calculations
 
         }
 
-        private double AvgValue(int x, int y)
+        private double MedianValue(int x, int y)
         {
+            double[] values = new double[2*r*r+2*r+1];
+
+
             int x_start, x_end, y_start, y_end;
             if (x < r)
             {
@@ -68,21 +72,46 @@ namespace ImgAnalyzer._2D.Calculations
                 y_end = y + r;
             }
 
-            double sum = 0;
+            for (int i = 0; i < values.Length; i++) values[i] = double.MaxValue;
+
+
             for (int i = x_start; i <= x_end; i++)
                 for (int j = y_start; j <= y_end; j++)
-                    sum += ContainerParameters[0].ddata(i, j);
-            sum /= (2*r + 1) * (2*r + 1);
-            return sum;
+                    InsertElement(ref values, ContainerParameters[0].ddata(i, j));
+            return values[values.Length - 1];
 
         }
+
+        private void InsertElement(ref double[] array, double value)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (value < array[i])
+                {
+                    double insert_value = array[i];
+                    array[i] = value;
+                    for (int j = i + 1; j < array.Length; j++)
+                    { 
+                        double temp = array[j];
+                        array[j] = insert_value;
+                        insert_value = temp;
+                        if (temp == double.MaxValue) return;
+                        
+                    }
+                    return;
+                }  
+            }
+        }
+
+
+
 
         public override double Measure(int x, int y)
         {
             double point = ContainerParameters[0].ddata(x, y);
-            double area = AvgValue(x, y);
-            double diff = Math.Abs((point - area) / area);
-            return diff < d ? normal_value : except_value;
+            double area = MedianValue(x, y);
+            double diff = Math.Abs((point - area));
+            return diff;//< d ? normal_value : except_value;
         }
                                 
 

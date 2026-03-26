@@ -1,6 +1,7 @@
 ﻿using ScottPlot.SubplotPositions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,9 @@ namespace ImgAnalyzer._2D
         }
 
         public override double Measure(int x, int y)
-        {
+        { 
+            if (x== 378 && y==327)Debugger.Break();
+
             Func<int, int, double> inp = (xx, yy) => ContainerParameters[0].ddata(xx, yy); 
             Func<int, int, double> mask = (xx, yy) => ContainerParameters[1].ddata(xx, yy);
 
@@ -35,7 +38,7 @@ namespace ImgAnalyzer._2D
             {
                 if (mask(x, yt) != 0)
                 {
-                    inverse_d += 1/Math.Abs(y - yt);
+                    inverse_d += 1.0f/Math.Abs(y - yt);
                     sum += inp(x, yt) / (double)(Math.Abs(y - yt));
                     break;
                 }
@@ -45,7 +48,7 @@ namespace ImgAnalyzer._2D
             {
                 if (mask(x, yt) != 0)
                 {
-                    inverse_d += 1/Math.Abs(y - yt);
+                    inverse_d += 1.0f/Math.Abs(y - yt);
                     sum += inp(x, yt) / (double)(Math.Abs(y - yt));
                     break;
                 }
@@ -55,7 +58,7 @@ namespace ImgAnalyzer._2D
             {
                 if (mask(xt, y) != 0)
                 {
-                    inverse_d += 1/Math.Abs(x - xt);
+                    inverse_d += 1.0f/Math.Abs(x - xt);
                     sum += inp(xt, y) / (double)(Math.Abs(x - xt));
                     break;
                 }
@@ -65,7 +68,7 @@ namespace ImgAnalyzer._2D
             {
                 if (mask(xt, y) != 0)
                 {
-                    inverse_d += 1 / Math.Abs(x - xt);
+                    inverse_d += 1.0f / Math.Abs(x - xt);
                     sum += inp(xt, y) / (double)(Math.Abs(x - xt));
                     break;
                 }
