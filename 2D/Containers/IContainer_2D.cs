@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,9 @@ namespace ImgAnalyzer._2D
         double SumWhere(Func<double, bool> criteria);
 
         int CountWhere(Func<double, bool> criteria);
+
+         void Heaviside();
+
 
     }
 }

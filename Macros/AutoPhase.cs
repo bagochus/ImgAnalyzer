@@ -56,12 +56,17 @@ namespace ImgAnalyzer.Macros
 
         double stitch_thr = 70;
 
-        double range_percentile = 99.5;
+        double range_percentile = 99.99;
 
         int lut_max_code = 4095;
         int lut_min_code = 0;
         double phase_range_thr = 30;
+        double phase_diff_thr = 10;
+        int median_area_r = 3;
 
+        double phase_lo;
+        double phase_hi;
+        Container_2D mask;
 
         private void AddPhaseSettings()
         {
@@ -125,13 +130,22 @@ namespace ImgAnalyzer.Macros
         {
             settings.Add(SD.CreateLocal("lut_min_code", (int)0, this, "Минимально разрешенный код для LUT"));
             settings.Add(SD.CreateLocal("lut_max_code", (int)4095, this, "Максимально разрешенный код для LUT"));
-            settings.Add(SD.CreateLocal("phase_range_thr", 30.0, this, "Порог фазового диапазона для того чтобы считать пиксель дефектным"));
+            //settings.Add(SD.CreateLocal("phase_range_thr", 30.0, this, "Порог фазового диапазона для того чтобы считать пиксель дефектным"));
+            settings.Add(SD.CreateLocal("phase_diff_thr", 10.0, this,
+                "Порог выброса фазы для того чтобы считать пиксель дефектным"));
+            settings.Add(SD.CreateLocal("median_area_r", 10.0, this, "Радиус окна медианного фильтра"));
+
+
+
+
         }
         private void RetrieveLutSettings()
         {
             lut_min_code = settings.Single(x => x.Name == "lut_min_code").GetValue<int>();
             lut_max_code = settings.Single(x => x.Name == "lut_max_code").GetValue<int>();
-            phase_range_thr = settings.Single(x => x.Name == "phase_range_thr").GetValue<double>();
+           // phase_range_thr = settings.Single(x => x.Name == "phase_range_thr").GetValue<double>();
+            phase_diff_thr = settings.Single(x => x.Name == "phase_diff_thr").GetValue<double>();
+            median_area_r = settings.Single(x => x.Name == "median_area_r").GetValue<int>();
         }
 
 
@@ -204,7 +218,9 @@ namespace ImgAnalyzer.Macros
 
         private async Task _run()
         {
+            if (requestParams)
             writeLog("Запрос параметров от пользователя...");
+            else writeLog("Запрос параметров из БД...");
             RequestParams();
 
             if (calculationMode == PhaseCalculationMode.UseImages)
@@ -322,14 +338,54 @@ namespace ImgAnalyzer.Macros
                 {
                     writeErrorLog("Не удалось выполнить поиск активных областей");
                     writeErrorLog(ex.Message);
-                    return;
+                    throw new Exception("Не удалось выполнить поиск активных областей");
                 }
             }
             else
             {
-                throw new NotImplementedException();
+                string text = "";
+                writeLog("Задайте активные области для груп изображений: ");
+                writeLog("Главная форма->Открыть изображение->Определить активную область");
+                writeLog("Выберите углы изображения: Нижний левый > Верхний левый > Верхний правый");
+                writeLog("Ожидание ввода пользователя...");
+
+                while (!CheckActiveAreas(out text) )//|| cts.IsCancellationRequested)
+                { 
+                    replaceLastLine(text);
+                    if (cts.IsCancellationRequested) throw new Exception("Операция отменена");
+                    Thread.Sleep(500);
+                }
+                writeLog("Активные области заданы, продолжаем");
             }
 
+
+        }
+
+
+        private bool CheckActiveAreas(out string text)
+        {
+            text = "__";
+            bool result = (ImageManager.Batch_A().coordinateTransformation != null);
+            result &= (ImageManager.Batch_B().coordinateTransformation != null);
+            result &= (ImageManager.Batch_C().coordinateTransformation != null);
+            if (!result) { text = "Пока не определены все активные области"; return false; }
+
+            CoordinateTransformation ct_a = ImageManager.Batch_A().coordinateTransformation;
+            CoordinateTransformation ct_b = ImageManager.Batch_B().coordinateTransformation;
+            CoordinateTransformation ct_c = ImageManager.Batch_C().coordinateTransformation;
+
+            result &= ct_a.frame_width == ct_b.frame_width;
+            result &= ct_a.frame_height == ct_b.frame_height;
+
+            result &= ct_a.frame_width == ct_c.frame_width;
+            result &= ct_a.frame_height == ct_c.frame_height;
+
+            if (!result) 
+                { text = $"Не совпадают размеры! A{ct_a.frame_width}:{ct_a.frame_height} " +
+                    $"B{ct_b.frame_width}:{ct_b.frame_height} " +
+                    $"C{ct_c.frame_width}:{ct_c.frame_height} " ; return false; }
+
+            return result;
 
         }
 
@@ -452,6 +508,37 @@ namespace ImgAnalyzer.Macros
 
         }
 
+        private IContainer_2D FindDefectPixels()
+        {
+
+            var phase_start = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[0]);
+            var phase_end = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[stitchedPhaseBatch.Count - 1]);
+
+            double avg_start = ImageProcessor_2D.CalculateAverage(phase_start, 8);
+            double avg_end = ImageProcessor_2D.CalculateAverage(phase_end, 8);
+
+            var phase_min = avg_start < avg_end ? phase_start : phase_end;
+            var phase_max = avg_start < avg_end ? phase_end : phase_start;
+
+            var pf_calc = new PeakFilter();
+            pf_calc.SingleValueParameters = new double[] { median_area_r };
+
+            pf_calc.ContainerParameters = new IContainer_2D[] { phase_min };
+            var min_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
+
+            pf_calc.ContainerParameters = new IContainer_2D[] { phase_max };
+            var max_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
+
+            var thr_calc = new Threshold();
+            thr_calc.SingleValueParameters = new double[] { 1, 0, 0, phase_diff_thr, phase_diff_thr };
+            thr_calc.ContainerParameters = new IContainer_2D[] { min_phase_diff };
+
+
+
+
+        }
+
+
         private async Task GeneratuLUT()
         {
 
@@ -491,7 +578,6 @@ namespace ImgAnalyzer.Macros
             threshold_calc.ContainerParameters = new IContainer_2D[] { diff_map};
 
             IContainer_2D defect_map = new Container_2D_double(ImageProcessor_2D.PerformCalculation(threshold_calc));
-
 
 
 
@@ -544,6 +630,10 @@ namespace ImgAnalyzer.Macros
                 return;
             }
             writeLog("Обработка завершениа");
+
+
+
+
         }
 
         

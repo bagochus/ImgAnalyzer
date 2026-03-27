@@ -145,5 +145,58 @@ namespace ImgAnalyzer._2D
 
 
         public abstract int CountWhere(Func<double, bool> criteria);
+
+
+        public static Container_2D operator +(Container_2D left, Container_2D right)
+        { 
+            if (left.Width != right.Width || left.Height != right.Height) throw new ArgumentException();
+            if (left is Container_2D_int & right is Container_2D_int)
+            {
+                int[,] data = new int[left.Width, left.Height];
+                for (int i = 0; i < left.Width; i++)
+                    for (int j = 0; j < left.Height; j++)
+                        data[i, j] = (left as Container_2D_int).data[i, j] + (right as Container_2D_int).data[i, j];
+                return new Container_2D_int(data);
+            }
+            else
+            {
+                double[,] data = new double[left.Width, left.Height];
+                for (int i = 0; i < left.Width; i++)
+                    for (int j = 0; j < left.Height; j++)
+                        data[i, j] = left.ddata(i,j) + right.ddata(i,j);
+                return new Container_2D_double(data);
+            }
+        }
+
+
+        public static Container_2D operator &(Container_2D left, Container_2D right)
+        {
+            if (left.Width != right.Width || left.Height != right.Height) throw new ArgumentException();
+
+            int[,] data = new int[left.Width, left.Height];
+            for (int i = 0; i < left.Width; i++)
+                for (int j = 0; j < left.Height; j++)
+                    data[i, j] = (left.ddata(i,j) != 0 && right.ddata(i,j) !=0)? 1:0; 
+            return new Container_2D_int(data);
+        }
+
+        public static Container_2D operator |(Container_2D left, Container_2D right)
+        {
+            if (left.Width != right.Width || left.Height != right.Height) throw new ArgumentException();
+
+            int[,] data = new int[left.Width, left.Height];
+            for (int i = 0; i < left.Width; i++)
+                for (int j = 0; j < left.Height; j++)
+                    data[i, j] = (left.ddata(i, j) != 0 || right.ddata(i, j) != 0) ? 1 : 0;
+            return new Container_2D_int(data);
+        }
+
+
+
+        public abstract void Heaviside();
+
+
+
+
     }
 }

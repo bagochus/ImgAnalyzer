@@ -91,6 +91,15 @@ namespace ImgAnalyzer._2D
             foreach (var v in data) if (criteria(v)) result++;
             return result;
         }
+        public override void Heaviside()
+        { 
+            for (int i = 0; i<width; i++) 
+                for (int j = 0;j<height; j++)
+                    if (data[i, j] <= 0) data[i, j] = 0;
+            else data[i, j] = 1;
+        
+        
+        }
 
-    }
+}
 }

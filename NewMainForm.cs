@@ -142,6 +142,7 @@ namespace ImgAnalyzer
             richTextBox_sample.KeyDown += richTextBox_sample_KeyDown;
             richTextBox_batch.KeyDown += richTextBox_batch_KeyDown;
 
+            useAutoSquare = checkBox_auto_sq.Checked;
 
             UpdateSamplesList();
             if (sampleList.Count > 0) comboBox_sample.SelectedIndex = 0;

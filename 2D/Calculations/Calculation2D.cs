@@ -46,7 +46,11 @@ namespace ImgAnalyzer._2D
 
         public virtual double[,] MeasureFull()
         {
-            return new double[0, 0]; 
+            double[,] result = new double[width, height];
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    result[i, j] = Measure(i, j);
+            return result;
         }
 
         public virtual void Process()

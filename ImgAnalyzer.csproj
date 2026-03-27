@@ -189,6 +189,7 @@
     <Compile Include="2D\Calculations\Acos.cs" />
     <Compile Include="2D\Calculations\FindSqr.cs" />
     <Compile Include="2D\Calculations\PeakFilter.cs" />
+    <Compile Include="2D\Calculations\PhaseRange2.cs" />
     <Compile Include="2D\Calculations\PhaseRange.cs" />
     <Compile Include="2D\Calculations\SqareFitter.cs" />
     <Compile Include="2D\Calculations\StitchSpatialy3.cs" />

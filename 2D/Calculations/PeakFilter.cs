@@ -19,18 +19,18 @@ namespace ImgAnalyzer._2D.Calculations
 
         public PeakFilter() 
         {
-            this.description = "Отчечает пиксели, отличающиеся от среднего\n" +
-                " значения в своем окружении более чем в (1+d) раз" +
+            this.description = "Находит различие между заданным пикселем и медианной величиной" +
+                "в области радиусом r" +
                 "r - полуширина квадратной области сравнения в пикселях";
-            this.singeValueNames = new string[] { "d", "r" };
+            this.singeValueNames = new string[] { "r" };
             this.containerNames = new string[] { "x" };
         }
 
         public override void Init()
         {
             base.Init();
-            d = SingleValueParameters[0];
-            r = (int)SingleValueParameters[1];
+           // d = SingleValueParameters[0];
+            r = (int)SingleValueParameters[0];
 
         }
 
