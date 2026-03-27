@@ -533,7 +533,7 @@ namespace ImgAnalyzer.Macros
             thr_calc.SingleValueParameters = new double[] { 1, 0, 0, phase_diff_thr, phase_diff_thr };
             thr_calc.ContainerParameters = new IContainer_2D[] { min_phase_diff };
 
-
+            return null;
 
 
         }
