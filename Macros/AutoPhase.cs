@@ -67,7 +67,14 @@ namespace ImgAnalyzer.Macros
         double phase_lo;
         double phase_hi;
         Container_2D mask;
+        string defect_report = "";
 
+        bool savemaskDebugData = true;
+        
+        
+
+
+        #region parameters
         private void AddPhaseSettings()
         {
             settings.Add(SD.CreateGlobal("k1", 2.0, "Коэффициент для измерения фазы"));
@@ -87,7 +94,6 @@ namespace ImgAnalyzer.Macros
             m2 = settings.Single(x => x.Name == "m2").GetValue<double>();
             m3 = settings.Single(x => x.Name == "m3").GetValue<double>();
         }
-
         private void AddAutoSquareSettings()
         {
             settings.Add(SD.CreateLocal("img_step", 5, this, "Шаг по изображениям при расчете амплитуды"));
@@ -148,7 +154,6 @@ namespace ImgAnalyzer.Macros
             median_area_r = settings.Single(x => x.Name == "median_area_r").GetValue<int>();
         }
 
-
         private void RequestParams()
         {
 
@@ -178,7 +183,7 @@ namespace ImgAnalyzer.Macros
 
         }
 
-
+        #endregion
         public async Task Run(LogForm form)
         {
             if (form == null) return;
@@ -280,6 +285,8 @@ namespace ImgAnalyzer.Macros
             }
             else return;
 
+            FindDefectPixels();
+
             if (generateLUT)
             {
                 try { await GeneratuLUT(); }
@@ -360,7 +367,6 @@ namespace ImgAnalyzer.Macros
 
 
         }
-
 
         private bool CheckActiveAreas(out string text)
         {
@@ -508,7 +514,7 @@ namespace ImgAnalyzer.Macros
 
         }
 
-        private IContainer_2D FindDefectPixels()
+        private void FindDefectPixels()
         {
 
             var phase_start = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[0]);
@@ -525,61 +531,74 @@ namespace ImgAnalyzer.Macros
 
             pf_calc.ContainerParameters = new IContainer_2D[] { phase_min };
             var min_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
+            min_phase_diff.Name = "min_phase_diff";
 
             pf_calc.ContainerParameters = new IContainer_2D[] { phase_max };
             var max_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
+            max_phase_diff.Name = "max_phase_diff";
 
             var thr_calc = new Threshold();
             thr_calc.SingleValueParameters = new double[] { 1, 0, 0, phase_diff_thr, phase_diff_thr };
+
             thr_calc.ContainerParameters = new IContainer_2D[] { min_phase_diff };
+            var min_mask = new Container_2D_double(thr_calc.MeasureFull());
+
+            thr_calc.ContainerParameters = new IContainer_2D[] { max_phase_diff };
+            var max_mask = new Container_2D_double(thr_calc.MeasureFull());
+
+            var defect_mask = max_mask & min_mask;
+            defect_mask.Name = "defect_mask";
 
 
-
-
-        }
-
-
-        private async Task GeneratuLUT()
-        {
-
-            
-            var phase_start = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[0]);
-            var phase_end = Container_2D.ReadFromFile(stitchedPhaseBatch.Filenames[stitchedPhaseBatch.Count - 1]);
-
-            double avg_start = ImageProcessor_2D.CalculateAverage(phase_start, 8);
-            double avg_end = ImageProcessor_2D.CalculateAverage(phase_end, 8);
 
             writeLog("Расчет диапазона...");
             PhaseRange pr_calc = new PhaseRange();
             pr_calc.internal_call = true;
             pr_calc.DisplayMessage = writeLog;
             pr_calc.SingleValueParameters = new double[] { range_percentile };
-            if (avg_start < avg_end)
-                pr_calc.ContainerParameters = new IContainer_2D[] { phase_start, phase_end };
-            else
-                pr_calc.ContainerParameters = new IContainer_2D[] { phase_end, phase_start };
-
-            if (!pr_calc.Check())
-            {
-                writeErrorLog("Ошибка при расчете фазового диапазона ");
-                return;
-            }
+            pr_calc.ContainerParameters = new IContainer_2D[] { phase_end, phase_start };
             var container_range = new Container_2D_double(pr_calc.MeasureFull());
 
-            double phase_lo = pr_calc.bottom;
-            double phase_hi = pr_calc.top;
+            mask = container_range & defect_mask;
+            mask.Name = "mask";
 
-            var diff_calc = new Difference();
-            diff_calc.ContainerParameters = new IContainer_2D[] { phase_start, phase_end };
-            IContainer_2D diff_map = new Container_2D_double(ImageProcessor_2D.PerformCalculation(diff_calc));
-
-            var threshold_calc = new Threshold();
-            threshold_calc.SingleValueParameters = new double[] {0,1,1,phase_range_thr, phase_range_thr+1.0 };
-            threshold_calc.ContainerParameters = new IContainer_2D[] { diff_map};
-
-            IContainer_2D defect_map = new Container_2D_double(ImageProcessor_2D.PerformCalculation(threshold_calc));
+            phase_lo = pr_calc.bottom;
+             phase_hi = pr_calc.top; 
 
 
+            double defect_count = mask.CountWhere((x) => x == 0);
+            double defect_percent = defect_count / (mask.Width * mask.Width) * 100;
+
+
+
+            defect_report = "Дефектные пиксели отмечены по алгоритму " +
+                $"выброса относительно медианного значения r={median_area_r}, dmax = {phase_diff_thr}\n";
+            if (range_percentile < 100) defect_report += $"Дополнительная обработка по персентилю p={range_percentile}\n";
+            defect_report += $"Отмечено {defect_count} дефектных пикселей ({defect_percent:f2}%)";
+
+            if (stitchMode == StitchMode.Calculate) SamplesDB.AppendBatchCommentNewLine(stitchedPhaseBatch.id,defect_report);
+
+            writeLog(defect_report);
+
+            if (savemaskDebugData)
+            {
+                DataManager_2D.containers.Add(min_phase_diff);
+                DataManager_2D.containers.Add(max_phase_diff);
+                DataManager_2D.containers.Add(defect_mask);
+                DataManager_2D.containers.Add(mask);
+
+            }
+
+
+        }
+
+        private async Task GeneratuLUT()
+        {
+
+
+            FindDefectPixels();
+
+     
 
             ParameterRequestForm pr_form = new ParameterRequestForm();
             pr_form.AddHeader("Введите параметры для LU таблицы. PHASE_0 - значение фазы," +
@@ -613,6 +632,9 @@ namespace ImgAnalyzer.Macros
 
             lut_calc.SingleValueParameters = new double[] { ph0, ph255, dac_0, dac_step };
             lut_calc.imageSources = new IImageSource[] { stitchedPhaseBatch };
+            lut_calc.useMask = true;
+            lut_calc.ContainerParameters = new IContainer_2D[] {mask };
+
 
             writeLog("Построение LU таблицы...");
             lut_calc.containerPorcessed += () =>
@@ -636,9 +658,6 @@ namespace ImgAnalyzer.Macros
 
         }
 
-        
-
-
         private void FillFitterField(SqareFitter sf)
         {
             sf.aa_size = active_area_res;
@@ -651,10 +670,7 @@ namespace ImgAnalyzer.Macros
         }
 
 
-        
-
-
-
+       
         public AutoPhase() 
         {
 
