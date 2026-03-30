@@ -100,7 +100,7 @@ namespace ImgAnalyzer
         /// <summary>
         /// Упрощенный конструктор с автоматическим определением типа
         /// </summary>
-        private SettingDefinition(string name, object defaultValue, string comment = "")
+        public SettingDefinition(string name, object defaultValue, string comment = "")
         {
             if (!supportedTypes.Contains(defaultValue.GetType()))
                 throw new ArgumentException("Type not supported");

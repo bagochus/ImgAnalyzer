@@ -468,6 +468,9 @@
     <EmbeddedResource Include="1D\Form_1D.resx">
       <DependentUpon>Form_1D.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="DialogForms\FormSettings.resx">
+      <DependentUpon>FormSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DialogForms\Form_GroupOperations.resx">
       <DependentUpon>Form_GroupOperations.cs</DependentUpon>
     </EmbeddedResource>

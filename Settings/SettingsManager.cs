@@ -1,4 +1,5 @@
 ﻿using ImgAnalyzer.DialogForms;
+using ImgAnalyzer.Properties;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -81,6 +82,119 @@ namespace ImgAnalyzer
 
         }
 
+        public List<SettingDefinition> GetAllSettings(string ownerName = "", string searchText ="")
+        {
+            List<SettingDefinition> result = new List<SettingDefinition>();
+
+            try
+            {
+                if (_dbConnection.State != ConnectionState.Open)
+                    _dbConnection.Open();
+
+                using (var transaction = _dbConnection.BeginTransaction())
+                {
+                    string where_statement = "";
+                    if (ownerName.Length > 0 || searchText.Length > 0) where_statement += "WHERE ";
+                    if (ownerName.Length > 0) where_statement += "Owner = @Owner ";
+                    if (ownerName.Length > 0 && searchText.Length > 0) where_statement += "AND ";
+                    if (searchText.Length > 0) where_statement += $"Name LIKE %{searchText} %";
+
+
+                    var getQuery = $"SELECT * FROM {_tableName} {where_statement} AND Owner = @sender ORDER BY Owner";
+                    using (var getCommand = _dbConnection.CreateCommand())
+                    {
+                        getCommand.Transaction = transaction;
+                        getCommand.CommandText = getQuery;
+                        if (ownerName.Length >0) AddParameter(getCommand, "@Owner", ownerName);
+
+                        using (var reader = getCommand.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string name = reader
+
+
+
+
+                            }
+                        
+                        
+                        }
+
+                        var exists = Convert.ToInt32(getCommand.ExecuteScalar()) > 0;
+
+                        if (!exists)
+                        {
+                            // Добавляем настройку с значением по умолчанию
+                            var insertQuery = $@"
+                                INSERT INTO {_tableName} (Name, Owner, Value, ValueType, Comment) 
+                                VALUES (@Name, @Owner, @Value, @ValueType, @Comment)";
+
+                            using (var insertCommand = _dbConnection.CreateCommand())
+                            {
+                                insertCommand.Transaction = transaction;
+                                insertCommand.CommandText = insertQuery;
+
+                                AddParameter(insertCommand, "@Name", setting.Name);
+                                AddParameter(insertCommand, "@Owner", setting.Owner);
+                                AddParameter(insertCommand, "@Value", ConvertToString(setting.DefaultValue));
+                                AddParameter(insertCommand, "@ValueType", setting.ValueType.FullName);
+                                AddParameter(insertCommand, "@Comment", setting.Comment);
+
+                                insertCommand.ExecuteNonQuery();
+                            }
+                        }
+                        else
+                        {
+                            var updateQuery = $@"
+                                UPDATE {_tableName} 
+                                SET ValueType = @ValueType, Comment = @Comment 
+                                WHERE Name = @Name";
+
+                            using (var updateCommand = _dbConnection.CreateCommand())
+                            {
+                                updateCommand.Transaction = transaction;
+                                updateCommand.CommandText = updateQuery;
+
+                                AddParameter(updateCommand, "@Name", setting.Name);
+                                AddParameter(updateCommand, "@ValueType", setting.ValueType.FullName);
+                                AddParameter(updateCommand, "@Comment", setting.Comment);
+
+                                updateCommand.ExecuteNonQuery();
+                            }
+
+
+                            var request_query = $"SELECT Value FROM {_tableName} WHERE Name = @Name";
+                            using (var command = _dbConnection.CreateCommand())
+                            {
+                                command.CommandText = request_query;
+                                AddParameter(command, "@Name", setting.Name);
+
+                                var result = command.ExecuteScalar();
+
+                                if (result == null || result == DBNull.Value || !setting.ConvertFromString(result.ToString()))
+                                {
+                                    // Возвращаем значение по умолчанию
+                                    setting.SetDefault();
+                                }
+
+                            }
+                        }
+                    }
+                    
+
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Ошибка синхронизации настроек: {ex.Message}", ex);
+            }
+
+
+
+
+        }
 
         /// <summary>
         /// Синхронизация зарегистрированных настроек с базой данных
