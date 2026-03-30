@@ -157,7 +157,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
 
 
-            var _lutFolder = SettingDefinition.CreateGlobal("containerFolder",
+            var _lutFolder = SettingDefinition.CreateGlobal("lutFolder",
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\LUT"
                 , "Папка для LU таблиц");
             var _lutSummaryFile = SettingDefinition.CreateGlobal("lutSummaryFile",

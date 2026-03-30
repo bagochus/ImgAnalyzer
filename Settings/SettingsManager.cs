@@ -84,6 +84,7 @@ namespace ImgAnalyzer
 
         public List<SettingDefinition> GetAllSettings(string ownerName = "", string searchText ="")
         {
+            throw new NotImplementedException();
             List<SettingDefinition> result = new List<SettingDefinition>();
 
             try
@@ -111,7 +112,7 @@ namespace ImgAnalyzer
                         {
                             while (reader.Read())
                             {
-                                string name = reader
+                                string name = reader.GetString(0);  
 
 
 
@@ -121,65 +122,7 @@ namespace ImgAnalyzer
                         
                         }
 
-                        var exists = Convert.ToInt32(getCommand.ExecuteScalar()) > 0;
-
-                        if (!exists)
-                        {
-                            // Добавляем настройку с значением по умолчанию
-                            var insertQuery = $@"
-                                INSERT INTO {_tableName} (Name, Owner, Value, ValueType, Comment) 
-                                VALUES (@Name, @Owner, @Value, @ValueType, @Comment)";
-
-                            using (var insertCommand = _dbConnection.CreateCommand())
-                            {
-                                insertCommand.Transaction = transaction;
-                                insertCommand.CommandText = insertQuery;
-
-                                AddParameter(insertCommand, "@Name", setting.Name);
-                                AddParameter(insertCommand, "@Owner", setting.Owner);
-                                AddParameter(insertCommand, "@Value", ConvertToString(setting.DefaultValue));
-                                AddParameter(insertCommand, "@ValueType", setting.ValueType.FullName);
-                                AddParameter(insertCommand, "@Comment", setting.Comment);
-
-                                insertCommand.ExecuteNonQuery();
-                            }
-                        }
-                        else
-                        {
-                            var updateQuery = $@"
-                                UPDATE {_tableName} 
-                                SET ValueType = @ValueType, Comment = @Comment 
-                                WHERE Name = @Name";
-
-                            using (var updateCommand = _dbConnection.CreateCommand())
-                            {
-                                updateCommand.Transaction = transaction;
-                                updateCommand.CommandText = updateQuery;
-
-                                AddParameter(updateCommand, "@Name", setting.Name);
-                                AddParameter(updateCommand, "@ValueType", setting.ValueType.FullName);
-                                AddParameter(updateCommand, "@Comment", setting.Comment);
-
-                                updateCommand.ExecuteNonQuery();
-                            }
-
-
-                            var request_query = $"SELECT Value FROM {_tableName} WHERE Name = @Name";
-                            using (var command = _dbConnection.CreateCommand())
-                            {
-                                command.CommandText = request_query;
-                                AddParameter(command, "@Name", setting.Name);
-
-                                var result = command.ExecuteScalar();
-
-                                if (result == null || result == DBNull.Value || !setting.ConvertFromString(result.ToString()))
-                                {
-                                    // Возвращаем значение по умолчанию
-                                    setting.SetDefault();
-                                }
-
-                            }
-                        }
+                       
                     }
                     
 

@@ -139,7 +139,7 @@ namespace ImgAnalyzer.Macros
             //settings.Add(SD.CreateLocal("phase_range_thr", 30.0, this, "Порог фазового диапазона для того чтобы считать пиксель дефектным"));
             settings.Add(SD.CreateLocal("phase_diff_thr", 10.0, this,
                 "Порог выброса фазы для того чтобы считать пиксель дефектным"));
-            settings.Add(SD.CreateLocal("median_area_r", 10.0, this, "Радиус окна медианного фильтра"));
+            settings.Add(SD.CreateLocal("median_area_r", (int)3, this, "Радиус окна медианного фильтра"));
 
 
 
@@ -530,10 +530,12 @@ namespace ImgAnalyzer.Macros
             pf_calc.SingleValueParameters = new double[] { median_area_r };
 
             pf_calc.ContainerParameters = new IContainer_2D[] { phase_min };
+            if (!pf_calc.Check()) throw new Exception(pf_calc.ErrorMessage);
             var min_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
             min_phase_diff.Name = "min_phase_diff";
 
             pf_calc.ContainerParameters = new IContainer_2D[] { phase_max };
+            if (!pf_calc.Check()) throw new Exception(pf_calc.ErrorMessage);
             var max_phase_diff = new Container_2D_double(pf_calc.MeasureFull());
             max_phase_diff.Name = "max_phase_diff";
 
@@ -541,22 +543,38 @@ namespace ImgAnalyzer.Macros
             thr_calc.SingleValueParameters = new double[] { 1, 0, 0, phase_diff_thr, phase_diff_thr };
 
             thr_calc.ContainerParameters = new IContainer_2D[] { min_phase_diff };
+            if (!thr_calc.Check())throw new Exception(thr_calc.ErrorMessage);
             var min_mask = new Container_2D_double(thr_calc.MeasureFull());
 
             thr_calc.ContainerParameters = new IContainer_2D[] { max_phase_diff };
+            if (!thr_calc.Check()) throw new Exception(thr_calc.ErrorMessage);
             var max_mask = new Container_2D_double(thr_calc.MeasureFull());
 
             var defect_mask = max_mask & min_mask;
             defect_mask.Name = "defect_mask";
 
-            return null;
+            var patch_calc = new Patch();
+            patch_calc.ContainerParameters = new IContainer_2D[] { phase_min, defect_mask };
+            if (!patch_calc.Check()) throw new Exception(patch_calc.ErrorMessage);
+            var phase_min_patched = new Container_2D_double(patch_calc.MeasureFull());
+
+            patch_calc.ContainerParameters = new IContainer_2D[] { phase_max, defect_mask };
+            if (!patch_calc.Check()) throw new Exception(patch_calc.ErrorMessage);
+            var phase_max_patched = new Container_2D_double(patch_calc.MeasureFull());
+
+
+
+
+
+            //return null;
 
             writeLog("Расчет диапазона...");
             PhaseRange pr_calc = new PhaseRange();
             pr_calc.internal_call = true;
             pr_calc.DisplayMessage = writeLog;
             pr_calc.SingleValueParameters = new double[] { range_percentile };
-            pr_calc.ContainerParameters = new IContainer_2D[] { phase_end, phase_start };
+            pr_calc.ContainerParameters = new IContainer_2D[] { phase_min_patched, phase_max_patched };
+            if (!pr_calc.Check())  throw new Exception(pr_calc.ErrorMessage); 
             var container_range = new Container_2D_double(pr_calc.MeasureFull());
 
             mask = container_range & defect_mask;
@@ -596,7 +614,7 @@ namespace ImgAnalyzer.Macros
         {
 
 
-            FindDefectPixels();
+            //FindDefectPixels();
 
      
 
@@ -652,10 +670,6 @@ namespace ImgAnalyzer.Macros
                 return;
             }
             writeLog("Обработка завершениа");
-
-
-
-
         }
 
         private void FillFitterField(SqareFitter sf)
