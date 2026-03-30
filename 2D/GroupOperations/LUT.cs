@@ -75,7 +75,7 @@ namespace ImgAnalyzer._2D.GroupOperations
         int block_width;
         int block_height;
 
-        protected bool useMask = false;
+        public bool useMask = false;
         protected bool useGradientTails = false;
 
         internal enum reportCodes : int {good = 0, over, under, overunder, banding, dead };
@@ -190,7 +190,7 @@ namespace ImgAnalyzer._2D.GroupOperations
 
             if (_cancellationToken.IsCancellationRequested)
             {
-                //some comment actions
+                DisplayMessage("Операция отменена");
                 _cancellationToken.ThrowIfCancellationRequested();
             }
 

@@ -1,4 +1,4 @@
-﻿using ImgAnalyzer._2D;
+﻿ using ImgAnalyzer._2D;
 using Microsoft.Data.Sqlite;
 using Microsoft.VisualBasic.ApplicationServices;
 using NetTopologySuite.Noding;

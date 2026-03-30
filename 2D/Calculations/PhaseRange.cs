@@ -54,6 +54,8 @@ namespace ImgAnalyzer._2D
 
             double[,] result = new double[width, height];
             percentile = SingleValueParameters[0];
+            if (percentile >= 100) sortedArrayCount = 1; 
+            else
             sortedArrayCount = (int)((1 - percentile / 100 ) * width * height);
             max_values = new double[sortedArrayCount];
             min_values = new double[sortedArrayCount];
