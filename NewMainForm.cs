@@ -47,7 +47,7 @@ namespace ImgAnalyzer
         private enum BatchCommentBinding { New, Phase, Stitch }
         private BatchCommentBinding commentBinding = BatchCommentBinding.New;
 
-
+        SettingDefinition setting_checkbox;
 
         public NewMainForm()
         {
@@ -146,9 +146,10 @@ namespace ImgAnalyzer
 
             UpdateSamplesList();
             if (sampleList.Count > 0) comboBox_sample.SelectedIndex = 0;
-            
 
-
+            setting_checkbox = SettingDefinition.CreateLocal("show_params", true, this, "Галочка показать параметры перед стартом");
+            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { setting_checkbox });
+            checkBox_req_params.Checked = setting_checkbox.GetValue<bool>();
         }
 
         private void Phase_click(object sender, EventArgs e)
@@ -587,6 +588,12 @@ namespace ImgAnalyzer
         private void button_start_Click(object sender, EventArgs e)
         {
             Start();
+        }
+
+        private void NewMainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            setting_checkbox.Value = checkBox_req_params.Checked;
+            SettingsManager.SaveSettingsToDatabase(new List<SettingDefinition> { setting_checkbox });
         }
 
         private void button6_Click(object sender, EventArgs e)

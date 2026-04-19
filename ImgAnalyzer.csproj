@@ -442,6 +442,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SamplesDB.cs" />
     <Compile Include="Settings\SettingDefinition.cs" />
+    <Compile Include="Settings\SettingRecord.cs" />
     <Compile Include="Settings\SettingsManager.cs" />
     <Compile Include="StaticFunctions.cs" />
     <EmbeddedResource Include="2D\Form_2D.resx">

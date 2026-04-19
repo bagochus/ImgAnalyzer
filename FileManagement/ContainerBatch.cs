@@ -166,7 +166,7 @@ namespace ImgAnalyzer
         {
 
             var _containerFolder = SettingDefinition.CreateGlobal("_containerFolder", "D:\\containers", "Папка для сохранения данных");
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _containerFolder });
+            SettingsManager.RequestSettingList(new List<SettingDefinition> { _containerFolder });
             string containerFolder = _containerFolder.GetValue<string>();
             return FileManagement.CreateUniqueFolder(containerFolder+"\\"+name);
 

@@ -139,7 +139,7 @@ namespace ImgAnalyzer.Macros
             //settings.Add(SD.CreateLocal("phase_range_thr", 30.0, this, "Порог фазового диапазона для того чтобы считать пиксель дефектным"));
             settings.Add(SD.CreateLocal("phase_diff_thr", 10.0, this,
                 "Порог выброса фазы для того чтобы считать пиксель дефектным"));
-            settings.Add(SD.CreateLocal("median_area_r", 10.0, this, "Радиус окна медианного фильтра"));
+            settings.Add(SD.CreateLocal("median_area_r", (int)10, this, "Радиус окна медианного фильтра"));
 
 
 

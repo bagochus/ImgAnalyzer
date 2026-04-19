@@ -360,6 +360,7 @@
             this.Controls.Add(this.comboBox_sample);
             this.Name = "NewMainForm";
             this.Text = "NewMainForm";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.NewMainForm_FormClosed);
             this.groupBox_phase.ResumeLayout(false);
             this.groupBox_phase.PerformLayout();
             this.groupBox_stitch.ResumeLayout(false);

@@ -146,8 +146,8 @@ namespace ImgAnalyzer
 
         private void настройкиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form_PhaseMeasurment form = new Form_PhaseMeasurment();
-            form.ShowDialog();
+            FormSettings form = new FormSettings();
+            form.Show();
         }
 
 

@@ -16,7 +16,7 @@ namespace ImgAnalyzer
     /// </summary>
     public class SettingDefinition
     {
-        private Type[] supportedTypes =
+        private static Type[] supportedTypes =
             { 
             typeof(bool),
             typeof(int),
@@ -67,8 +67,9 @@ namespace ImgAnalyzer
         {
             bool result = true;
             try
-            { 
-                        if (ValueType == typeof(bool))
+            {
+                
+            if (ValueType == typeof(bool))
                 Value = bool.Parse(s);
 
             if (ValueType == typeof(int))

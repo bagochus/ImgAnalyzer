@@ -164,7 +164,7 @@ namespace ImgAnalyzer._2D.GroupOperations
                 Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\LUT\\_lut_summary.txt"
                 , "Статистика по LUT файлам");
 
-            SettingsManager.GetSettingsFromDatabase(new List<SettingDefinition> { _lutFolder, _lutSummaryFile });
+            SettingsManager.RequestSettingList(new List<SettingDefinition> { _lutFolder, _lutSummaryFile });
 
 
             string lutFolder = _lutFolder.GetValue<string>();
