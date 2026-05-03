@@ -23,7 +23,7 @@ namespace ImgAnalyzer._2D
 
         public override double Measure(int x, int y)
         { 
-            if (x== 378 && y==327)Debugger.Break();
+            //if (x== 378 && y==327)Debugger.Break();
 
             Func<int, int, double> inp = (xx, yy) => ContainerParameters[0].ddata(xx, yy); 
             Func<int, int, double> mask = (xx, yy) => ContainerParameters[1].ddata(xx, yy);
